@@ -1,0 +1,6 @@
+export enum EventStatus {
+  SCHEDULED = 'SCHEDULED',
+  ONGOING   = 'ONGOING',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'
+}

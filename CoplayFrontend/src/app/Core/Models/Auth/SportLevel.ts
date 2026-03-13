@@ -1,0 +1,6 @@
+export enum SportLevel {
+  BEGINNER     = 'BEGINNER',
+  INTERMEDIATE = 'INTERMEDIATE',
+  ADVANCED     = 'ADVANCED',
+  PROFESSIONAL = 'PROFESSIONAL'
+}

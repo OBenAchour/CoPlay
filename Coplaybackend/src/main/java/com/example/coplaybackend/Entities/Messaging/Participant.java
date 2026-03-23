@@ -1,4 +1,5 @@
 package com.example.coplaybackend.Entities.Messaging;
+import com.example.coplaybackend.Entities.Auth.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,9 +16,9 @@ public class Participant {
     @Id
     private String participantId;
 
-    private String conversationId;   // ref → Conversation
+    private Conversation conversation;   // ref → Conversation
 
-    private String userId;           // ref → User
+    private User user;           // ref → User
 
     private ParticipantRole role;
 

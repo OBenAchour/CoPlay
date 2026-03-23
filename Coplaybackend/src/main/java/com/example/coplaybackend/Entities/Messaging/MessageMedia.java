@@ -13,7 +13,7 @@ public class MessageMedia {
     @Id
     private String mediaId;
 
-    private String messageId;        // ref → Message
+    private Message message;
 
     private MediaType mediaType;
 

@@ -1,7 +1,9 @@
 package com.example.coplaybackend.Entities.Messaging;
+import com.example.coplaybackend.Entities.Auth.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 
 import java.time.LocalDateTime;
 
@@ -15,9 +17,9 @@ public class Message {
     @Id
     private String messageId;
 
-    private String senderId;         // ref → User
+    private User sender;
 
-    private String conversationId;   // ref → Conversation
+    private Conversation conversation;   // ref → Conversation
 
     private String content;
 

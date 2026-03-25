@@ -1,4 +1,5 @@
 package com.example.coplaybackend.Entities.Social;
+import com.example.coplaybackend.Entities.Auth.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,11 +16,11 @@ public class Comment {
     @Id
     private String commentId;
 
-    private String postId;           // ref → Post
+    private Post post;           // ref → Post
 
-    private String authorId;         // ref → User
+    private User author;         // ref → User
 
-    private String parentCommentId;  // ref → Comment (null si commentaire racine)
+    private Comment parentComment;  // ref → Comment (null si commentaire racine)
 
     private String content;
 

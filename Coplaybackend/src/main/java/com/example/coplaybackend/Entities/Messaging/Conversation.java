@@ -17,7 +17,7 @@ public class Conversation {
 
     private ConversationType type;
 
-    private String name;             // null pour les conversations DIRECT
+    private String name;
 
     private LocalDateTime createdAt;
 

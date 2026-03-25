@@ -1,5 +1,7 @@
 package com.example.coplaybackend.Entities.Social;
 
+import com.example.coplaybackend.Entities.Auth.User;
+import com.example.coplaybackend.Entities.Events.Event;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,7 +18,7 @@ public class Post {
     @Id
     private String postId;
 
-    private String authorId;         // ref → User
+    private User author;         // ref → User
 
     private PostType type;
 
@@ -24,7 +26,7 @@ public class Post {
 
     private String photoUrl;
 
-    private String eventRef;         // ref → Event (optionnel)
+    private Event eventRef;         // ref → Event (optionnel)
 
     private LocalDateTime createdAt;
 

@@ -3,10 +3,7 @@ package com.example.coplaybackend.Entities.Events;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 
-/**
- * Embedded dans TrainingProgram — pas de collection propre.
- * Stocké directement dans le document training_programs.
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

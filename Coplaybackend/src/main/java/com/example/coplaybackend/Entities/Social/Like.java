@@ -1,5 +1,6 @@
 package com.example.coplaybackend.Entities.Social;
 
+import com.example.coplaybackend.Entities.Auth.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
@@ -20,11 +21,13 @@ public class Like {
     @Id
     private String likeId;
 
-    private String userId;           // ref → User
+    private User userId;           // ref → User
 
     private LikeTargetType targetType;
 
-    private String targetId;         // ref → Post ou Comment selon targetType
+    private Post post ;         // ref → Post
+
+    private Comment comment ;         // ref → Comment
 
     private LocalDateTime createdAt;
 }

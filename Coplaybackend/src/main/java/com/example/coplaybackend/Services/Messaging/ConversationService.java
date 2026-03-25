@@ -2,10 +2,10 @@ package com.example.coplaybackend.Services.Messaging;
 
 import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Messaging.*;
+import com.example.coplaybackend.Repositories.Auth.UserRepository;
 import com.example.coplaybackend.Repositories.Messaging.ConversationRepository;
 import com.example.coplaybackend.Repositories.Messaging.MessageRepository;
 import com.example.coplaybackend.Repositories.Messaging.ParticipantRepository;
-import com.example.coplaybackend.Repositories.Events.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

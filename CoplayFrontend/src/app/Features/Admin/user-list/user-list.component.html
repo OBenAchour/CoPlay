@@ -1,0 +1,51 @@
+<div class="admin-container">
+  <h2>Gestion des Utilisateurs</h2>
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <table *ngIf="!errorMessage">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.profile?.displayName || 'Sans nom' }}</td>
+        <td>{{ user.email }}</td>
+        <td><span class="badge">{{ user.role }}</span></td>
+        <td>
+           <button (click)="editUser(user)" class="btn-edit">Modifier</button>
+           <button (click)="deleteUser(user.userId)" class="btn-delete">Supprimer</button>
+       </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="modal" *ngIf="selectedUser">
+  <div class="modal-content">
+    <h3>Modifier l'utilisateur</h3>
+    
+    <label>Nom d'affichage :</label>
+    <input [(ngModel)]="selectedUser.profile!.displayName" class="form-control">
+
+    <label>Rôle :</label>
+    <select [(ngModel)]="selectedUser.role" class="form-control">
+      <option value="PLAYER">PLAYER</option>
+      <option value="ADMIN">ADMIN</option>
+    </select>
+
+    <label>Statut :</label>
+    <select [(ngModel)]="selectedUser.isActive" class="form-control">
+      <option [ngValue]="true">Actif</option>
+      <option [ngValue]="false">Bloqué</option>
+    </select>
+
+    <div class="modal-actions">
+      <button (click)="saveChanges()" class="btn-save">Enregistrer</button>
+      <button (click)="selectedUser = null" class="btn-cancel">Annuler</button>
+    </div>
+  </div>
+</div>

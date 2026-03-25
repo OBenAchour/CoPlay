@@ -1,0 +1,47 @@
+<div class="profile-container" *ngIf="user">
+  <div class="profile-card">
+    <h2 class="profile-title">Mon Profil CoPlay</h2>
+    
+    <div class="profile-content">
+      <div class="avatar-sidebar">
+        <div class="image-wrapper">
+          <img [src]="user.profile?.profilePicture || 'assets/default-avatar.png'" 
+               alt="Photo de profil" class="profile-img">
+          <label for="fileInput" class="upload-badge">
+            <i class="fas fa-camera"></i>
+          </label>
+        </div>
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" id="fileInput" hidden>
+        <p class="avatar-hint">Modifier la photo</p>
+      </div>
+
+      <div class="profile-form">
+        <div class="input-group">
+          <label>Email professionnel</label>
+          <input [value]="user.email" disabled class="form-control readonly">
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label>Nom d'affichage</label>
+            <input [(ngModel)]="user.profile.displayName" class="form-control" placeholder="Votre pseudo">
+          </div>
+          <div class="input-group">
+            <label>Téléphone</label>
+            <input [(ngModel)]="user.profile.phone" class="form-control" placeholder="25 471 173">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Ville actuelle</label>
+          <input [(ngModel)]="user.profile.city" class="form-control" placeholder="Ariena, Tunis...">
+        </div>
+
+        <button (click)="saveProfile()" class="btn-primary">
+          Enregistrer les modifications
+        </button>
+        <p class="success-msg" *ngIf="message">{{ message }}</p>
+      </div>
+    </div>
+  </div>
+</div>

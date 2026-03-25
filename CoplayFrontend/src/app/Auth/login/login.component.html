@@ -1,0 +1,48 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <span class="header-icon">🔑</span>
+      <h2>Connexion CoPlay</h2>
+      <p>Ravi de vous revoir ! Connectez-vous pour jouer.</p>
+    </div>
+
+    <div class="error-banner" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+      
+      <div class="input-group">
+        <label><i class="fas fa-envelope"></i> Email professionnel</label>
+        <input type="email" formControlName="email" placeholder="votre.email@exemple.com">
+      </div>
+      
+      <div class="input-group password-group">
+        <label><i class="fas fa-lock"></i> Mot de passe</label>
+        <div class="password-wrapper">
+          <input [type]="passwordVisible ? 'text' : 'password'" 
+                 formControlName="password"
+                 placeholder="Entrez votre mot de passe">
+          
+          <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()">
+            <i [class]="passwordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="loginForm.invalid">
+          Se connecter
+        </button>
+      </div>
+    </form>
+    
+    <div class="login-footer">
+      <p>Pas encore de compte ? <a routerLink="/register">Inscrivez-vous ici</a></p>
+    </div>
+  </div>
+</div>

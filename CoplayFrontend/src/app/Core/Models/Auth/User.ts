@@ -1,13 +1,14 @@
-import {Role} from "./Role"
+import { Role } from './Role';
+import { UserProfile } from './UserProfile';
 
 export interface User {
-  userId?:          string;
-  email:            string;
-  passwordHash?:    string;       // jamais renvoyé par l'API
-  role:             Role;
-  isEmailVerified?: boolean;
-  isActive?:        boolean;
-  createdAt?:       string;       // ISO 8601
-  updatedAt?:       string;
-  lastLoginAt?:     string;
+    userId: string;
+    email: string;
+    role: Role;
+    isActive: boolean;
+    isEmailVerified: boolean;
+    profile: UserProfile; // L'objet profile est ICI
+    createdAt: Date;
+    updatedAt: Date;
+    lastLoginAt?: Date;
 }

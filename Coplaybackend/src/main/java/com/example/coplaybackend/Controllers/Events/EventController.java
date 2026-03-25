@@ -2,8 +2,8 @@ package com.example.coplaybackend.Controllers.Events;
 
 import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Events.*;
+import com.example.coplaybackend.Repositories.Auth.UserRepository;
 import com.example.coplaybackend.Repositories.Events.EventRepository;
-import com.example.coplaybackend.Repositories.Events.UserRepository;
 import com.example.coplaybackend.Services.Events.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

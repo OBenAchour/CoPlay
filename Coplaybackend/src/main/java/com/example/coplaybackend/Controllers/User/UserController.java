@@ -1,15 +1,18 @@
 package com.example.coplaybackend.Controllers.User;
 
+import com.example.coplaybackend.DTOs.Auth.PasswordChangeRequest;
 import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Auth.UserProfile;
 import com.example.coplaybackend.Repositories.Auth.UserRepository;
+import com.example.coplaybackend.Services.Auth.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -18,14 +21,13 @@ import java.util.List;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final AuthService authService; // ✅ Ajout
 
-    // Récupérer tous les utilisateurs (Réservé à l'ADMIN)
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userRepository.findAll());
     }
 
-    // Supprimer un utilisateur
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable String id) {
         userRepository.deleteById(id);
@@ -34,7 +36,6 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<User> getMyProfile(Authentication authentication) {
-        // authentication.getName() contient l'email extrait par ton JwtAuthenticationFilter
         return userRepository.findByEmail(authentication.getName())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -49,5 +50,23 @@ public class UserController {
                     return ResponseEntity.ok().build();
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ✅ Nouvel endpoint change-password (déplacé depuis AuthController)
+    @PutMapping("/me/password")
+    public ResponseEntity<?> changePassword(
+            Authentication authentication,
+            @RequestBody PasswordChangeRequest request) {
+        try {
+            authService.updateOwnPassword(
+                    authentication.getName(),
+                    request.getOldPassword(),
+                    request.getNewPassword()
+            );
+            return ResponseEntity.ok().body(Map.of("message", "Mot de passe mis à jour"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }

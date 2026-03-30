@@ -40,6 +40,18 @@ export class UserListComponent implements OnInit {
   }
 }
 
+resetPassword(userId: string) {
+  if (confirm("Voulez-vous vraiment réinitialiser le mot de passe ?")) {
+    this.adminService.resetUserPassword(userId).subscribe({
+      next: (res) => {
+        alert("Nouveau mot de passe généré : " + res.temporaryPassword);
+        // Tu peux aussi copier le pass dans le presse-papier ici
+      },
+      error: (err) => alert("Erreur lors de la réinitialisation")
+    });
+  }
+}
+
   saveChanges(): void {
     if (this.selectedUser) {
       this.adminService.updateUser(this.selectedUser.userId, this.selectedUser).subscribe({

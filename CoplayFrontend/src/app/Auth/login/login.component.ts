@@ -12,6 +12,8 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   passwordVisible: boolean = false;
   errorMessage: string = '';
+  loginData = { email: '', password: '' };
+  isLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -44,4 +46,14 @@ export class LoginComponent implements OnInit {
       });
     }
   }
+
+  forgotPassword(): void {
+  const email = prompt("Entrez votre email :");
+  if (email) {
+    this.authService.forgotPassword(email).subscribe({
+      next: (res) => alert("Succès : " + res.message),
+      error: (err) => alert("Erreur : " + (err.error?.error || "Email introuvable"))
+    });
+  }
+}
 }

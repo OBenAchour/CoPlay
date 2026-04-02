@@ -33,6 +33,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/teams/**").permitAll()
+                        .requestMatchers("/api/sponsors/**").permitAll() // <- autorise ce endpoint
+
                         .requestMatchers("/api/users/me").authenticated()
                         // Seuls les ADMIN peuvent accéder aux APIs users
                         // Remplace .hasAuthority("ADMIN") par cette version plus souple :

@@ -87,7 +87,16 @@ public class ConversationService {
     }
 
     /** Archive a conversation (soft-delete). */
-    public Conversation archiveConversation(String conversationId) {
+    public Conversation archiveConversation(String conversationId, String requestingUserId) {
+        // Check if user is admin
+        Participant participant = participantRepository
+                .findByConversation_ConversationIdAndUser_UserId(conversationId, requestingUserId)
+                .orElseThrow(() -> new RuntimeException("Access denied: User is not a participant in this conversation"));
+
+        if (participant.getRole() != ParticipantRole.ADMIN) {
+            throw new RuntimeException("Access denied: Only admins can archive conversations");
+        }
+
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found: " + conversationId));
         conversation.setIsArchived(true);
@@ -96,7 +105,15 @@ public class ConversationService {
     }
 
     /** Get a single conversation by ID. */
-    public Conversation getConversation(String conversationId) {
+    public Conversation getConversation(String conversationId, String requestingUserId) {
+        // Check if user is participant
+        boolean isParticipant = participantRepository
+                .existsByConversation_ConversationIdAndUser_UserIdAndIsActiveTrue(conversationId, requestingUserId);
+
+        if (!isParticipant) {
+            throw new RuntimeException("Access denied: User is not a participant in this conversation");
+        }
+
         return conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found: " + conversationId));
     }

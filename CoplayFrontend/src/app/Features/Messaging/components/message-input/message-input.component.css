@@ -1,0 +1,47 @@
+.message-input-container {
+  display: flex;
+  align-items: flex-end;
+  padding: 10px 15px;
+  border-top: 1px solid #eee;
+  background: white;
+  gap: 10px;
+}
+
+textarea {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  resize: none;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  max-height: 100px;
+  min-height: 40px;
+}
+
+textarea:focus {
+  border-color: #3498db;
+}
+
+.send-btn {
+  width: 40px;
+  height: 40px;
+  background: #2ecc71;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: #27ae60;
+}
+
+.send-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}

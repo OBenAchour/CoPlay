@@ -34,9 +34,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/api/users/me").authenticated()
+
                         // Seuls les ADMIN peuvent accéder aux APIs users
                         // Remplace .hasAuthority("ADMIN") par cette version plus souple :
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                        .requestMatchers("/ws-call/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // ÉTAPE CRUCIALE : On dit à Spring de passer par notre filtre AVANT de vérifier les accès

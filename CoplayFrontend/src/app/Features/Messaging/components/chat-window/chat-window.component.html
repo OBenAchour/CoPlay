@@ -1,0 +1,44 @@
+<div class="chat-window">
+  <!-- Header -->
+  <div class="chat-header">
+<button class="back-btn" (click)="selectConversation.emit(undefined)">←</button>
+    <h3 *ngIf="selectedConversation">{{ selectedConversation.name || 'Conversation' }}</h3>
+    <h3 *ngIf="!selectedConversation">Messages</h3>
+    <button class="close-btn" (click)="close.emit()">✕</button>
+    <button class="new-msg-btn" (click)="newMessage.emit()">+</button>
+  </div>
+
+  <!-- Content -->
+  <div class="chat-content">
+    <!-- Liste conversations -->
+    <div *ngIf="!selectedConversation" class="conversation-list">
+      <div class="search-box">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery"
+          placeholder="Rechercher..."
+          (input)="onSearch(searchQuery)">
+      </div>
+      <div 
+        *ngFor="let conv of conversations" 
+        class="conversation-item"
+        (click)="selectConversation.emit(conv)">
+        <div class="avatar">{{ conv.name?.charAt(0) || '?' }}</div>
+        <div class="conv-info">
+          <span class="conv-name">{{ conv.name || 'Sans nom' }}</span>
+          <span class="conv-preview">{{ conv.lastMessage?.content || 'Aucun message' }}</span>
+        </div>
+        <span *ngIf="conv.unreadCount" class="unread-badge">{{ conv.unreadCount }}</span>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="selectedConversation" class="message-area">
+      <app-message-list [messages]="messages"></app-message-list>
+      <app-message-input 
+        [(message)]="messageInput"
+        (send)="onSendMessage()">
+      </app-message-input>
+    </div>
+  </div>
+</div>

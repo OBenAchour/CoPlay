@@ -56,8 +56,14 @@ public class ConversationService {
 
         // Add each participant
         for (String userId : participantIds) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+            User user;
+            if (userId.contains("@")) {
+                user = userRepository.findByEmail(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+            } else {
+                user = userRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+            }
 
             ParticipantRole role = participantIds.indexOf(userId) == 0
                     ? ParticipantRole.ADMIN
@@ -79,7 +85,14 @@ public class ConversationService {
 
     /** Return all active conversations for a given user. */
     public List<Conversation> getConversationsForUser(String userId) {
-        return participantRepository.findByUser_UserIdAndIsActiveTrue(userId)
+        String resolvedUserId = userId;
+        if (userId != null && userId.contains("@")) {
+            resolvedUserId = userRepository.findByEmail(userId)
+                    .map(User::getUserId)
+                    .orElse(userId);
+        }
+
+        return participantRepository.findByUser_UserIdAndIsActiveTrue(resolvedUserId)
                 .stream()
                 .map(Participant::getConversation)
                 .filter(c -> !c.getIsArchived())

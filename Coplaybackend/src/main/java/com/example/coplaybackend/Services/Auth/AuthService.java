@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +64,8 @@ public class AuthService {
                 .role(user.getRole())
                 .displayName(user.getProfile().getDisplayName())
                 .build();
+    }
+    public List<User> searchUsers(String query) {
+        return userRepository.findByProfileDisplayNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
     }
 }

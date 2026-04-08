@@ -1,0 +1,13 @@
+<div class="message-bubble" [class.own]="isOwn">
+  <div class="sender-name" *ngIf="!isOwn">{{ message.sender?.profile?.displayName || 'User' }}</div>
+  <div class="content">{{ message.content }}</div>
+  <div class="meta">
+    <span class="time">{{ formatTime(message.sentAt) }}</span>
+    <span *ngIf="isOwn" class="status">
+      <span *ngIf="message.status === 'READ'" class="read">✓✓</span>
+      <span *ngIf="message.status === 'DELIVERED'" class="delivered">✓✓</span>
+      <span *ngIf="message.status === 'SENT'" class="sent">✓</span>
+    </span>
+  </div>
+  <button class="reaction-btn" (click)="toggleReactions()">😀</button>
+</div>

@@ -37,14 +37,20 @@ public class MessageService {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found: " + conversationId));
 
+        User sender;
+        if (senderId.contains("@")) {
+            sender = userRepository.findByEmail(senderId)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + senderId));
+        } else {
+            sender = userRepository.findById(senderId)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + senderId));
+        }
+
         boolean isParticipant = participantRepository
-                .existsByConversation_ConversationIdAndUser_UserIdAndIsActiveTrue(conversationId, senderId);
+                .existsByConversation_ConversationIdAndUser_UserIdAndIsActiveTrue(conversationId, sender.getUserId());
         if (!isParticipant) {
             throw new RuntimeException("User " + senderId + " is not an active participant of this conversation");
         }
-
-        User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + senderId));
 
         Message message = Message.builder()
                 .sender(sender)
@@ -67,9 +73,16 @@ public class MessageService {
 
     /** Retrieve all non-deleted messages for a conversation, ordered by sentAt ASC. */
     public List<Message> getMessages(String conversationId, String requestingUserId) {
-        // Check if user is participant
+        String resolvedUserId = requestingUserId;
+
+        if (requestingUserId.contains("@")) {
+            User user = userRepository.findByEmail(requestingUserId)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + requestingUserId));
+            resolvedUserId = user.getUserId();
+        }
+
         boolean isParticipant = participantRepository
-                .existsByConversation_ConversationIdAndUser_UserIdAndIsActiveTrue(conversationId, requestingUserId);
+                .existsByConversation_ConversationIdAndUser_UserIdAndIsActiveTrue(conversationId, resolvedUserId);
 
         if (!isParticipant) {
             throw new RuntimeException("Access denied: User is not a participant in this conversation");

@@ -1,0 +1,71 @@
+.messaging-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 998;
+}
+.new-msg-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.new-msg-modal {
+  background: white;
+  width: 350px;
+  max-height: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  background: #2c3e50;
+  color: white;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.modal-search {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-search input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  outline: none;
+}
+
+.user-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  cursor: pointer;
+  gap: 12px;
+}
+
+.user-item:hover {
+  background: #f4f7f9;
+}
+
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: #7f8c8d;
+}

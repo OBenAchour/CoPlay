@@ -83,6 +83,18 @@ getUserName(): string {
     return localStorage.getItem('user_role');
   }
 
+  
+getUserId(): string {
+  const token = localStorage.getItem('token');
+  if (!token) return '';
+  
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.userId || payload.sub || '';
+  } catch (e) {
+    return '';
+  }
+}
   /**
    * Utile pour vérifier combien de temps il reste avant l'expiration (en secondes)
    */
@@ -111,6 +123,9 @@ isAdmin(): boolean {
   } catch (e) {
     return false;
   }
+}
+getCurrentUser(): Observable<User> {
+  return this.http.get<User>(`${this.apiUrl}/users/me`);
 }
 
 }

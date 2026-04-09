@@ -20,7 +20,9 @@ public class ParticipantService {
     private final UserRepository userRepository;
 
     /** Add a user to a conversation. Throws if already an active participant. */
-    public Participant addParticipant(String conversationId, String userId, ParticipantRole role) {
+    public Participant addParticipant(String conversationId, String userId, ParticipantRole role, String requestingUserId) {
+        // Verify requesting user is admin of the conversation
+        verifyIsAdmin(conversationId, requestingUserId);
 
         boolean alreadyIn = participantRepository
                 .existsByConversation_ConversationIdAndUser_UserIdAndIsActiveTrue(conversationId, userId);
@@ -46,7 +48,10 @@ public class ParticipantService {
     }
 
     /** Remove a user from a conversation (soft-deactivate). */
-    public Participant removeParticipant(String conversationId, String userId) {
+    public Participant removeParticipant(String conversationId, String userId, String requestingUserId) {
+        // Verify requesting user is admin of the conversation
+        verifyIsAdmin(conversationId, requestingUserId);
+
         Participant participant = participantRepository
                 .findByConversation_ConversationIdAndUser_UserId(conversationId, userId)
                 .orElseThrow(() -> new RuntimeException("Participant not found"));
@@ -56,17 +61,39 @@ public class ParticipantService {
     }
 
     /** List all active participants in a conversation. */
-    public List<Participant> getParticipants(String conversationId) {
+    public List<Participant> getParticipants(String conversationId, String requestingUserId) {
+        // Verify requesting user is a participant of the conversation
+        boolean isParticipant = participantRepository
+                .existsByConversation_ConversationIdAndUser_UserIdAndIsActiveTrue(conversationId, requestingUserId);
+
+        if (!isParticipant) {
+            throw new RuntimeException("Access denied: User is not a participant in this conversation");
+        }
+
         return participantRepository.findByConversation_ConversationIdAndIsActiveTrue(conversationId);
     }
 
     /** Promote or demote a participant's role. */
-    public Participant updateRole(String conversationId, String userId, ParticipantRole newRole) {
+    public Participant updateRole(String conversationId, String userId, ParticipantRole newRole, String requestingUserId) {
+        // Verify requesting user is admin of the conversation
+        verifyIsAdmin(conversationId, requestingUserId);
+
         Participant participant = participantRepository
                 .findByConversation_ConversationIdAndUser_UserId(conversationId, userId)
                 .orElseThrow(() -> new RuntimeException("Participant not found"));
 
         participant.setRole(newRole);
         return participantRepository.save(participant);
+    }
+
+    /** Helper method to verify if a user is admin of a conversation */
+    private void verifyIsAdmin(String conversationId, String userId) {
+        Participant participant = participantRepository
+                .findByConversation_ConversationIdAndUser_UserId(conversationId, userId)
+                .orElseThrow(() -> new RuntimeException("Access denied: User is not a participant in this conversation"));
+
+        if (participant.getRole() != ParticipantRole.ADMIN) {
+            throw new RuntimeException("Access denied: Only admins can perform this action");
+        }
     }
 }

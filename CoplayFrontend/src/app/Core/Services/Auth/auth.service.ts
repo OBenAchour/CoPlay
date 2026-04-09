@@ -98,7 +98,7 @@ getUserId(): string {
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/forgot-password`, { email });
   }
-}
+
 getCurrentUser(): Observable<User> {
   return this.http.get<User>(`${this.apiUrl}/users/me`);
 }

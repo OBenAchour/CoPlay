@@ -1,6 +1,2 @@
-export enum RoleEquipe {
-  CAPTAIN = 'CAPTAIN',
-  PLAYER  = 'PLAYER',
-  COACH   = 'COACH',
-  STAFF   = 'STAFF'
-}
+export type RoleEquipe =
+  'CAPTAIN' | 'PLAYER' | 'COACH' | 'STAFF';

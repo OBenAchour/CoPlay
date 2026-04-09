@@ -12,4 +12,5 @@ public interface TeamRepository extends MongoRepository<Team,String> {
     List<Team> findBySport(String sport);
 
     List<Team> findByStatus(String status);
+
 }

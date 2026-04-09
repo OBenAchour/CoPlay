@@ -13,6 +13,7 @@ import java.util.List;
 @RequestMapping("/api/teams")
 @RequiredArgsConstructor
 @Tag(name = "Team-controller", description = "création-affichage-détails(équipe)")
+@CrossOrigin(origins = "http://localhost:4200")
 public class TeamController {
 
     private final TeamService teamService;
@@ -31,4 +32,19 @@ public class TeamController {
     public Team getById(@PathVariable String id){
         return teamService.getTeamById(id);
     }
+
+    // 🔹 UPDATE
+    @PutMapping("/{id}")
+    public Team updateTeam(@PathVariable String id, @RequestBody Team team) {
+        return teamService.updateTeam(id, team);
+    }
+
+    // 🔹 DELETE
+    @DeleteMapping("/{id}")
+    public void deleteTeam(@PathVariable String id) {
+        teamService.deleteTeam(id);
+    }
+
+
+
 }

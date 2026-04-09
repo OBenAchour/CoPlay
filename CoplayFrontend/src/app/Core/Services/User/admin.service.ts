@@ -7,19 +7,24 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AdminService {
-  private apiUrl = 'http://localhost:8080/api/admin/users';
+  // Supprimez "/users" de la fin de l'URL de base
+  private apiUrl = 'http://localhost:8080/api/admin'; 
 
   constructor(private http: HttpClient) { }
 
   getUsers(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+    return this.http.get<any[]>(`${this.apiUrl}/users`);
   }
 
   updateUser(id: string, user: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, user);
+    return this.http.put(`${this.apiUrl}/users/${id}`, user);
   }
 
   deleteUser(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+    return this.http.delete(`${this.apiUrl}/users/${id}`);
+  }
+
+  resetUserPassword(userId: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/users/${userId}/reset-password`, {});
   }
 }

@@ -8,25 +8,19 @@ import { JwtHelperService } from '@auth0/angular-jwt';
   providedIn: 'root'
 })
 export class AuthService {
-  // L'URL de ton backend IntelliJ
   private apiUrl = 'http://localhost:8080/api/auth';
   private jwtHelper = new JwtHelperService();
 
   constructor(private http: HttpClient) { }
 
-  // --- ACTIONS ---
-
-  // Inscription
   register(registerData: any): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/register`, registerData);
   }
 
-  // Connexion
   login(loginData: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, loginData).pipe(
       tap(response => {
         if (response.token) {
-          // Stockage des informations brutes
           localStorage.setItem('token', response.token);
           localStorage.setItem('user_email', response.email);
           localStorage.setItem('user_name', response.displayName);
@@ -36,47 +30,30 @@ export class AuthService {
     );
   }
 
-  // Déconnexion
   logout() {
     localStorage.clear();
   }
 
-  // --- GETTERS & VÉRIFICATIONS ---
-
-  /**
-   * Vérifie si l'utilisateur est connecté ET si le token n'est pas expiré
-   * Utilise la bibliothèque angular-jwt pour plus de sécurité
-   */
   isLoggedIn(): boolean {
     const token = localStorage.getItem('token');
     if (!token) return false;
-    
-    // Vérifie si le token est encore valide (temps d'expiration non dépassé)
     return !this.jwtHelper.isTokenExpired(token);
   }
 
-  // Récupérer le nom d'affichage
- // Dans auth.service.ts
-getUserName(): string {
-  const token = localStorage.getItem('token');
-  if (!token) return '';
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  return payload.name || 'Utilisateur'; // 'name' est la clé qu'on a mis dans JwtUtils.java
-}
+  getUserName(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.name || 'Utilisateur';
+  }
 
-  // Récupérer l'email
   getUserEmail(): string | null {
     return localStorage.getItem('user_email');
   }
 
-  /**
-   * Récupérer le rôle
-   * On peut le lire depuis le localStorage ou directement depuis le Token décodé
-   */
   getUserRole(): string | null {
     const token = localStorage.getItem('token');
     if (token) {
-      // Optionnel : on décode le token pour être sûr d'avoir le rôle réel du JWT
       const decodedToken = this.jwtHelper.decodeToken(token);
       return decodedToken.role || localStorage.getItem('user_role');
     }
@@ -107,25 +84,28 @@ getUserId(): string {
     return null;
   }
 
-  // Core/Services/Auth/auth.service.ts
+  isAdmin(): boolean {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role === 'ADMIN';
+    } catch (e) {
+      return false;
+    }
+  }
 
-isAdmin(): boolean {
-  const token = localStorage.getItem('token');
-  if (!token) return false;
-
-  try {
-    // On décode la partie centrale (payload) du JWT
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    
-    // On vérifie si le champ 'role' est égal à 'ADMIN'
-    // Note : Vérifie si dans ton JwtUtils.java tu as mis "role" ou "roles"
-    return payload.role === 'ADMIN'; 
-  } catch (e) {
-    return false;
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
   }
 }
 getCurrentUser(): Observable<User> {
   return this.http.get<User>(`${this.apiUrl}/users/me`);
 }
 
+  // ✅ URL corrigée — pointe vers /api/users/me/password
+  // Le token est ajouté automatiquement par l'interceptor
+  changePassword(data: any): Observable<any> {
+    return this.http.put(`http://localhost:8080/api/users/me/password`, data);
+  }
 }

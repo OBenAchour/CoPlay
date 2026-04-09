@@ -1,0 +1,51 @@
+<div class="team-box">
+
+  <div class="header">
+    <h2>👥 Membres de l’équipe</h2>
+  </div>
+
+  <!-- 🔹 FORM -->
+  <div class="form">
+
+    <input
+      [(ngModel)]="newUserId"
+      placeholder="ID utilisateur existant"
+    />
+
+    <select [(ngModel)]="newRole">
+      <option value="PLAYER">Joueur</option>
+      <option value="CAPTAIN">Capitaine</option>
+      <option value="COACH">Coach</option>
+      <option value="STAFF">Staff</option>
+    </select>
+
+    <button (click)="addMember()">Ajouter</button>
+
+  </div>
+
+  <!-- 🔹 LOADING -->
+  <div *ngIf="loading" class="loading">Chargement...</div>
+
+  <!-- 🔹 LIST -->
+  <div *ngIf="members.length > 0" class="list">
+
+    <div class="card" *ngFor="let m of members">
+
+      <div class="info">
+        <span class="user">{{ m.userId }}</span>
+        <span class="role">{{ m.roleEquipe }}</span>
+      </div>
+
+      <button class="delete" (click)="removeMember(m.userId)">
+        ✖
+      </button>
+
+    </div>
+
+  </div>
+
+  <div *ngIf="!loading && members.length === 0" class="empty">
+    Aucun membre dans cette équipe
+  </div>
+
+</div>

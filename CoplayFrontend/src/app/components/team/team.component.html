@@ -1,0 +1,72 @@
+<div class="container">
+
+  <h1 class="title">🏆 CoPlay Teams</h1>
+
+  <!-- 🔹 Création -->
+  <div class="create-box">
+    <input [(ngModel)]="newTeam.name" placeholder="Nom de l'équipe">
+    <input [(ngModel)]="newTeam.sport" placeholder="Sport (Football, Basket...)">
+    <input [(ngModel)]="newTeam.city" placeholder="Ville">
+    <input [(ngModel)]="newTeam.description" placeholder="Description">
+    <input type="number" [(ngModel)]="newTeam.capacityMax" placeholder="Capacité max">
+
+    <button (click)="createTeam()">Créer</button>
+  </div>
+
+  <!-- 🔹 Loading -->
+  <div *ngIf="loading" class="loading">
+    Chargement...
+  </div>
+
+  <!-- 🔹 Liste des teams -->
+  <div class="grid">
+    <div class="card" *ngFor="let team of teams">
+
+      <h3>{{ team.name }}</h3>
+      <p><b>Sport:</b> {{ team.sport }}</p>
+      <p><b>Ville:</b> {{ team.city }}</p>
+
+      <button (click)="viewTeam(team.teamId!)">
+        Voir Détails
+      </button>
+
+      <!-- 🔥 EDIT + DELETE -->
+      <button (click)="editTeam(team)">Modifier</button>
+      <button (click)="deleteTeam(team.teamId!)">Supprimer</button>
+
+    </div>
+  </div>
+
+  <!-- 🔹 Modal détails -->
+  <div class="modal" *ngIf="selectedTeam">
+    <div class="modal-content">
+
+      <h2>{{ selectedTeam.name }}</h2>
+
+      <p><b>Sport:</b> {{ selectedTeam.sport }}</p>
+      <p><b>Ville:</b> {{ selectedTeam.city }}</p>
+      <p><b>Description:</b> {{ selectedTeam.description }}</p>
+      <p><b>Capacité:</b> {{ selectedTeam.capacityMax }}</p>
+      <p><b>ID:</b> {{ selectedTeam.teamId }}</p>
+
+      <button (click)="closeDetails()">Fermer</button>
+    </div>
+  </div>
+
+  <!-- 🔹 Modal édition -->
+  <div class="modal" *ngIf="editingTeam">
+    <div class="modal-content">
+      <h2>Modifier Team</h2>
+
+      <input [(ngModel)]="editingTeam.name" placeholder="Nom">
+      <input [(ngModel)]="editingTeam.sport" placeholder="Sport">
+      <input [(ngModel)]="editingTeam.city" placeholder="Ville">
+      <input [(ngModel)]="editingTeam.description" placeholder="Description">
+      <input type="number" [(ngModel)]="editingTeam.capacityMax" placeholder="Capacité">
+
+      <button (click)="updateTeam()">Valider</button>
+      <button (click)="cancelEdit()">Annuler</button>
+    </div>
+  </div>
+
+</div>

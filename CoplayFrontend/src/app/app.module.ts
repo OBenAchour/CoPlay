@@ -14,6 +14,13 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './Core/Interceptors/auth.interceptor';
 import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './Features/User/profile/profile.component';
+import { TeamComponent } from './components/team/team.component';
+import { CoachComponent } from './components/coach/coach.component';
+import { DemandeAdhesionComponent } from './components/demande-adhesion/demande-adhesion.component';
+import { EquipeSponsorComponent } from './components/equipe-sponsor/equipe-sponsor.component';
+import { HistoriqueActionComponent } from './components/historique-action/historique-action.component';
+import { InvitationComponent } from './components/invitation/invitation.component';
+import { TeamMemberComponent } from './components/team-member/team-member.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -22,12 +29,19 @@ import { ProfileComponent } from './Features/User/profile/profile.component';
     DashboardComponent,
     NavbarComponent,
     UserListComponent,
-    ProfileComponent
+    ProfileComponent,
+    TeamComponent,
+    CoachComponent,
+    DemandeAdhesionComponent,
+    EquipeSponsorComponent,
+    HistoriqueActionComponent,
+    InvitationComponent,
+    TeamMemberComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule, 
+    HttpClientModule,
     FormsModule,   // <-- AJOUTER CECI
     ReactiveFormsModule  // <-- AJOUTER CECI
   ],

@@ -1,0 +1,99 @@
+.team-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+/* HEADER */
+.header h2 {
+  margin-bottom: 15px;
+  color: #ff4500;
+}
+
+/* FORM */
+.form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form input,
+.form select {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.form button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.form button:hover {
+  background: #218838;
+}
+
+/* LIST */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* CARD */
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: #f8f9fa;
+  padding: 12px 15px;
+  border-radius: 10px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user {
+  font-weight: bold;
+}
+
+.role {
+  color: #007bff;
+  font-size: 13px;
+}
+
+/* DELETE */
+.delete {
+  background: #dc3545;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete:hover {
+  background: #c82333;
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  color: #777;
+}
+
+/* LOADING */
+.loading {
+  text-align: center;
+  font-weight: bold;
+}

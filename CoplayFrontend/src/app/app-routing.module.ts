@@ -7,6 +7,8 @@ import { UserListComponent } from './Features/Admin/user-list/user-list.componen
 import { AdminGuard } from './Core/Guards/admin.guard';
 import { ProfileComponent } from './Features/User/profile/profile.component';
 import { AuthGuard } from './Core/Guards/auth.guard'; // <-- AJOUTE CET IMPORT
+import { TeamComponent } from './components/team/team.component';
+import {TeamMemberComponent} from "./components/team-member/team-member.component";
 
 const routes: Routes = [
   { path: 'register', component: RegisterComponent },
@@ -14,9 +16,10 @@ const routes: Routes = [
   { path: '', redirectTo: '/register', pathMatch: 'full' }, // <-- ICI IL MANQUE UNE VIRGULE
   { path: 'dashboard', component: DashboardComponent },
   { path: 'admin/users', component: UserListComponent, canActivate: [AdminGuard]} ,// <-- Sécurité maximale},
-  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] }
-  
-
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
+  //routiong pour le module Team
+  { path: 'team', component: TeamComponent },
+  { path: 'teammember', component: TeamMemberComponent }
 ];
 
 @NgModule({

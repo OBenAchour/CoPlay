@@ -17,7 +17,7 @@ public class User {
     @Id
     private String userId;
 
-    @Indexed(unique = true)
+    @Indexed
     private String email;
 
     private String passwordHash;
@@ -28,9 +28,10 @@ public class User {
 
     private Boolean isActive = true;
 
+    // L'AGRÉGATION (EMBEDDING) SE FAIT ICI
+    private UserProfile profile;
+
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
-
     private LocalDateTime lastLoginAt;
 }

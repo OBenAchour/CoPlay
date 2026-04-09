@@ -1,12 +1,12 @@
-import { SportLevel } from "./SportLevel";
+
+import { SportLevel } from './SportLevel';
+
 export interface UserProfile {
-  profileId?:   string;
-  userId:       string;
-  displayName:  string;
-  avatarUrl?:   string;
-  bio?:         string;
-  level?:       SportLevel;
-  city?:        string;
-  phone?:       string;
-  updatedAt?:   string;
+    displayName: string;
+    avatarUrl?: string; // le '?' signifie optionnel
+    bio?: string;
+    level: SportLevel;
+    city: string;
+    phone?: string;
+    updatedAt: Date;
 }

@@ -12,17 +12,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class RefreshToken {
-
     @Id
     private String tokenId;
 
-    private String userId;           // ref → User
+    // On stocke l'objet User (ou juste une version simplifiée)
+    private User user;
 
     private String tokenHash;
-
     private LocalDateTime expiresAt;
-
     private Boolean isRevoked = false;
-
     private LocalDateTime createdAt;
 }

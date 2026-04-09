@@ -1,0 +1,92 @@
+<div class="register-container">
+  <div class="register-card">
+    
+    <div class="success-banner" *ngIf="isSuccess">
+      <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+      <div class="success-content">
+        <h3>Inscription réussie !</h3>
+        <p>Bienvenue sur CoPlay. Vous allez être redirigé vers la connexion...</p>
+      </div>
+      <div class="progress-container">
+        <div class="progress-bar"></div>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!isSuccess">
+      <div class="register-header">
+        <span class="header-icon">🏅</span>
+        <h2>Rejoindre CoPlay</h2>
+        <p>Créez votre compte pour commencer à jouer</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+        <fieldset>
+          <legend>Informations de Connexion</legend>
+          <div class="form-row">
+            <div class="input-group">
+              <label><i class="fas fa-envelope"></i> Email</label>
+              <input type="email" formControlName="email" placeholder="votre.email@exemple.com">
+              <div class="error-msg" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                <small>Email invalide ou requis.</small>
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label><i class="fas fa-lock"></i> Mot de passe</label>
+              <div class="password-wrapper">
+                <input [type]="passwordVisible ? 'text' : 'password'" 
+                       formControlName="password" placeholder="Min. 6 caractères">
+                <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()">
+                  <i [class]="passwordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div class="error-msg" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+                <small>Minimum 6 caractères.</small>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Informations Profil</legend>
+          <div class="form-row">
+            <div class="input-group">
+              <label><i class="fas fa-id-card"></i> Nom d'affichage</label>
+              <input type="text" formControlName="displayName" placeholder="Pseudo de joueur">
+              <div class="error-msg" *ngIf="registerForm.get('displayName')?.invalid && registerForm.get('displayName')?.touched">
+                <small>Ce champ est requis.</small>
+              </div>
+            </div>
+            <div class="input-group">
+              <label><i class="fas fa-map-marker-alt"></i> Ville</label>
+              <input type="text" formControlName="city" placeholder="Ex: Tunis, Ariana...">
+              <div class="error-msg" *ngIf="registerForm.get('city')?.invalid && registerForm.get('city')?.touched">
+                <small>Ce champ est requis.</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="input-group full-width">
+              <label><i class="fas fa-level-up-alt"></i> Niveau Sportif</label>
+              <select formControlName="level">
+                <option *ngFor="let lvl of levels" [value]="lvl">{{lvl}}</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="registerForm.invalid">
+            S'inscrire
+          </button>
+        </div>
+      </form>
+      
+      <div class="register-footer">
+        <p>Déjà un compte ? <a routerLink="/login">Connectez-vous</a></p>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

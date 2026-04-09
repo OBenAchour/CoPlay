@@ -1,0 +1,30 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <a [routerLink]="authService.isLoggedIn() ? '/dashboard' : '/'" class="logo-link">
+      <img src="assets/logo-coplay.png.png" alt="CoPlay Logo" class="navbar-logo">
+    </a>
+  </div>
+
+  <ul class="nav-links" *ngIf="authService.isLoggedIn()">
+    <li><a routerLink="/profile" routerLinkActive="active">Mon Profil</a></li>
+    <li><a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a></li>
+    <li><a routerLink="/events" routerLinkActive="active">Événements</a></li>
+    
+    <li *ngIf="authService.isAdmin()">
+      <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">
+        <span class="admin-icon">⚙️</span> Gestion Admin
+      </a>
+    </li>
+  </ul>
+
+  <div class="nav-auth">
+    <ng-container *ngIf="authService.isLoggedIn(); else authButtons">
+      <span class="welcome-text">Salut, <strong>{{ authService.getUserName() }}</strong></span>
+      <button (click)="onLogout()" class="btn-logout">Déconnexion</button>
+    </ng-container>
+    
+    <ng-template #authButtons>
+      <button routerLink="/login" class="btn-login">Connexion</button>
+    </ng-template>
+  </div>
+</nav>

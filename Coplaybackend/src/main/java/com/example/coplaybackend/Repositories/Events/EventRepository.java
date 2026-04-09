@@ -16,4 +16,5 @@ public interface EventRepository extends MongoRepository<Event, String> {
     List<Event> findByTeamIdAndStatus(String teamId, EventStatus status);
 
     List<Event> findByIsPublicTrueAndStartDateAfter(LocalDateTime date);
+
 }

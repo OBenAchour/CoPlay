@@ -3,8 +3,10 @@ package com.example.coplaybackend.Entities.Events;
 import com.example.coplaybackend.Entities.Auth.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+
 
 import java.time.LocalDateTime;
 
@@ -30,8 +32,10 @@ public class EventParticipation {
     @Id
     private String participationId;
 
+
     private Event eventId;         // ref → Event
 
+    
     private User userId;          // ref → User (module Auth)
 
     // ── RSVP ───────────────────────────────────────────────────────
@@ -52,6 +56,7 @@ public class EventParticipation {
      * ABSENT    → no-show validé par le capitaine → pénalité score
      */
     @Builder.Default
+
     private ParticipationStatus participationStatus = ParticipationStatus.WAITING;
 
     // ── Paiement ───────────────────────────────────────────────────
@@ -61,6 +66,7 @@ public class EventParticipation {
      * PENDING après réponse YES → le joueur a X heures pour payer.
      */
     @Builder.Default
+
     private PaymentStatus paymentStatus = PaymentStatus.NOT_REQUIRED;
 
     /**
@@ -68,6 +74,7 @@ public class EventParticipation {
      * = heure du YES + paymentDeadlineHours de l'événement.
      * Null si l'événement est gratuit.
      */
+
     private LocalDateTime paymentDeadline;
 
     // ── Présence réelle ────────────────────────────────────────────
@@ -89,5 +96,6 @@ public class EventParticipation {
     private Integer attendanceScore = 50;
 
     // ── Dates ──────────────────────────────────────────────────────
+
     private LocalDateTime respondedAt;
 }

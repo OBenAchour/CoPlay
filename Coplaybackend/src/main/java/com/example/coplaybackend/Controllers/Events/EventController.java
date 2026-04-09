@@ -2,8 +2,8 @@ package com.example.coplaybackend.Controllers.Events;
 
 import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Events.*;
+import com.example.coplaybackend.Repositories.Auth.UserRepository;
 import com.example.coplaybackend.Repositories.Events.EventRepository;
-import com.example.coplaybackend.Repositories.Events.UserRepository;
 import com.example.coplaybackend.Services.Events.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +21,8 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/events")
+@CrossOrigin(origins = "http://localhost:4200")  // ✅ AJOUTE CETTE LIGNE
+
 @RequiredArgsConstructor
 public class EventController {
 
@@ -57,6 +59,12 @@ public class EventController {
      * POST /api/events/add
      * US-024 / US-026
      */
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Event>> getAllEvents() {
+        return ResponseEntity.ok(eventRepository.findAll());
+    }
+
     @PostMapping("/add")
     public ResponseEntity<Event> createEvent(@RequestBody Event event) {
         Event created = eventService.createEvent(event);

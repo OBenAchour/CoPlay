@@ -1,0 +1,193 @@
+:root {
+  --primary: #4361ee;
+  --primary-dark: #3730a3;
+  --dark: #0f172a;
+  --dark-2: #1e293b;
+  --bg-page: #f1f5f9;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --radius: 20px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.events-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
+  background: #f1f5f9 !important;
+  min-height: 100vh;
+}
+
+/* --- HEADER --- */
+.page-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border-radius: 24px;
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  color: white !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  color: white !important;
+}
+
+.page-subtitle {
+  color: #94a3b8;
+  margin: 5px 0 0 0;
+  font-size: 0.95rem;
+}
+
+.btn-create {
+  background: #4361ee !important;
+  color: white !important;
+  border-radius: 12px;
+  padding: 0.8rem 1.5rem;
+  font-weight: 700;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+/* --- STATS BAR --- */
+.stats-bar {
+  display: flex;
+  gap: 1.5rem;
+  background: white;
+  padding: 1.2rem 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+  align-items: center;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-value { font-weight: 800; color: #0f172a; }
+.stat-label { color: #64748b; font-size: 0.9rem; }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+.stat-dot.all { background: #4361ee; }
+.stat-dot.scheduled { background: #3b82f6; }
+.stat-dot.ongoing { background: #22c55e; }
+.stat-dot.completed { background: #64748b; }
+
+/* --- FILTRES --- */
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 2rem;
+}
+
+.filter-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filter-btn.active {
+  background: #0f172a !important;
+  color: white !important;
+  border-color: #0f172a;
+}
+
+/* --- GRILLE & CARTES --- */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.event-card {
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 20px;
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: #4361ee !important;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.visibility-chip {
+  font-size: 0.75rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.event-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0.5rem 0 1rem 0;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.btn-detail {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #f1f5f9;
+  color: #4361ee;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-detail:hover {
+  background: #4361ee;
+  color: white;
+}

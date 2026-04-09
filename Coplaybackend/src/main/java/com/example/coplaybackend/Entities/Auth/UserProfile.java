@@ -17,7 +17,7 @@ public class UserProfile {
     @Id
     private String profileId;
 
-    @Indexed(unique = true)
+
     private String userId;           // ref → User
 
     private String displayName;

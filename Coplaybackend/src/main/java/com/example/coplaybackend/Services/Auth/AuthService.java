@@ -13,14 +13,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Random;
+
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
+
     private final EmailService emailService;
+
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
@@ -30,6 +34,9 @@ public class AuthService {
             throw new RuntimeException("Email déjà utilisé !");
         }
 
+
+        // Création de l'objet User avec son Profile agrégé
+
         User user = User.builder()
                 .email(request.getEmail().trim().toLowerCase())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
@@ -37,6 +44,7 @@ public class AuthService {
                 .isActive(true)
                 .createdAt(LocalDateTime.now())
                 .profile(UserProfile.builder()
+
                         .displayName(request.getDisplayName())
                         .city(request.getCity())
                         .level(request.getLevel())
@@ -48,6 +56,7 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+
         User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
@@ -61,6 +70,7 @@ public class AuthService {
 
         String token = jwtUtils.generateToken(user);
 
+
         return AuthResponse.builder()
                 .token(token)
                 .email(user.getEmail())
@@ -68,6 +78,7 @@ public class AuthService {
                 .displayName(user.getProfile().getDisplayName())
                 .build();
     }
+
 
     public List<User> searchUsers(String query) {
         return userRepository
@@ -120,3 +131,4 @@ public class AuthService {
         return sb.toString();
     }
 }
+

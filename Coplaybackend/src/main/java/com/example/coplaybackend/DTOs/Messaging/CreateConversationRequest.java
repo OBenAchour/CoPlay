@@ -19,7 +19,9 @@ public class CreateConversationRequest {
     private ConversationType type;
 
 
+
     @Size(max = 100, message = "Name cannot exceed 100 characters")
+
     private String name;
 
     @NotEmpty(message = "At least one participant is required")

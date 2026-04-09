@@ -72,6 +72,7 @@ public class MessageController {
         messageService.markConversationAsRead(conversationId, userId);
         return ResponseEntity.noContent().build();
     }
+
     /**
      * PUT /api/messages/{id} - Edit a message
      */
@@ -83,6 +84,7 @@ public class MessageController {
         log.info("Editing message: {} by user: {}", id, requestingUserId);
         return ResponseEntity.ok(messageService.updateMessage(id, requestingUserId, req.getContent()));
     }
+
 
     /**
      * PATCH /api/messages/{id}/status - Update message status

@@ -12,6 +12,7 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   passwordVisible: boolean = false;
   errorMessage: string = '';
+
   isLoading = false;
 
   // Variables pour le modal "Mot de passe oublié"
@@ -37,6 +38,7 @@ export class LoginComponent implements OnInit {
 
   onLogin(): void {
     if (this.loginForm.valid) {
+
       this.errorMessage = '';
       this.isLoading = true;
 
@@ -88,4 +90,5 @@ export class LoginComponent implements OnInit {
       }
     });
   }
+
 }

@@ -1,0 +1,122 @@
+/* --- 1. RESET & FOND DE PAGE --- */
+.form-page {
+  background-color: #f0f2f5 !important; /* Gris clair pour faire ressortir le blanc */
+  padding: 40px 20px;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* --- 2. HEADER (On le rend massif et pro) --- */
+.page-header {
+  background: #1a202c !important; /* Noir profond */
+  color: white !important;
+  padding: 35px;
+  border-radius: 16px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+.page-title {
+  color: #ffffff !important;
+  font-size: 1.8rem;
+  margin: 10px 0;
+}
+
+/* --- 3. LES SECTIONS (C'est ici que ça change tout) --- */
+.form-section {
+  background: #ffffff !important; /* BLANC PUR obligatoire */
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  padding: 30px !important;
+  margin-bottom: 30px !important;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
+}
+
+/* On force l'affichage du numéro de section */
+.section-number {
+  display: inline-block;
+  background: #4361ee;
+  color: white;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-right: 15px;
+}
+
+/* --- 4. INPUTS & ICONES --- */
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  transition: 0.2s;
+  margin-top: 8px;
+}
+
+.input-wrap:focus-within {
+  border-color: #4361ee;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+.input-prefix {
+  padding: 0 12px;
+  font-size: 1.2rem;
+}
+
+.form-control {
+  border: none !important; /* On enlève la bordure de l'input lui-même */
+  background: transparent !important;
+  padding: 12px 10px !important;
+  width: 100%;
+  font-size: 1rem;
+  outline: none;
+}
+
+/* --- 5. TOGGLES (Le look CoPlay) --- */
+.toggle-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #f1f5f9;
+  padding: 15px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.toggle-input:checked + .toggle-display {
+  /* Style spécifique si besoin */
+}
+
+/* --- 6. ACTIONS --- */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.btn-submit {
+  background: #4361ee !important;
+  color: white !important;
+  padding: 14px 30px;
+  border-radius: 12px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 14px 30px;
+  border-radius: 12px;
+  color: #64748b;
+  cursor: pointer;
+}

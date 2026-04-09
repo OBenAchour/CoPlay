@@ -1,0 +1,95 @@
+<div class="training-page">
+
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">🏋️ Programmes d'entraînement</h1>
+      <p class="page-subtitle">Gérez les programmes et exercices de votre équipe</p>
+    </div>
+    <button class="btn-create" (click)="openNewProgramForm()" *ngIf="!showNewProgramForm">
+      <span>＋</span> Créer un programme
+    </button>
+  </div>
+
+  <div class="filters">
+    <button
+      *ngFor="let option of levelOptions"
+      class="filter-btn"
+      [class.active]="selectedLevel === option.value"
+      (click)="filterByLevel(option.value)">
+      {{ option.label }}
+    </button>
+  </div>
+
+  <div class="new-program-form" *ngIf="showNewProgramForm">
+    <div class="form-header">
+      <span class="form-badge">Nouveau programme</span>
+      <button class="btn-close-form" (click)="cancelNewProgram()">✕</button>
+    </div>
+
+    <div class="form-row-3">
+      <div class="form-group">
+        <label class="form-label">Titre <span class="req">*</span></label>
+        <input type="text" class="form-input" [(ngModel)]="newProgram.title" placeholder="Ex : Préparation physique">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Niveau</label>
+        <select class="form-input" [(ngModel)]="newProgram.level">
+          <option value="">— Niveau —</option>
+          <option value="BEGINNER">Débutant</option>
+          <option value="INTERMEDIATE">Intermédiaire</option>
+          <option value="ADVANCED">Avancé</option>
+          <option value="PROFESSIONAL">Professionnel</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Durée (min)</label>
+        <input type="number" class="form-input" [(ngModel)]="newProgram.duration" placeholder="Ex : 90">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-ghost" (click)="cancelNewProgram()">Annuler</button>
+      <button class="btn-primary" (click)="createProgram()">✅ Créer le programme</button>
+    </div>
+  </div>
+
+  <div class="programs-list" *ngIf="!isLoading">
+    <div class="program-card" *ngFor="let program of filteredPrograms">
+      
+      <div class="program-header" (click)="toggleAccordion(program.programId!)">
+        <div class="program-info">
+          <div class="program-top">
+            <span class="level-badge" [ngClass]="getLevelClass(program.level)">
+              {{ getLevelLabel(program.level) }}
+            </span>
+            <h3 class="program-title">{{ program.title }}</h3>
+          </div>
+          <div class="program-meta">
+            <span class="meta-chip">⏱ {{ program.duration }} min</span>
+            <span class="meta-chip">📚 {{ program.exercises?.length || 0 }} ex.</span>
+          </div>
+        </div>
+
+        <div class="program-actions" (click)="$event.stopPropagation()">
+          <button class="btn-add-ex" (click)="openExerciseForm(program.programId!)">＋ Exercice</button>
+          <button class="btn-delete-program" (click)="deleteProgram(program)">🗑️</button>
+          <span class="accordion-arrow" [class.open]="isExpanded(program.programId!)">▼</span>
+        </div>
+      </div>
+
+      <div class="accordion-body" [class.open]="isExpanded(program.programId!)">
+        <div class="exercise-item" *ngFor="let ex of program.exercises; let i = index">
+          <div class="ex-number">{{ i + 1 }}</div>
+          <div class="ex-body">
+            <div class="ex-top">
+              <span class="ex-name">{{ ex.name }}</span>
+              <button class="ex-delete" (click)="removeExercise(program.programId!, ex.exerciseId!, ex.name)">✕</button>
+            </div>
+            <p class="ex-desc">{{ ex.description }}</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,5 +1,6 @@
 package com.example.coplaybackend.Controllers.Auth;
 
+
 import com.example.coplaybackend.DTOs.Auth.AuthResponse;
 import com.example.coplaybackend.DTOs.Auth.LoginRequest;
 import com.example.coplaybackend.DTOs.Auth.RegisterRequest;
@@ -8,6 +9,7 @@ import com.example.coplaybackend.Services.Auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:4200")
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
+
     @Operation(summary = "Inscription d'un nouvel utilisateur")
     public ResponseEntity<User> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
@@ -54,5 +58,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         }
+
     }
 }

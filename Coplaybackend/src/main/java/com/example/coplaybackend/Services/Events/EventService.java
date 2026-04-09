@@ -75,6 +75,12 @@ public class EventService {
      * Bloqué si l'événement n'est pas SCHEDULED.
      * US-027
      */
+
+    public List<Event> getAllEvents() {
+        return eventRepository.findAll();
+    }
+
+
     public Event updateEvent(String eventId, Event updatedData) {
         Event existing = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Événement introuvable : " + eventId));

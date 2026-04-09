@@ -1,0 +1,14 @@
+<div class="message-input-container">
+  <textarea 
+    [(ngModel)]="message"
+    (input)="onInput($event)"
+    (keypress)="onKeyPress($event)"
+    placeholder="Écrire un message..."
+    rows="1">
+  </textarea>
+  <button class="send-btn" (click)="onSend()" [disabled]="!message.trim()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+    </svg>
+  </button>
+</div>

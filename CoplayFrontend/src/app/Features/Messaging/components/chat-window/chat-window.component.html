@@ -1,0 +1,54 @@
+<div class="chat-window">
+  <!-- Header -->
+  <div class="chat-header">
+    <button class="back-btn" (click)="selectConversation.emit(undefined)">←</button>
+    <h3 *ngIf="selectedConversation">{{ getConversationName(selectedConversation) }}</h3>
+    <h3 *ngIf="!selectedConversation">Messages</h3>
+    <button class="close-btn" (click)="close.emit()">✕</button>
+    <button class="new-msg-btn" (click)="newMessage.emit()">+</button>
+  </div>
+
+  <!-- Content -->
+  <div class="chat-content">
+    <!-- Conversation List -->
+    <div class="conversation-list" [class.hidden]="selectedConversation">
+      <div class="search-box">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery"
+          placeholder="Rechercher..."
+          (input)="onSearch(searchQuery)">
+      </div>
+      <div 
+        *ngFor="let conv of conversations" 
+        class="conversation-item"
+        [class.selected]="isSelected(conv)"
+        [class.unread]="conv.unreadCount && conv.unreadCount > 0"
+        (click)="selectConversation.emit(conv)">
+        <div class="avatar">{{ conv.otherUserAvatar || conv.name?.charAt(0) || '?' }}</div>
+        <div class="conv-info">
+          <div class="conv-header">
+            <span class="conv-name">{{ conv.name || 'Sans nom' }}</span>
+            <span class="conv-time" *ngIf="conv.lastMessageTime">{{ formatTime(conv.lastMessageTime) }}</span>
+          </div>
+          <div class="conv-preview-row">
+            <span class="conv-preview">{{ conv.lastMessageContent || 'Aucun message' }}</span>
+            <span *ngIf="conv.unreadCount && conv.unreadCount > 0" class="unread-badge">{{ conv.unreadCount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="selectedConversation" class="message-area">
+      <app-message-list 
+        [messages]="messages"
+        [currentUserId]="currentUserId">
+      </app-message-list>
+      <app-message-input 
+        [(message)]="messageInput"
+        (send)="onSendMessage()">
+      </app-message-input>
+    </div>
+  </div>
+</div>

@@ -38,9 +38,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/sponsors/**").permitAll() // <- autorise ce endpoint
 
                         .requestMatchers("/api/users/me").authenticated()
+
                         // Seuls les ADMIN peuvent accéder aux APIs users
                         // Remplace .hasAuthority("ADMIN") par cette version plus souple :
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                        .requestMatchers("/ws-call/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // On s'assure que le filtre JWT est bien placé
@@ -52,7 +54,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:4200"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
 

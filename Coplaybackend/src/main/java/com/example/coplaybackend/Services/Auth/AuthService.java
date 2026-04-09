@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -66,6 +67,10 @@ public class AuthService {
                 .displayName(user.getProfile().getDisplayName())
                 .build();
     }
+    public List<User> searchUsers(String query) {
+        return userRepository.findByProfileDisplayNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
+    }
+}
 
     public String resetUserPassword(String userId) {
         User user = userRepository.findById(userId)

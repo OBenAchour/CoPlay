@@ -3,7 +3,6 @@ package com.example.coplaybackend.Entities.Messaging;
 import com.example.coplaybackend.Entities.Auth.User;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -13,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@CompoundIndex(name = "unique_reaction", def = "{'message.messageId': 1, 'user.userId': 1}", unique = true)
 public class MessageReaction {
 
     @Id

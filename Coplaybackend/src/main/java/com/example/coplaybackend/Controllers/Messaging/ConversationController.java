@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.example.coplaybackend.DTOs.Messaging.ConversationListItem;
 import jakarta.validation.Valid;
 import java.util.List;
 
@@ -40,10 +40,10 @@ public class ConversationController {
      * GET /api/conversations - Get all conversations for the authenticated user
      */
     @GetMapping
-    public ResponseEntity<List<Conversation>> getForUser() {
-        String userId = SecurityUtils.getCurrentUserId(); // Get authenticated user ID
+    public ResponseEntity<List<ConversationListItem>> getForUser() {
+        String userId = SecurityUtils.getCurrentUserId();
         log.info("Fetching conversations for user: {}", userId);
-        return ResponseEntity.ok(conversationService.getConversationsForUser(userId));
+        return ResponseEntity.ok(conversationService.getConversationsForUserWithDetails(userId));
     }
 
     /**
@@ -75,4 +75,6 @@ public class ConversationController {
         log.info("Fetching unread count for conversation: {} and user: {}", id, userId);
         return ResponseEntity.ok(conversationService.countUnread(id, userId));
     }
+
+
 }

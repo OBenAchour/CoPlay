@@ -6,7 +6,9 @@ import com.example.coplaybackend.Repositories.Auth.UserRepository;
 import com.example.coplaybackend.Repositories.Messaging.ConversationRepository;
 import com.example.coplaybackend.Repositories.Messaging.MessageRepository;
 import com.example.coplaybackend.Repositories.Messaging.ParticipantRepository;
-
+import com.example.coplaybackend.DTOs.Messaging.ConversationListItem;
+import java.util.ArrayList;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -56,8 +58,14 @@ public class ConversationService {
 
         // Add each participant
         for (String userId : participantIds) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+            User user;
+            if (userId.contains("@")) {
+                user = userRepository.findByEmail(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+            } else {
+                user = userRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+            }
 
             ParticipantRole role = participantIds.indexOf(userId) == 0
                     ? ParticipantRole.ADMIN
@@ -79,7 +87,14 @@ public class ConversationService {
 
     /** Return all active conversations for a given user. */
     public List<Conversation> getConversationsForUser(String userId) {
-        return participantRepository.findByUser_UserIdAndIsActiveTrue(userId)
+        String resolvedUserId = userId;
+        if (userId != null && userId.contains("@")) {
+            resolvedUserId = userRepository.findByEmail(userId)
+                    .map(User::getUserId)
+                    .orElse(userId);
+        }
+
+        return participantRepository.findByUser_UserIdAndIsActiveTrue(resolvedUserId)
                 .stream()
                 .map(Participant::getConversation)
                 .filter(c -> !c.getIsArchived())
@@ -132,4 +147,98 @@ public class ConversationService {
                         || m.getSentAt().isAfter(participant.getLastReadAt()))
                 .count();
     }
+    public List<ConversationListItem> getConversationsForUserWithDetails(String userId) {
+        // 1. Resolve email to MongoDB ID if needed
+        String resolvedUserId = userId;
+        if (userId != null && userId.contains("@")) {
+            resolvedUserId = userRepository.findByEmail(userId)
+                    .map(User::getUserId)
+                    .orElse(userId);
+        }
+
+        // 2. Get all active conversations for this user
+        List<Participant> participations = participantRepository
+                .findByUser_UserIdAndIsActiveTrue(resolvedUserId);
+
+        List<ConversationListItem> result = new ArrayList<>();
+
+        for (Participant participation : participations) {
+            Conversation conv = participation.getConversation();
+
+            if (conv.getIsArchived() != null && conv.getIsArchived()) {
+                continue;
+            }
+
+            // 3. Get last message
+            Optional<Message> lastMsgOpt = messageRepository
+                    .findFirstByConversation_ConversationIdAndIsDeletedFalseOrderBySentAtDesc(
+                            conv.getConversationId());
+
+            String lastMessageContent = null;
+            LocalDateTime lastMessageTime = null;
+            if (lastMsgOpt.isPresent()) {
+                Message lastMsg = lastMsgOpt.get();
+                // For sent messages (content), show text
+                // For other types, you might show "[Media]", "[Call]", etc.
+                lastMessageContent = lastMsg.getContent();
+                lastMessageTime = lastMsg.getSentAt();
+            }
+
+            // 4. Calculate unread count
+            long unreadCount = countUnread(conv.getConversationId(), resolvedUserId);
+
+            // 5. Determine conversation name and other user (for DIRECT)
+            String name = conv.getName();
+            String otherUserId = null;
+            String otherUserAvatar = null;
+
+            if (conv.getType() == ConversationType.DIRECT) {
+                // For DIRECT chats, find the other participant
+                List<Participant> otherParticipants = participantRepository
+                        .findByConversation_ConversationIdAndIsActiveTrue(conv.getConversationId());
+
+                for (Participant p : otherParticipants) {
+                    if (!p.getUser().getUserId().equals(resolvedUserId)) {
+                        // This is the other user
+                        User otherUser = p.getUser();
+                        name = otherUser.getProfile().getDisplayName();
+                        otherUserId = otherUser.getUserId();
+                        otherUserAvatar = name != null && !name.isEmpty()
+                                ? name.substring(0, 1).toUpperCase()
+                                : "?";
+                        break;
+                    }
+                }
+            } else {
+                // For GROUP/TEAM, use conversation name
+                name = conv.getName() != null ? conv.getName() : "Sans nom";
+                otherUserAvatar = name.substring(0, 1).toUpperCase();
+            }
+
+            // 6. Build and add item
+            ConversationListItem item = ConversationListItem.builder()
+                    .conversationId(conv.getConversationId())
+                    .type(conv.getType())
+                    .name(name)
+                    .otherUserId(otherUserId)
+                    .otherUserAvatar(otherUserAvatar)
+                    .lastMessageContent(lastMessageContent)
+                    .lastMessageTime(lastMessageTime)
+                    .unreadCount(unreadCount)
+                    .build();
+
+            result.add(item);
+        }
+
+        // 7. Sort by last message time (most recent first), null times at end
+        result.sort((a, b) -> {
+            if (a.getLastMessageTime() == null && b.getLastMessageTime() == null) return 0;
+            if (a.getLastMessageTime() == null) return 1;
+            if (b.getLastMessageTime() == null) return -1;
+            return b.getLastMessageTime().compareTo(a.getLastMessageTime());
+        });
+
+        return result;
+    }
 }
+

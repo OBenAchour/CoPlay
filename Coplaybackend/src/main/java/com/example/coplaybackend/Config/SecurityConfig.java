@@ -31,15 +31,22 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+
+                        // On ouvre largement l'accès aux routes d'authentification
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/events/**").permitAll()  // ✅ AJOUTE CETTE LIGNE
-                        .requestMatchers("/api/locations/**").permitAll()  // ✅ ET CELLE-CI pour les locations
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/teams/**").permitAll()
+                        .requestMatchers("/api/sponsors/**").permitAll() // <- autorise ce endpoint
+
                         .requestMatchers("/api/users/me").authenticated()
+
+                        // Seuls les ADMIN peuvent accéder aux APIs users
+                        // Remplace .hasAuthority("ADMIN") par cette version plus souple :
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                        .requestMatchers("/ws-call/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                // ÉTAPE CRUCIALE : On dit à Spring de passer par notre filtre AVANT de vérifier les accès
+                // On s'assure que le filtre JWT est bien placé
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -48,7 +55,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:4200"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
 

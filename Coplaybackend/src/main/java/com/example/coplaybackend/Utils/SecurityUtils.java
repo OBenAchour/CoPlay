@@ -9,10 +9,21 @@ import org.springframework.stereotype.Component;
 public class SecurityUtils {
     public static String getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            return userDetails.getUsername(); // Assuming username is userId
+
+        if (authentication != null && authentication.getPrincipal() != null) {
+            Object principal = authentication.getPrincipal();
+
+            if (principal instanceof UserDetails) {
+                return ((UserDetails) principal).getUsername();
+            }
+
+            if (principal instanceof String) {
+                return (String) principal;
+            }
         }
+
         throw new RuntimeException("No authenticated user found");
     }
+
+
 }

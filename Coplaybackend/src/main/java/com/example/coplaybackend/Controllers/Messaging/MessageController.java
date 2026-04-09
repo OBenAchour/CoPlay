@@ -74,6 +74,19 @@ public class MessageController {
     }
 
     /**
+     * PUT /api/messages/{id} - Edit a message
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Message> editMessage(
+            @PathVariable String id,
+            @Valid @RequestBody EditMessageRequest req) {
+        String requestingUserId = SecurityUtils.getCurrentUserId();
+        log.info("Editing message: {} by user: {}", id, requestingUserId);
+        return ResponseEntity.ok(messageService.updateMessage(id, requestingUserId, req.getContent()));
+    }
+
+
+    /**
      * PATCH /api/messages/{id}/status - Update message status
      */
     @PatchMapping("/{id}/status")

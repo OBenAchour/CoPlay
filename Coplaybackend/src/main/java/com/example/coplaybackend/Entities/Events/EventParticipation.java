@@ -35,7 +35,7 @@ public class EventParticipation {
 
     private Event eventId;         // ref → Event
 
-    
+
     private User userId;          // ref → User (module Auth)
 
     // ── RSVP ───────────────────────────────────────────────────────

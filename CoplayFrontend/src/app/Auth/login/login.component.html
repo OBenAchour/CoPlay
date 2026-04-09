@@ -31,7 +31,9 @@
       </div>
 
       <div class="form-options">
-        <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+        <button type="button" (click)="openForgotPasswordModal()" class="forgot-link">
+          Mot de passe oublié ?
+        </button>
       </div>
 
       <div class="form-actions">
@@ -45,4 +47,43 @@
       <p>Pas encore de compte ? <a routerLink="/register">Inscrivez-vous ici</a></p>
     </div>
   </div>
+<<<<<<< HEAD
+=======
+</div>
+
+
+<p class="error-text" *ngIf="errorMessage" style="color: #e74c3c; font-size: 0.9rem; margin-bottom: 15px;">
+  <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+</p>
+
+<!-- ====================== MODAL MOT DE PASSE OUBLIÉ ====================== -->
+<div class="modal-overlay" *ngIf="showForgotModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Mot de passe oublié</h3>
+      <button type="button" class="btn-close" (click)="closeForgotPasswordModal()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <p>Entrez votre email professionnel pour recevoir un lien de réinitialisation.</p>
+      
+      <div class="input-group">
+        <label><i class="fas fa-envelope"></i> Email professionnel</label>
+        <input type="email" 
+               [(ngModel)]="forgotEmail" 
+               placeholder="votre.email@exemple.com"
+               (keyup.enter)="sendForgotPassword()">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeForgotPasswordModal()">
+        Annuler
+      </button>
+      <button type="button" class="btn-primary" (click)="sendForgotPassword()" [disabled]="!forgotEmail">
+        Envoyer le lien
+      </button>
+    </div>
+  </div>
+>>>>>>> origin/main
 </div>

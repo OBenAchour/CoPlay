@@ -18,8 +18,10 @@ public class CreateConversationRequest {
     @NotNull(message = "Conversation type is required")
     private ConversationType type;
 
-    @NotBlank(message = "Conversation name is required for GROUP and TEAM types")
-    @Size(min = 1, max = 100, message = "Name must be between 1 and 100 characters")
+
+
+    @Size(max = 100, message = "Name cannot exceed 100 characters")
+
     private String name;
 
     @NotEmpty(message = "At least one participant is required")

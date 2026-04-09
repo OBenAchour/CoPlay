@@ -20,19 +20,21 @@
             <td class="user-name">{{ user.profile?.displayName || 'Sans nom' }}</td>
             <td class="user-email">{{ user.email }}</td>
             <td>
-              <span class="badge" [ngClass]="user.role === 'ADMIN' ? 'badge-admin' : 'badge-player'">
+              <span class="badge" [ngClass]="{
+                'badge-admin': user.role === 'ADMIN',
+                'badge-coach': user.role === 'COACH',
+                'badge-player': user.role === 'PLAYER',
+                'badge-spectator': user.role === 'SPECTATOR'
+              }">
                 {{ user.role }}
               </span>
             </td>
             <td class="actions-cell">
               <button (click)="editUser(user)" class="btn-edit">
-                <i class="fas fa-edit"></i> Modifier
+                <i class="fas fa-edit"></i>
               </button>
-              <button (click)="resetPassword(user)" class="btn-reset" title="Réinitialiser le mot de passe">
-                 <i class="fas fa-key"></i>
-                </button>
               <button (click)="deleteUser(user.userId)" class="btn-delete">
-                <i class="fas fa-trash"></i> Supprimer
+                <i class="fas fa-trash"></i>
               </button>
             </td>
           </tr>
@@ -52,19 +54,18 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Nom d'affichage :</label>
-        <input [(ngModel)]="selectedUser.profile!.displayName" class="form-control" placeholder="Entrez le nom">
+        <input [(ngModel)]="selectedUser.profile!.displayName" class="form-control">
       </div>
 
       <div class="form-group">
         <label>Rôle :</label>
         <select [(ngModel)]="selectedUser.role" class="form-control">
-          <option value="PLAYER">PLAYER</option>
-          <option value="ADMIN">ADMIN</option>
+          <option *ngFor="let role of allRoles" [value]="role">{{ role }}</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label>Statut :</label>
+        <label>Statut du compte :</label>
         <select [(ngModel)]="selectedUser.isActive" class="form-control">
           <option [ngValue]="true">Actif</option>
           <option [ngValue]="false">Bloqué</option>

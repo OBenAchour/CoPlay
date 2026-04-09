@@ -31,8 +31,15 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Connexion d'un utilisateur")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            AuthResponse response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            // Si c'est une erreur de blocage ou de mot de passe, on renvoie le message exact
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
 
     // ✅ change-password SUPPRIMÉ d'ici — déplacé dans UserController /api/users/me/password

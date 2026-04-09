@@ -48,8 +48,14 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
+        // ✅ Vérification stricte du statut
+        if (user.getIsActive() != null && !user.getIsActive()) {
+            // On lance une exception avec le message exact souhaité
+            throw new RuntimeException("Votre compte est bloqué. Veuillez contacter l'administrateur.");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Mot de passe incorrect");
+            throw new RuntimeException("Email ou mot de passe incorrect.");
         }
 
         String token = jwtUtils.generateToken(user);

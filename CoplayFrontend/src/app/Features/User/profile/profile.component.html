@@ -5,88 +5,96 @@
     <div class="profile-content">
       <div class="avatar-sidebar">
         <div class="image-wrapper">
-          <img [src]="user.profile?.profilePicture || 'assets/default-avatar.png'" alt="Photo de profil" class="profile-img">
-          <label for="fileInput" class="upload-badge">
-            <i class="fas fa-camera"></i>
-          </label>
+          <img [src]="user.profile?.profilePicture || 'assets/default-avatar.png'" class="profile-img">
+          <label for="fileInput" class="upload-badge"><i class="fas fa-camera"></i></label>
         </div>
-        <input type="file" (change)="onFileSelected($event)" accept="image/*" id="fileInput" hidden>
+        <input type="file" (change)="onFileSelected($event)" id="fileInput" hidden>
         <p class="avatar-hint">Modifier la photo</p>
+
+        <div class="bio-section">
+          <label class="bio-label"><i class="fas fa-pen"></i> Ma Bio</label>
+          <textarea 
+            [(ngModel)]="user.profile.bio" 
+            class="bio-textarea" 
+            placeholder="Parlez-nous de vous..."
+            rows="4">
+          </textarea>
+        </div>
       </div>
 
       <div class="profile-form">
-
         <div class="input-group">
-          <label>Email professionnel</label>
-          <input [value]="user.email" disabled class="form-control readonly" autocomplete="off" name="user_email_readonly">
+          <label><i class="fas fa-envelope"></i> Email professionnel</label>
+          <input [value]="user.email" disabled class="form-control readonly">
         </div>
 
         <div class="form-row">
           <div class="input-group">
-            <label>Nom d'affichage</label>
-            <input [(ngModel)]="user.profile.displayName" class="form-control" placeholder="Votre pseudo" name="displayName" autocomplete="off">
+            <label><i class="fas fa-user"></i> Nom d'affichage</label>
+            <input [(ngModel)]="user.profile.displayName" class="form-control">
           </div>
           <div class="input-group">
-            <label>Téléphone</label>
-            <input [(ngModel)]="user.profile.phone" class="form-control" placeholder="25 471 173" name="phone" autocomplete="off">
+            <label><i class="fas fa-phone"></i> Téléphone</label>
+            <input [(ngModel)]="user.profile.phone" class="form-control">
           </div>
         </div>
 
-        <div class="input-group">
-          <label>Ville actuelle</label>
-          <input [(ngModel)]="user.profile.city" class="form-control" placeholder="Ariena, Tunis..." name="city" autocomplete="off">
+        <div class="form-row">
+          <div class="input-group">
+            <label><i class="fas fa-map-marker-alt"></i> Ville</label>
+            <input [(ngModel)]="user.profile.city" class="form-control">
+          </div>
+          <div class="input-group">
+            <label><i class="fas fa-user-tag"></i> Rôle</label>
+            <select [(ngModel)]="user.profile.role" class="form-control">
+              <option *ngFor="let r of availableRoles" [value]="r">{{ r }}</option>
+            </select>
+          </div>
         </div>
 
-        <button (click)="saveProfile()" class="btn-primary">
-          Enregistrer les modifications
-        </button>
+        <button (click)="saveProfile()" class="btn-primary">Enregistrer les modifications</button>
         <p class="success-msg" *ngIf="message">{{ message }}</p>
 
         <hr class="separator">
 
-        <div class="password-toggle-zone">
-          <button type="button" (click)="showPwForm = !showPwForm" class="btn-link">
-            <i class="fas fa-key"></i>
-            {{ showPwForm ? 'Masquer le changement de mot de passe' : 'Modifier mon mot de passe' }}
-          </button>
-        </div>
+        <button type="button" (click)="showPwForm = !showPwForm" class="btn-link">
+          <i class="fas fa-key"></i> {{ showPwForm ? 'Masquer' : 'Modifier le mot de passe' }}
+        </button>
 
         <div class="pw-card" *ngIf="showPwForm">
           <div class="input-group">
             <label>Mot de passe actuel</label>
-            <!-- ✅ current-password pour l'ancien mot de passe -->
-            <input type="password"
-                   [(ngModel)]="pwData.oldPassword"
-                   class="form-control"
-                   name="current-password-field"
-                   autocomplete="current-password">
+            <div class="password-wrapper">
+              <input [type]="showOld ? 'text' : 'password'" [(ngModel)]="pwData.oldPassword" class="form-control">
+              <button type="button" class="eye-btn" (click)="showOld = !showOld">
+                <i class="fas" [class.fa-eye]="!showOld" [class.fa-eye-slash]="showOld"></i>
+              </button>
+            </div>
           </div>
 
           <div class="input-group">
             <label>Nouveau mot de passe</label>
-            <!-- ✅ new-password pour le nouveau -->
-            <input type="password"
-                   [(ngModel)]="pwData.newPassword"
-                   class="form-control"
-                   name="new-password-field"
-                   autocomplete="new-password">
+            <div class="password-wrapper">
+              <input [type]="showNew ? 'text' : 'password'" [(ngModel)]="pwData.newPassword" class="form-control">
+              <button type="button" class="eye-btn" (click)="showNew = !showNew">
+                <i class="fas" [class.fa-eye]="!showNew" [class.fa-eye-slash]="showNew"></i>
+              </button>
+            </div>
           </div>
 
           <div class="input-group">
             <label>Confirmer le nouveau</label>
-            <!-- ✅ new-password pour la confirmation -->
-            <input type="password"
-                   [(ngModel)]="pwData.confirmPassword"
-                   class="form-control"
-                   name="confirm-password-field"
-                   autocomplete="new-password">
+            <div class="password-wrapper">
+              <input [type]="showConfirm ? 'text' : 'password'" [(ngModel)]="pwData.confirmPassword" class="form-control">
+              <button type="button" class="eye-btn" (click)="showConfirm = !showConfirm">
+                <i class="fas" [class.fa-eye]="!showConfirm" [class.fa-eye-slash]="showConfirm"></i>
+              </button>
+            </div>
           </div>
 
-          <p class="error-msg" *ngIf="pwError">{{ pwError }}</p>
-
           <div class="pw-actions">
-            <button (click)="updatePassword()" class="btn-save-alt">Valider le changement</button>
-            <button type="button" (click)="cancelPasswordChange()" class="btn-cancel">Annuler</button>
+            <button (click)="updatePassword()" class="btn-save-alt">Valider</button>
+            <button (click)="cancelPasswordChange()" class="btn-cancel">Annuler</button>
           </div>
         </div>
       </div>

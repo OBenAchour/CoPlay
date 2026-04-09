@@ -8,22 +8,21 @@ import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-  // --- Données Profil ---
   user: any = null;
   message: string = '';
   currentUserEmail: string = '';
+  availableRoles = ['COACH', 'PLAYER', 'SPECTATOR'];
 
-  // --- Données Mot de Passe ---
   showPwForm = false;
-  
-  // Correction ici : On crée l'objet pwData attendu par le HTML
+  showOld = false;
+  showNew = false;
+  showConfirm = false;
+
   pwData = {
     oldPassword: '',
     newPassword: '',
     confirmPassword: ''
   };
-  
-  pwError: string = '';
 
   constructor(
     private userService: UserService,
@@ -31,92 +30,71 @@ export class ProfileComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // 1. Récupération des données du profil
     this.userService.getMyProfile().subscribe({
       next: (data) => {
         this.user = data;
+        // Initialisation par défaut si les champs sont vides
+        if (this.user && this.user.profile) {
+          if (!this.user.profile.role) this.user.profile.role = 'PLAYER';
+          if (!this.user.profile.bio) this.user.profile.bio = '';
+        }
       },
       error: (err) => console.error('Erreur profil:', err)
     });
 
-    // 2. Récupération de l'email
     const email = localStorage.getItem('user_email');
-    if (email) {
-      this.currentUserEmail = email;
-    } else {
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      this.currentUserEmail = storedUser.email || '';
-    }
+    this.currentUserEmail = email || JSON.parse(localStorage.getItem('user') || '{}').email || '';
   }
 
-  // SAUVEGARDE DU PROFIL (Nom, Ville, etc.)
   saveProfile(): void {
-    this.message = '';
-    if (this.user && this.user.profile) {
+    if (this.user?.profile) {
       this.userService.updateProfile(this.user.profile).subscribe({
         next: () => {
-          this.message = 'Profil mis à jour avec succès !';
+          this.message = 'Profil et bio mis à jour avec succès !';
           setTimeout(() => this.message = '', 3000);
         },
-        error: () => this.message = 'Erreur lors de la mise à jour du profil.'
+        error: () => this.message = 'Erreur lors de la mise à jour.'
       });
     }
   }
 
-  // MISE À JOUR DU MOT DE PASSE
   updatePassword(): void {
-    // On utilise this.pwData pour les validations
     if (!this.pwData.oldPassword || !this.pwData.newPassword || !this.pwData.confirmPassword) {
-      alert("Veuillez remplir tous les champs du mot de passe.");
+      alert("Veuillez remplir tous les champs.");
       return;
     }
-
     if (this.pwData.newPassword !== this.pwData.confirmPassword) {
       alert("Les nouveaux mots de passe ne correspondent pas.");
       return;
     }
 
-    // Préparation de l'envoi au backend
-    const payload = {
+    this.authService.changePassword({
       oldPassword: this.pwData.oldPassword,
       newPassword: this.pwData.newPassword
-    };
-
-    this.authService.changePassword(payload).subscribe({
+    }).subscribe({
       next: (res: any) => {
-        alert(res.message || "Mot de passe mis à jour avec succès !");
+        alert(res.message || "Succès !");
         this.resetPwFields();
         this.showPwForm = false;
       },
-      error: (err: any) => {
-        console.error('Erreur backend:', err);
-        const errorMessage = err.error?.error || err.error?.message || "Ancien mot de passe incorrect";
-        alert("Erreur : " + errorMessage);
-      }
+      error: (err: any) => alert("Erreur : " + (err.error?.error || "Ancien mot de passe incorrect"))
     });
   }
 
-  // GESTION DE LA PHOTO
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        if (this.user && this.user.profile) {
-          this.user.profile.profilePicture = reader.result as string;
-        }
+      reader.onload = () => { 
+        if (this.user?.profile) this.user.profile.profilePicture = reader.result as string; 
       };
       reader.readAsDataURL(file);
     }
   }
 
   resetPwFields(): void {
-    this.pwData = {
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    };
-    this.pwError = '';
+    this.pwData = { oldPassword: '', newPassword: '', confirmPassword: '' };
+    this.showOld = this.showNew = this.showConfirm = false;
   }
 
   cancelPasswordChange(): void {

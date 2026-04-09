@@ -12,8 +12,11 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   passwordVisible: boolean = false;
   errorMessage: string = '';
-  loginData = { email: '', password: '' };
   isLoading = false;
+
+  // Variables pour le modal "Mot de passe oublié"
+  showForgotModal: boolean = false;
+  forgotEmail: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -34,26 +37,55 @@ export class LoginComponent implements OnInit {
 
   onLogin(): void {
     if (this.loginForm.valid) {
+      this.errorMessage = '';
+      this.isLoading = true;
+
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
+          this.isLoading = false;
           console.log('Connexion réussie', response);
-          this.router.navigate(['/dashboard']); // Redirection vers le dashboard
+          this.router.navigate(['/dashboard']);
         },
         error: (err) => {
-          this.errorMessage = "Email ou mot de passe incorrect.";
-          console.error(err);
-        }
+  this.isLoading = false;
+  
+  // Le backend envoie maintenant { "message": "Votre compte est bloqué..." }
+  if (err.error && err.error.message) {
+    this.errorMessage = err.error.message;
+  } else if (typeof err.error === 'string') {
+    this.errorMessage = err.error;
+  } else {
+    this.errorMessage = "Email ou mot de passe incorrect.";
+  }
+}
       });
     }
   }
 
-  forgotPassword(): void {
-  const email = prompt("Entrez votre email :");
-  if (email) {
-    this.authService.forgotPassword(email).subscribe({
-      next: (res) => alert("Succès : " + res.message),
-      error: (err) => alert("Erreur : " + (err.error?.error || "Email introuvable"))
+  // === GESTION DU MODAL (RÉPARE VOS ERREURS TS2339) ===
+
+  openForgotPasswordModal(): void {
+    this.forgotEmail = '';
+    this.showForgotModal = true;
+    this.errorMessage = ''; // Optionnel : nettoie les erreurs de login en ouvrant le modal
+  }
+
+  closeForgotPasswordModal(): void {
+    this.showForgotModal = false;
+    this.forgotEmail = '';
+  }
+
+  sendForgotPassword(): void {
+    if (!this.forgotEmail) return;
+
+    this.authService.forgotPassword(this.forgotEmail).subscribe({
+      next: (res) => {
+        alert("Succès : " + (res.message || "Un email de récupération a été envoyé."));
+        this.closeForgotPasswordModal();
+      },
+      error: (err) => {
+        alert("Erreur : " + (err.error?.error || err.error?.message || "Email introuvable"));
+      }
     });
   }
-}
 }

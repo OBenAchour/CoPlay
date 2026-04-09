@@ -17,7 +17,7 @@ public class User {
     @Id
     private String userId;
 
-    @Indexed(unique = true)
+   
     private String email;
 
     private String passwordHash;

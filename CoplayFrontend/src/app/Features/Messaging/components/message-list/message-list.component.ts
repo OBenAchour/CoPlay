@@ -8,8 +8,7 @@ import { Message } from 'src/app/Core/Models/Messaging/Message';
 })
 export class MessageListComponent implements OnChanges {
   @Input() messages: Message[] = [];
-  
-  currentUserId = 'current-user-id'; // À remplacer par le vrai user ID
+  @Input() currentUserId: string = '';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['messages']) {

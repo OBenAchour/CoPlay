@@ -7,6 +7,7 @@ import { MessageReaction } from 'src/app/Core/Models/Messaging/MessageReaction';
 import { SearchResult } from 'src/app/Core/Models/Messaging/SearchResult';
 import { ReactionType } from 'src/app/Core/Models/Messaging/ReactionType';
 import { CreateConversationRequest } from 'src/app/Core/Models/Messaging/CreateConversationRequest';
+import { ConversationListItem } from 'src/app/Core/Models/Messaging/ConversationListItem';
 
 @Injectable({
   providedIn: 'root'
@@ -17,17 +18,17 @@ export class MessagingService {
   constructor(private http: HttpClient) {}
 
   // CONVERSATIONS
-  getConversations(): Observable<Conversation[]> {
-    return this.http.get<Conversation[]>(`${this.apiUrl}/conversations`);
+  getConversations(): Observable<ConversationListItem[]> {
+    return this.http.get<ConversationListItem[]>(`${this.apiUrl}/conversations`);
   }
 
   getConversation(id: string): Observable<Conversation> {
     return this.http.get<Conversation>(`${this.apiUrl}/conversations/${id}`);
   }
 
-  createConversation(request: CreateConversationRequest): Observable<Conversation> {
-  return this.http.post<Conversation>(`${this.apiUrl}/conversations`, request);
-}
+  createConversation(request: CreateConversationRequest): Observable<ConversationListItem> {
+    return this.http.post<ConversationListItem>(`${this.apiUrl}/conversations`, request);
+  }
 
   deleteConversation(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/conversations/${id}`);
@@ -58,6 +59,10 @@ export class MessagingService {
     });
   }
 
+  updateMessage(messageId: string, content: string): Observable<Message> {
+  return this.http.put<Message>(`${this.apiUrl}/messages/${messageId}`, { content });
+}
+
   deleteMessage(messageId: string): Observable<Message> {
     return this.http.delete<Message>(`${this.apiUrl}/messages/${messageId}`);
   }
@@ -83,22 +88,20 @@ export class MessagingService {
 
   // REACTIONS
   addReaction(messageId: string, reactionType: ReactionType): Observable<MessageReaction> {
-    return this.http.post<MessageReaction>(`${this.apiUrl}/messages/${messageId}/reactions`, {
-      reactionType
-    });
-  }
+  return this.http.post<MessageReaction>(`${this.apiUrl}/messages/${messageId}/reactions`, {
+    reactionType: reactionType
+  });
+}
 
-  removeReaction(messageId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/messages/${messageId}/reactions`);
-  }
+removeReaction(messageId: string): Observable<void> {
+  return this.http.delete<void>(`${this.apiUrl}/messages/${messageId}/reactions`);
+}
 
-  getReactions(messageId: string): Observable<MessageReaction[]> {
-    return this.http.get<MessageReaction[]>(`${this.apiUrl}/messages/${messageId}/reactions`);
-  }
-
-  getReactionSummary(messageId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/messages/${messageId}/reactions/summary`);
-  }
+getReactionSummary(messageId: string): Observable<{counts: any, total: number, userReaction?: string}> {
+  return this.http.get<{counts: any, total: number, userReaction?: string}>(
+    `${this.apiUrl}/messages/${messageId}/reactions/summary`
+  );
+}
 
   // SEARCH
   searchMessages(query: string): Observable<SearchResult[]> {
@@ -110,8 +113,9 @@ export class MessagingService {
     const params = new HttpParams().set('q', query);
     return this.http.get<SearchResult[]>(`${this.apiUrl}/search/conversations/${conversationId}/messages`, { params });
   }
+
   searchUsers(query: string): Observable<any[]> {
-  const params = new HttpParams().set('q', query);
-  return this.http.get<any[]>(`${this.apiUrl}/users/search`, { params });
-}
+    const params = new HttpParams().set('q', query);
+    return this.http.get<any[]>(`${this.apiUrl}/users/search`, { params });
+  }
 }

@@ -97,12 +97,20 @@ public class MessageService {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found: " + messageId));
 
-        if (!message.getSender().getUserId().equals(requestingUserId)) {
+        // Résoudre email → MongoDB userId
+        String resolvedUserId = requestingUserId;
+        if (requestingUserId.contains("@")) {
+            User user = userRepository.findByEmail(requestingUserId)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + requestingUserId));
+            resolvedUserId = user.getUserId();
+        }
+
+        if (!message.getSender().getUserId().equals(resolvedUserId)) {
             throw new RuntimeException("You can only delete your own messages");
         }
 
         message.setIsDeleted(true);
-        auditService.logMessageDeleted(requestingUserId, messageId);
+        auditService.logMessageDeleted(resolvedUserId, messageId);
         return messageRepository.save(message);
     }
 
@@ -110,13 +118,23 @@ public class MessageService {
      * Mark all unread messages in a conversation as READ for the given user,
      * and update the participant's lastReadAt timestamp.
      */
-    public void markConversationAsRead(String conversationId, String userId) {
+    public void markConversationAsRead(String conversationId, String requestingUserId) {
+
+        // ✅ Résoudre email → MongoDB userId
+        final String resolvedUserId;
+        if (requestingUserId.contains("@")) {
+            User user = userRepository.findByEmail(requestingUserId)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + requestingUserId));
+            resolvedUserId = user.getUserId();
+        } else {
+            resolvedUserId = requestingUserId;
+        }
 
         List<Message> messages = messageRepository
                 .findByConversation_ConversationIdAndIsDeletedFalseOrderBySentAtAsc(conversationId);
 
         messages.stream()
-                .filter(m -> !m.getSender().getUserId().equals(userId))
+                .filter(m -> !m.getSender().getUserId().equals(resolvedUserId))
                 .filter(m -> m.getStatus() != MessageStatus.READ)
                 .forEach(m -> {
                     m.setStatus(MessageStatus.READ);
@@ -124,7 +142,7 @@ public class MessageService {
                 });
 
         // Update lastReadAt for the participant
-        participantRepository.findByConversation_ConversationIdAndUser_UserId(conversationId, userId)
+        participantRepository.findByConversation_ConversationIdAndUser_UserId(conversationId, resolvedUserId)
                 .ifPresent(p -> {
                     p.setLastReadAt(LocalDateTime.now());
                     participantRepository.save(p);
@@ -155,14 +173,46 @@ public class MessageService {
     }
 
     /** Update message status (DELIVERED, READ) */
+    public Message updateMessage(String messageId, String requestingUserId, String newContent) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found: " + messageId));
+
+        // Résoudre email → MongoDB userId
+        String resolvedUserId = requestingUserId;
+        if (requestingUserId.contains("@")) {
+            User user = userRepository.findByEmail(requestingUserId)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + requestingUserId));
+            resolvedUserId = user.getUserId();
+        }
+
+        // Vérifier que l'utilisateur est l'expéditeur
+        if (!message.getSender().getUserId().equals(resolvedUserId)) {
+            throw new RuntimeException("You can only edit your own messages");
+        }
+
+        // Mettre à jour le contenu
+        message.setContent(newContent);
+        message.setIsEdited(true);
+        message.setEditedAt(LocalDateTime.now());
+
+        return messageRepository.save(message);
+    }
     public Message updateMessageStatus(String messageId, MessageStatus newStatus, String requestingUserId) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found: " + messageId));
 
-        // Verify requesting user is participant of the conversation
+        // Résoudre email → MongoDB userId
+        String resolvedUserId = requestingUserId;
+        if (requestingUserId.contains("@")) {
+            User user = userRepository.findByEmail(requestingUserId)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + requestingUserId));
+            resolvedUserId = user.getUserId();
+        }
+
+        // Vérifier que l'utilisateur est participant de la conversation
         boolean isParticipant = participantRepository
                 .existsByConversation_ConversationIdAndUser_UserIdAndIsActiveTrue(
-                        message.getConversation().getConversationId(), requestingUserId);
+                        message.getConversation().getConversationId(), resolvedUserId);
 
         if (!isParticipant) {
             throw new RuntimeException("Access denied: User is not a participant in this conversation");
@@ -181,7 +231,6 @@ public class MessageService {
         message.setStatus(newStatus);
         return messageRepository.save(message);
     }
-
     /** Mark multiple messages as READ */
     public void markMessagesAsRead(String conversationId, List<String> messageIds, String requestingUserId) {
         // Verify requesting user is participant

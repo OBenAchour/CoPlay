@@ -1,13 +1,81 @@
-<div class="message-bubble" [class.own]="isOwn">
-  <div class="sender-name" *ngIf="!isOwn">{{ message.sender?.profile?.displayName || 'User' }}</div>
-  <div class="content">{{ message.content }}</div>
-  <div class="meta">
-    <span class="time">{{ formatTime(message.sentAt) }}</span>
-    <span *ngIf="isOwn" class="status">
-      <span *ngIf="message.status === 'READ'" class="read">✓✓</span>
-      <span *ngIf="message.status === 'DELIVERED'" class="delivered">✓✓</span>
-      <span *ngIf="message.status === 'SENT'" class="sent">✓</span>
-    </span>
+<div class="message-bubble" [class.own]="isOwn" [class.deleted]="message.isDeleted">
+  
+  <!-- Si supprimé -->
+  <div *ngIf="message.isDeleted" class="deleted-text">
+    Ce message a été supprimé
   </div>
-  <button class="reaction-btn" (click)="toggleReactions()">😀</button>
+  
+  <!-- Si pas supprimé -->
+  <ng-container *ngIf="!message.isDeleted">
+    <div class="sender-name" *ngIf="!isOwn">{{ message.sender?.profile?.displayName || 'User' }}</div>
+    
+    <!-- Mode édition -->
+    <div *ngIf="isEditing" class="edit-mode">
+      <textarea 
+        [(ngModel)]="editContent" 
+        class="edit-input"
+        rows="2"></textarea>
+      <div class="edit-actions">
+        <button (click)="saveEdit()" class="save-btn">Enregistrer</button>
+        <button (click)="cancelEdit()" class="cancel-btn">Annuler</button>
+      </div>
+    </div>
+    
+    <!-- Mode normal -->
+    <div *ngIf="!isEditing" class="content">{{ message.content }}</div>
+    
+    <div class="meta">
+      <span class="time">{{ formatTime(message.sentAt) }}</span>
+      <span *ngIf="message.isEdited" class="edited">(Modifié)</span>
+      <span *ngIf="isOwn" class="status">
+        <span *ngIf="message.status === 'READ'" class="read">✓✓</span>
+        <span *ngIf="message.status === 'DELIVERED'" class="delivered">✓✓</span>
+        <span *ngIf="message.status === 'SENT'" class="sent">✓</span>
+      </span>
+    </div>
+
+    <!-- Reactions Bar -->
+    <div class="reactions-bar" *ngIf="reactionSummary.total > 0">
+      <span 
+        *ngFor="let reaction of getDisplayReactions()" 
+        class="reaction-badge"
+        [class.active]="hasUserReacted() && reactionSummary.userReaction === reaction.type.toString()">
+        {{ reactionEmojis[reaction.type] }} {{ reaction.count }}
+      </span>
+    </div>
+
+    <!-- Options Menu (3 points) -->
+    <div class="options-container">
+      <button class="options-btn" (click)="toggleOptionsMenu()">⋮</button>
+      
+      <div class="options-menu" *ngIf="showOptionsMenu">
+        <button *ngIf="isOwn" (click)="startEdit()">
+          <span class="menu-icon">✏️</span> Modifier
+        </button>
+        <button *ngIf="isOwn" (click)="deleteMessage()" class="delete-btn">
+          <span class="menu-icon">🗑️</span> Supprimer
+        </button>
+        <button (click)="toggleReactionMenu()">
+          <span class="menu-icon">👍</span> Réaction
+        </button>
+      </div>
+    </div>
+
+    <!-- Reaction Menu Popup -->
+    <div class="reaction-menu" *ngIf="showReactionMenu">
+      <button 
+        *ngFor="let type of reactionTypes" 
+        class="reaction-option"
+        [class.selected]="reactionSummary.userReaction === type.toString()"
+        (click)="addReaction(type)">
+        {{ reactionEmojis[type] }}
+      </button>
+      <button 
+        *ngIf="hasUserReacted()" 
+        class="remove-reaction"
+        (click)="removeReaction()">
+        ✕
+      </button>
+    </div>
+  </ng-container>
 </div>

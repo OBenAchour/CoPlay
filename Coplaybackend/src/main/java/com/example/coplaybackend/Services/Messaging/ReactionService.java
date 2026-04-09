@@ -7,9 +7,7 @@ import com.example.coplaybackend.Entities.Messaging.ReactionType;
 import com.example.coplaybackend.Repositories.Auth.UserRepository;
 import com.example.coplaybackend.Repositories.Messaging.MessageReactionRepository;
 import com.example.coplaybackend.Repositories.Messaging.MessageRepository;
-import com.example.coplaybackend.Services.Audit.AuditService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,32 +15,27 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ReactionService {
 
     private final MessageReactionRepository reactionRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
-    private final AuditService auditService;
 
-    public MessageReaction addOrUpdateReaction(String messageId, String userId, ReactionType reactionType) {
+    public MessageReaction addOrUpdateReaction(String messageId, String userEmail, ReactionType reactionType) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Optional<MessageReaction> existingReaction = reactionRepository
-                .findByMessage_MessageIdAndUser_UserId(messageId, userId);
+                .findByMessage_MessageIdAndUser_UserId(messageId, user.getUserId());
 
         MessageReaction reaction;
         if (existingReaction.isPresent()) {
             reaction = existingReaction.get();
-            ReactionType oldType = reaction.getReactionType();
             reaction.setReactionType(reactionType);
             reaction.setUpdatedAt(LocalDateTime.now());
-            log.info("Updating reaction from {} to {} for message {} by user {}",
-                    oldType, reactionType, messageId, userId);
         } else {
             reaction = MessageReaction.builder()
                     .message(message)
@@ -51,27 +44,20 @@ public class ReactionService {
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
-            log.info("Adding reaction {} to message {} by user {}", reactionType, messageId, userId);
         }
 
-        reaction = reactionRepository.save(reaction);
-
-        auditService.logAction(userId, "REACTION_ADDED", "MESSAGING", "MessageReaction",
-                reaction.getReactionId(), null, Map.of("reactionType", reactionType.name()), true, null);
-
-        return reaction;
+        return reactionRepository.save(reaction);
     }
 
-    public void removeReaction(String messageId, String userId) {
+    public void removeReaction(String messageId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Optional<MessageReaction> reaction = reactionRepository
-                .findByMessage_MessageIdAndUser_UserId(messageId, userId);
+                .findByMessage_MessageIdAndUser_UserId(messageId, user.getUserId());
 
         if (reaction.isPresent()) {
             reactionRepository.delete(reaction.get());
-            log.info("Removing reaction from message {} by user {}", messageId, userId);
-
-            auditService.logAction(userId, "REACTION_REMOVED", "MESSAGING", "MessageReaction",
-                    reaction.get().getReactionId(), null, null, true, null);
         }
     }
 
@@ -92,9 +78,13 @@ public class ReactionService {
         return counts;
     }
 
-    public Optional<ReactionType> getUserReaction(String messageId, String userId) {
+    public Optional<ReactionType> getUserReaction(String messageId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElse(null);
+        if (user == null) return Optional.empty();
+
         return reactionRepository
-                .findByMessage_MessageIdAndUser_UserId(messageId, userId)
+                .findByMessage_MessageIdAndUser_UserId(messageId, user.getUserId())
                 .map(MessageReaction::getReactionType);
     }
 

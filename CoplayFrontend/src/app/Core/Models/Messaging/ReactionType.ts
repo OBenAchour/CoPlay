@@ -1,33 +1,17 @@
 export enum ReactionType {
-  THUMBS_UP = 'THUMBS_UP',
-  THUMBS_DOWN = 'THUMBS_DOWN',
-  HEART = 'HEART',
-  LAUGHING = 'LAUGHING',
+  LIKE = 'LIKE',
+  LOVE = 'LOVE',
+  HAHA = 'HAHA',
   WOW = 'WOW',
   SAD = 'SAD',
-  CLAP = 'CLAP',
-  FIRE = 'FIRE',
-  EYES = 'EYES',
-  THINKING = 'THINKING',
-  HUNDRED = 'HUNDRED',
-  MUSCLE = 'MUSCLE',
-  PARTY = 'PARTY',
-  PRAY = 'PRAY'
+  ANGRY = 'ANGRY'
 }
 
-export const REACTION_EMOJIS: { [key: string]: string } = {
-  THUMBS_UP: '👍',
-  THUMBS_DOWN: '👎',
-  HEART: '❤️',
-  LAUGHING: '😂',
-  WOW: '😮',
-  SAD: '😢',
-  CLAP: '👏',
-  FIRE: '🔥',
-  EYES: '👀',
-  THINKING: '🤔',
-  HUNDRED: '💯',
-  MUSCLE: '💪',
-  PARTY: '🎉',
-  PRAY: '🙏'
+export const REACTION_EMOJIS: Record<ReactionType, string> = {
+  [ReactionType.LIKE]: '👍',
+  [ReactionType.LOVE]: '❤️',
+  [ReactionType.HAHA]: '😂',
+  [ReactionType.WOW]: '😮',
+  [ReactionType.SAD]: '😢',
+  [ReactionType.ANGRY]: '😠'
 };

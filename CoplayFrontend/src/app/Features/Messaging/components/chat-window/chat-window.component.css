@@ -109,12 +109,15 @@
   flex: 1;
   margin-left: 12px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .conv-name {
   display: block;
   font-weight: 600;
   color: #2c3e50;
+  font-size: 15px;
 }
 
 .conv-preview {
@@ -124,6 +127,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 180px;
 }
 
 .unread-badge {
@@ -135,6 +139,7 @@
   border-radius: 10px;
   min-width: 20px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .message-area {
@@ -143,3 +148,92 @@
   flex-direction: column;
   overflow: hidden;
 }
+/* Selected conversation */
+.conversation-item.selected {
+  background: #e8f0fe;
+}
+
+/* Unread conversation */
+.conversation-item.unread .conv-name {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.conversation-item.unread .conv-preview {
+  color: #555;
+  font-weight: 500;
+}
+
+/* Header row (name + time) */
+.conv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.conv-header .conv-name {
+  display: inline;
+  margin: 0;
+}
+
+/* Preview row (message + badge) */
+.conv-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conv-preview-row .conv-preview {
+  flex: 1;
+  margin: 0;
+  margin-right: 8px;
+}
+
+/* Time styling */
+.conv-time {
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+}
+
+/* Improved avatar colors based on first letter */
+.avatar {
+  position: relative;
+}
+
+.avatar.avatar-direct {
+  background: #2ecc71;
+}
+
+.avatar.avatar-group {
+  background: #3498db;
+}
+
+.avatar.avatar-team {
+  background: #9b59b6;
+}
+.hidden {
+  display: none !important;
+}
+/* Fix: Message area with scrollable list and fixed input */
+.message-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0; /* Important for flex child overflow */
+}
+
+.message-area app-message-list {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.message-area app-message-input {
+  flex-shrink: 0; /* Input stays at bottom */
+  background: white;
+}   

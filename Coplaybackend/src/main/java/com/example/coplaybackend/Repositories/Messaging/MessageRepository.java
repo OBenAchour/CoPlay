@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MessageRepository extends MongoRepository<Message, String> {
@@ -19,4 +20,6 @@ public interface MessageRepository extends MongoRepository<Message, String> {
     List<Message> findByConversation_ConversationIdAndStatus(String conversationId, MessageStatus status);
 
     long countByConversation_ConversationIdAndStatusAndIsDeletedFalse(String conversationId, MessageStatus status);
+
+    Optional<Message> findFirstByConversation_ConversationIdAndIsDeletedFalseOrderBySentAtDesc(String conversationId);
 }

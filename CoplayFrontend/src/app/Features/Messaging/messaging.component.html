@@ -1,10 +1,10 @@
-<app-chat-bubble *ngIf="!isChatOpen" (toggleChat)="toggleChat()"></app-chat-bubble>
-
+<app-chat-bubble *ngIf="!isChatOpen" [unreadCount]="totalUnreadCount" (toggleChat)="toggleChat()"></app-chat-bubble>
 <div *ngIf="isChatOpen" class="messaging-container">
   <app-chat-window
     [conversations]="conversations"
     [selectedConversation]="selectedConversation"
     [messages]="messages"
+    [currentUserId]="currentUserId"
     (close)="toggleChat()"
     (selectConversation)="selectConversation($event)"
     (sendMessage)="onSendMessage($event)"

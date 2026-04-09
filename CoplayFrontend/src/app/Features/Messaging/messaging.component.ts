@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Conversation } from 'src/app/Core/Models/Messaging/Conversation';
 import { Message } from 'src/app/Core/Models/Messaging/Message';
 import { MessagingService } from 'src/app/Core/Services/Messaging/messaging.service';
 import { WebSocketService } from 'src/app/Core/Services/Messaging/websocket.service';
@@ -7,6 +6,8 @@ import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
 import { User } from 'src/app/Core/Models/Auth/User';
 import { Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { ConversationListItem } from 'src/app/Core/Models/Messaging/ConversationListItem';
+
 @Component({
   selector: 'app-messaging',
   templateUrl: './messaging.component.html',
@@ -14,36 +15,34 @@ import { HttpClient } from '@angular/common/http';
 })
 export class MessagingComponent implements OnInit, OnDestroy {
   isChatOpen = false;
-  conversations: Conversation[] = [];
-  selectedConversation: Conversation | null = null;
+  conversations: ConversationListItem[] = [];
+  selectedConversation: ConversationListItem | null = null;
   messages: Message[] = [];
   currentUserId = '';
-  
-  // NEW: New Message Modal state
+
   showNewMessageModal = false;
   searchQuery = '';
   searchedUsers: User[] = [];
-  
+
   private subscriptions: Subscription[] = [];
 
   constructor(
     private messagingService: MessagingService,
     private webSocketService: WebSocketService,
-    private authService: AuthService, 
+    private authService: AuthService,
     private http: HttpClient
   ) {}
 
- ngOnInit(): void {
-  // Direct call to correct URL (bypasses auth.service's wrong URL)
-  this.http.get<any>('http://localhost:8080/api/users/me').subscribe({
-    next: (user) => {
-      this.currentUserId = user.userId;  // Real MongoDB ID
-      this.loadConversations();
-      this.initWebSocket();
-    },
-    error: (err) => console.error('Error getting user:', err)
-  });
-}
+  ngOnInit(): void {
+    this.http.get<any>('http://localhost:8080/api/users/me').subscribe({
+      next: (user) => {
+        this.currentUserId = user.userId;
+        this.loadConversations();
+        this.initWebSocket();
+      },
+      error: (err) => console.error('Error getting user:', err)
+    });
+  }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
@@ -72,7 +71,7 @@ export class MessagingComponent implements OnInit, OnDestroy {
 
   initWebSocket(): void {
     this.webSocketService.connect(this.currentUserId);
-    
+
     const msgSub = this.webSocketService.onMessage().subscribe(msg => {
       this.handleNewMessage(msg);
     });
@@ -89,17 +88,29 @@ export class MessagingComponent implements OnInit, OnDestroy {
     this.isChatOpen = !this.isChatOpen;
   }
 
-  selectConversation(conv: Conversation | null): void {
+  selectConversation(conv: ConversationListItem | null): void {
     this.selectedConversation = conv;
     if (conv?.conversationId) {
       this.loadMessages(conv.conversationId);
       this.webSocketService.subscribeToConversation(conv.conversationId);
+      
+      // MARQUER LES MESSAGES COMME LUS
+      this.messagingService.markAsRead(conv.conversationId).subscribe({
+        next: () => {
+          this.loadConversations();
+        },
+        error: (err) => console.error('Error marking as read:', err)
+      });
     }
+  }
+
+  get totalUnreadCount(): number {
+    return this.conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
   }
 
   onSendMessage(content: string): void {
     if (!this.selectedConversation?.conversationId) return;
-    
+
     const sub = this.messagingService.sendMessage(
       this.selectedConversation.conversationId,
       content
@@ -117,17 +128,16 @@ export class MessagingComponent implements OnInit, OnDestroy {
       this.loadConversations();
       return;
     }
-    
+
     const sub = this.messagingService.searchMessages(query).subscribe({
       next: (results) => {
-        // Transformer les résultats en conversations
         console.log('Search results:', results);
       },
       error: (err) => console.error('Error searching:', err)
     });
     this.subscriptions.push(sub);
   }
-    // NEW: New Message Modal methods
+
   openNewMessage(): void {
     this.showNewMessageModal = true;
     this.searchQuery = '';
@@ -145,7 +155,7 @@ export class MessagingComponent implements OnInit, OnDestroy {
       this.searchedUsers = [];
       return;
     }
-    
+
     const sub = this.messagingService.searchUsers(query).subscribe({
       next: (users) => {
         this.searchedUsers = users;
@@ -155,12 +165,12 @@ export class MessagingComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
- startConversation(user: User): void {
-  const sub = this.messagingService.createConversation({
-    type: 'DIRECT',
-    name: user.profile.displayName || 'Direct Message',
-    participantIds: [this.currentUserId, user.userId] 
-  }).subscribe({
+  startConversation(user: User): void {
+    const sub = this.messagingService.createConversation({
+      type: 'DIRECT',
+      name: user.profile.displayName || 'Direct Message',
+      participantIds: [this.currentUserId, user.userId]
+    }).subscribe({
       next: (conv) => {
         console.log('Conversation created:', conv);
         this.selectConversation(conv);
@@ -169,6 +179,6 @@ export class MessagingComponent implements OnInit, OnDestroy {
       },
       error: (err) => console.error('Error creating conversation:', err)
     });
-  this.subscriptions.push(sub);
-}
+    this.subscriptions.push(sub);
+  }
 }

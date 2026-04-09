@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-chat-bubble',
@@ -6,8 +6,7 @@ import { Component, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./chat-bubble.component.css']
 })
 export class ChatBubbleComponent {
+  @Input() unreadCount: number = 0;
   @Output() toggleChat = new EventEmitter<void>();
-  
   showBadge = true;
-  unreadCount = 0;
 }

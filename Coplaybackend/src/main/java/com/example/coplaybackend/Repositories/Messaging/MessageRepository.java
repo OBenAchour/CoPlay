@@ -12,6 +12,8 @@ public interface MessageRepository extends MongoRepository<Message, String> {
 
     List<Message> findByConversation_ConversationIdAndIsDeletedFalseOrderBySentAtAsc(String conversationId);
 
+    List<Message> findByConversation_ConversationIdAndIsDeletedFalseOrderBySentAtDesc(String conversationId);
+
     List<Message> findBySender_UserIdAndIsDeletedFalse(String senderId);
 
     List<Message> findByConversation_ConversationIdAndStatus(String conversationId, MessageStatus status);

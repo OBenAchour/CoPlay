@@ -12,17 +12,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-@Slf4j
 import java.util.Map;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
-    private final AuthService authService;
     private final UserRepository userRepository;
     private final AuthService authService; // ✅ Ajout
 

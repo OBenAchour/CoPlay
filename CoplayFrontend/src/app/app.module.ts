@@ -44,7 +44,7 @@ import { TeamMemberComponent } from './components/team-member/team-member.compon
     ChatWindowComponent,
     MessageInputComponent,
     TypingIndicatorComponent,
-    MessagingComponent
+    MessagingComponent,
     TeamComponent,
     CoachComponent,
     DemandeAdhesionComponent,

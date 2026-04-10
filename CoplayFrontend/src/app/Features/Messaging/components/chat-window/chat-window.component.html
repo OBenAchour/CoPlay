@@ -2,10 +2,14 @@
   <!-- Header -->
   <div class="chat-header">
     <button class="back-btn" (click)="selectConversation.emit(undefined)">←</button>
-    <h3 *ngIf="selectedConversation">{{ getConversationName(selectedConversation) }}</h3>
+    <h3 *ngIf="selectedConversation">{{ selectedConversation.name || 'Conversation' }}</h3>
     <h3 *ngIf="!selectedConversation">Messages</h3>
     <button class="close-btn" (click)="close.emit()">✕</button>
     <button class="new-msg-btn" (click)="newMessage.emit()">+</button>
+    <ng-container *ngIf="selectedConversation">
+      <button class="call-btn" (click)="startCall('AUDIO')">📞</button>
+      <button class="call-btn" (click)="startCall('VIDEO')">📹</button>
+    </ng-container>
   </div>
 
   <!-- Content -->
@@ -46,10 +50,10 @@
         [currentUserId]="currentUserId">
       </app-message-list>
       <app-message-input 
-  [messages]="messages"   
-  [(message)]="messageInput"
-  (send)="onSendMessage()">
-</app-message-input>
+        [messages]="messages"
+        [(message)]="messageInput"
+        (send)="onSendMessage()">
+      </app-message-input>
     </div>
   </div>
 </div>

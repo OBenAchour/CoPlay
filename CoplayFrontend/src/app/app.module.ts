@@ -14,13 +14,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './Core/Interceptors/auth.interceptor';
 import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './Features/User/profile/profile.component';
-import { ChatBubbleComponent } from './Features/Messaging/components/chat-bubble/chat-bubble.component';
-import { ChatWindowComponent } from './Features/Messaging/components/chat-window/chat-window.component';
-import { MessageListComponent } from './Features/Messaging/components/message-list/message-list.component';
-import { MessageBubbleComponent } from './Features/Messaging/components/message-bubble/message-bubble.component';
-import { MessageInputComponent } from './Features/Messaging/components/message-input/message-input.component';
-import { TypingIndicatorComponent } from './Features/Messaging/components/typing-indicator/typing-indicator.component';
-import { MessagingComponent } from './Features/Messaging/messaging.component';
+import { MessagingModule } from './Features/Messaging/messaging.module';
 import { TeamComponent } from './components/team/team.component';
 import { CoachComponent } from './components/coach/coach.component';
 import { DemandeAdhesionComponent } from './components/demande-adhesion/demande-adhesion.component';
@@ -30,35 +24,29 @@ import { InvitationComponent } from './components/invitation/invitation.componen
 import { TeamMemberComponent } from './components/team-member/team-member.component';
 @NgModule({
   declarations: [
-    AppComponent,
-    RegisterComponent,
-    LoginComponent,
-    DashboardComponent,
-    NavbarComponent,
-    UserListComponent,
-    ProfileComponent,
-    ChatBubbleComponent,
-    
-    MessageListComponent,
-    MessageBubbleComponent,
-    ChatWindowComponent,
-    MessageInputComponent,
-    TypingIndicatorComponent,
-    MessagingComponent,
-    TeamComponent,
-    CoachComponent,
-    DemandeAdhesionComponent,
-    EquipeSponsorComponent,
-    HistoriqueActionComponent,
-    InvitationComponent,
-    TeamMemberComponent
+  AppComponent,
+  RegisterComponent,
+  LoginComponent,
+  DashboardComponent,
+  NavbarComponent,
+  UserListComponent,
+  ProfileComponent,
+  TeamComponent,
+  CoachComponent,
+  DemandeAdhesionComponent,
+  EquipeSponsorComponent,
+  HistoriqueActionComponent,
+  InvitationComponent,
+  TeamMemberComponent,
+  
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule, 
     FormsModule,   
-    ReactiveFormsModule 
+    ReactiveFormsModule ,
+    MessagingModule
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }],
   bootstrap: [AppComponent]

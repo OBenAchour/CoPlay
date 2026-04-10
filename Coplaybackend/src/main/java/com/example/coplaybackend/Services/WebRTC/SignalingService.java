@@ -1,10 +1,12 @@
 package com.example.coplaybackend.Services.WebRTC;
 
+import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Messaging.CallSession;
 import com.example.coplaybackend.Entities.Messaging.CallStatus;
 import com.example.coplaybackend.Entities.Messaging.CallType;
 import com.example.coplaybackend.Entities.Messaging.Conversation;
 import com.example.coplaybackend.Entities.Messaging.Participant;
+import com.example.coplaybackend.Repositories.Auth.UserRepository;
 import com.example.coplaybackend.Repositories.Messaging.CallSessionRepository;
 import com.example.coplaybackend.Repositories.Messaging.ConversationRepository;
 import com.example.coplaybackend.Repositories.Messaging.ParticipantRepository;
@@ -14,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,10 +29,17 @@ public class SignalingService {
     private final CallSessionRepository callSessionRepository;
     private final ConversationRepository conversationRepository;
     private final ParticipantRepository participantRepository;
+    private final UserRepository userRepository;
 
     public CallSession initiateCall(String conversationId, String initiatorId, CallType callType) {
+        log.info("[SIGNALING] initiateCall - conversationId: {}, initiatorId: {}, callType: {}",
+                conversationId, initiatorId, callType);
+
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new RuntimeException("Conversation not found"));
+
+        User initiator = userRepository.findByEmail(initiatorId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         String roomId = UUID.randomUUID().toString();
 
@@ -39,11 +49,35 @@ public class SignalingService {
                 .status(CallStatus.INITIATED)
                 .startedAt(LocalDateTime.now())
                 .roomId(roomId)
+                .initiator(initiator)
                 .build();
 
         callSession = callSessionRepository.save(callSession);
+        log.info("[SIGNALING] CallSession saved: callId: {}, roomId: {}", callSession.getCallId(), roomId);
 
-        notifyParticipants(conversationId, "call-initiated", callSession);
+        // Envoyer notification vers topic disponible
+        List<Participant> participants = participantRepository
+                .findByConversation_ConversationIdAndIsActiveTrue(conversationId);
+
+        List<String> otherParticipantEmails = new ArrayList<>();
+        for (Participant p : participants) {
+            if (!p.getUser().getEmail().equals(initiatorId)) {
+                otherParticipantEmails.add(p.getUser().getEmail());
+            }
+        }
+
+        CallNotificationMessage notification = new CallNotificationMessage(
+                "call-initiated",
+                callSession.getCallId(),
+                roomId,
+                callSession.getCallType().name(),
+                initiator.getEmail(),
+                otherParticipantEmails,
+                initiator.getProfile().getDisplayName()
+        );
+
+        log.info("[SIGNALING] Sending call-initiated to /topic/calls/available");
+        messagingTemplate.convertAndSend("/topic/calls/available", notification);
 
         return callSession;
     }
@@ -62,15 +96,21 @@ public class SignalingService {
     }
 
     public void sendAnswer(String callId, String fromUserId, String sdpAnswer) {
+        CallSession call = callSessionRepository.findById(callId)
+                .orElseThrow(() -> new RuntimeException("Call not found"));
+
         messagingTemplate.convertAndSend(
-                "/topic/call/" + callId,
+                "/topic/call/" + call.getRoomId(),
                 new SignalingMessage("answer", fromUserId, sdpAnswer, null)
         );
     }
 
     public void sendIceCandidate(String callId, String fromUserId, String candidate) {
+        CallSession call = callSessionRepository.findById(callId)
+                .orElseThrow(() -> new RuntimeException("Call not found"));
+
         messagingTemplate.convertAndSend(
-                "/topic/call/" + callId,
+                "/topic/call/" + call.getRoomId(),
                 new SignalingMessage("ice-candidate", fromUserId, null, candidate)
         );
     }
@@ -109,9 +149,7 @@ public class SignalingService {
         LocalDateTime now = LocalDateTime.now();
         call.setStatus(CallStatus.ENDED);
         call.setEndedAt(now);
-        call.setDurationSeconds(
-                java.time.Duration.between(call.getStartedAt(), now).getSeconds()
-        );
+        call.setDurationSeconds(java.time.Duration.between(call.getStartedAt(), now).getSeconds());
         callSessionRepository.save(call);
 
         messagingTemplate.convertAndSend(
@@ -129,19 +167,6 @@ public class SignalingService {
                 .orElse(null);
     }
 
-    private void notifyParticipants(String conversationId, String event, CallSession call) {
-        List<Participant> participants = participantRepository
-                .findByConversation_ConversationIdAndIsActiveTrue(conversationId);
-
-        for (Participant p : participants) {
-            messagingTemplate.convertAndSendToUser(
-                    p.getUser().getUserId(),
-                    "/queue/calls",
-                    new SignalingMessage(event, null, null, null)
-            );
-        }
-    }
-
     @lombok.Data
     @lombok.AllArgsConstructor
     public static class SignalingMessage {
@@ -149,5 +174,18 @@ public class SignalingService {
         private String fromUserId;
         private String sdp;
         private String candidate;
+    }
+
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    @lombok.NoArgsConstructor
+    public static class CallNotificationMessage {
+        private String type;
+        private String callId;
+        private String roomId;
+        private String callType;
+        private String fromUserId;
+        private List<String> toUserIds;
+        private String callerName;
     }
 }

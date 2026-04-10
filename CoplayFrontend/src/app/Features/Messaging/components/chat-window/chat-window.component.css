@@ -237,3 +237,15 @@
   flex-shrink: 0; /* Input stays at bottom */
   background: white;
 }   
+.call-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 4px;
+}
+
+.call-btn:hover {
+  opacity: 0.8;
+}

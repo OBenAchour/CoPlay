@@ -1,0 +1,16 @@
+<div class="call-notification">
+  <div class="notification-content">
+    <div class="caller-avatar">👤</div>
+    <div class="caller-info">
+      <div class="caller-name">{{ callerName }}</div>
+      <div class="call-type-text">
+        {{ callType === 'VIDEO' ? '📹' : '📞' }}
+        Appel {{ callType === 'VIDEO' ? 'vidéo' : 'audio' }} - Appel entrant
+      </div>
+    </div>
+  </div>
+  <div class="notification-actions">
+    <button class="action-btn decline" (click)="onDecline()">📵</button>
+    <button class="action-btn accept" (click)="onAccept()">📞</button>
+  </div>
+</div>

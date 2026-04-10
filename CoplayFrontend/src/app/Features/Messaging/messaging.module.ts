@@ -8,7 +8,8 @@ import { MessageListComponent } from './components/message-list/message-list.com
 import { MessageBubbleComponent } from './components/message-bubble/message-bubble.component';
 import { MessageInputComponent } from './components/message-input/message-input.component';
 import { TypingIndicatorComponent } from './components/typing-indicator/typing-indicator.component';
-
+import { CallWindowComponent } from './components/call-window/call-window.component';
+import { CallNotificationComponent } from './components/call-notification/call-notification.component';
 @NgModule({
   declarations: [
     MessagingComponent,
@@ -17,7 +18,9 @@ import { TypingIndicatorComponent } from './components/typing-indicator/typing-i
     MessageBubbleComponent,
     MessageInputComponent,
     TypingIndicatorComponent,
-    ChatBubbleComponent
+    ChatBubbleComponent,
+    CallWindowComponent,
+    CallNotificationComponent
   ],
   imports: [
     CommonModule,

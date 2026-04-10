@@ -1,15 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-// === IMPORTS CORRIGÉS ===
 import { EventStatus } from 'src/app/Core/Models/Events & Training/EventStatus';
 import { CoplayEvent } from 'src/app/Core/Models/Events & Training/CoplayEvent';
 import { EventService } from 'src/app/Core/Services/Events & Training/EventService/event-service.service';
 
 @Component({
   selector: 'app-event-list',
-  templateUrl: './event-list-component.component.html',   // ← Important : nom du fichier html
-  styleUrls: ['./event-list-component.component.css']     // ← nom du fichier css
+  templateUrl: './event-list-component.component.html',
+  styleUrls: ['./event-list-component.component.css']
 })
 export class EventListComponent implements OnInit {
 
@@ -18,6 +17,7 @@ export class EventListComponent implements OnInit {
   selectedStatus: string = 'ALL';
   isLoading: boolean = false;
   errorMessage: string = '';
+  deletingEventId: string | null = null;  // ✅ NOUVEAU
 
   teamId: string = 'test-team-001';
 
@@ -38,26 +38,23 @@ export class EventListComponent implements OnInit {
     this.loadEvents();
   }
 
-  // ... le reste de ton code (loadEvents, filterByStatus, etc.) reste le même
+  loadEvents(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
 
-loadEvents(): void {
-  this.isLoading = true;
-  this.errorMessage = '';
-
-  // ✅ getPublicEvents() pour tester — on voit déjà un event public en base
-  this.eventService.getPublicEvents().subscribe({
-    next: (data: CoplayEvent[]) => {
-      this.events = data;
-      this.applyFilter();
-      this.isLoading = false;
-    },
-    error: (err) => {
-      this.errorMessage = 'Erreur lors du chargement des événements.';
-      this.isLoading = false;
-      console.error('Erreur:', err);
-    }
-  });
-}
+    this.eventService.getPublicEvents().subscribe({
+      next: (data: CoplayEvent[]) => {
+        this.events = data;
+        this.applyFilter();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.errorMessage = 'Erreur lors du chargement des événements.';
+        this.isLoading = false;
+        console.error('Erreur:', err);
+      }
+    });
+  }
 
   filterByStatus(status: string): void {
     this.selectedStatus = status;
@@ -72,6 +69,38 @@ loadEvents(): void {
         e => e.status === this.selectedStatus
       );
     }
+  }
+
+  // ✅ NOUVEAU : Supprimer un event
+  deleteEvent(event: CoplayEvent): void {
+    if (!event.eventId) return;
+
+    const confirmation = confirm(
+      `Êtes-vous sûr de vouloir supprimer l'événement "${event.title}" ?\n\nCette action est irréversible.`
+    );
+
+    if (!confirmation) return;
+
+    this.deletingEventId = event.eventId;
+
+    this.eventService.cancelEvent(event.eventId).subscribe({
+      next: () => {
+        // Retirer l'event de la liste locale
+        this.events = this.events.filter(e => e.eventId !== event.eventId);
+        this.applyFilter();
+        this.deletingEventId = null;
+      },
+      error: (err) => {
+        console.error('Erreur suppression:', err);
+        alert('Erreur lors de la suppression de l\'événement.');
+        this.deletingEventId = null;
+      }
+    });
+  }
+
+  // ✅ NOUVEAU : Aller à la page d'édition
+  goToEdit(eventId: string): void {
+    this.router.navigate(['/events/edit', eventId]);
   }
 
   goToDetail(eventId: string): void {

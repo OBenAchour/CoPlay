@@ -1,9 +1,12 @@
 package com.example.coplaybackend.Controllers.Events;
 
+import com.example.coplaybackend.DTOs.Events.EventRequestDTO;
 import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Events.*;
 import com.example.coplaybackend.Repositories.Auth.UserRepository;
 import com.example.coplaybackend.Repositories.Events.EventRepository;
+import com.example.coplaybackend.Repositories.Events.LocationRepository;
+import com.example.coplaybackend.Repositories.Teams.TeamRepository;
 import com.example.coplaybackend.Services.Events.EventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,39 +15,25 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * ⚠️ NOTE D'INTÉGRATION :
- * UserRepository est temporairement importé depuis Repositories.Events.
- * Lors de l'intégration avec le module Auth :
- *  → Remplacer : import com.example.coplaybackend.Repositories.Events.UserRepository;
- *  → Par       : import com.example.coplaybackend.Repositories.Auth.UserRepository;
- */
 @RestController
 @RequestMapping("/api/events")
-@CrossOrigin(origins = "http://localhost:4200")  // ✅ AJOUTE CETTE LIGNE
-
+@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class EventController {
 
     private final EventService eventService;
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;   // ⚠️ temporaire
+    private final UserRepository userRepository;
+    private final TeamRepository teamRepository;           // ✅ AJOUTÉ
+    private final LocationRepository locationRepository;   // ✅ AJOUTÉ
 
     // ── Méthodes utilitaires ───────────────────────────────────────
 
-    /**
-     * Charge un Event depuis MongoDB par son ID.
-     * Lève une exception si introuvable.
-     */
     private Event findEventOrThrow(String eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Événement introuvable : " + eventId));
     }
 
-    /**
-     * Charge un User depuis MongoDB par son ID.
-     * Lève une exception si introuvable.
-     */
     private User findUserOrThrow(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : " + userId));
@@ -54,39 +43,92 @@ public class EventController {
     //  ÉVÉNEMENTS
     // ═══════════════════════════════════════════════════════════════
 
-    /**
-     * Crée un nouvel événement.
-     * POST /api/events/add
-     * US-024 / US-026
-     */
-
     @GetMapping("/all")
     public ResponseEntity<List<Event>> getAllEvents() {
         return ResponseEntity.ok(eventRepository.findAll());
     }
 
+    /**
+     * Crée un nouvel événement.
+     * POST /api/events/add
+     * ✅ MODIFIÉ pour utiliser EventRequestDTO
+     */
     @PostMapping("/add")
-    public ResponseEntity<Event> createEvent(@RequestBody Event event) {
+    public ResponseEntity<Event> createEvent(@RequestBody EventRequestDTO dto) {
+
+        // Construire l'objet Event à partir du DTO
+        Event event = new Event();
+        event.setTitle(dto.getTitle());
+        event.setStartDate(dto.getStartDate());
+        event.setEndDate(dto.getEndDate());
+        event.setIsPublic(dto.getIsPublic());
+        event.setMaxParticipants(dto.getMaxParticipants());
+        event.setIsPaid(dto.getIsPaid());
+        event.setRegistrationFee(dto.getRegistrationFee());
+        event.setPaymentDeadlineHours(dto.getPaymentDeadlineHours());
+
+        // Charger Team si fourni
+        if (dto.getTeamId() != null && !dto.getTeamId().isEmpty()) {
+            teamRepository.findById(dto.getTeamId()).ifPresent(event::setTeamId);
+        }
+
+        // Charger Location si fourni
+        if (dto.getLocationId() != null && !dto.getLocationId().isEmpty()) {
+            locationRepository.findById(dto.getLocationId()).ifPresent(event::setLocationId);
+        }
+
         Event created = eventService.createEvent(event);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+
+    /**
+     * Met à jour uniquement le statut d'un événement.
+     * PUT /api/events/update/{eventId}/status?status=ONGOING
+     */
+    @PutMapping("/update/{eventId}/status")
+    public ResponseEntity<Event> updateEventStatus(
+            @PathVariable String eventId,
+            @RequestParam EventStatus status) {
+
+        Event event = findEventOrThrow(eventId);
+        event.setStatus(status);
+        Event updated = eventRepository.save(event);
+        return ResponseEntity.ok(updated);
     }
 
     /**
      * Modifie un événement existant.
      * PUT /api/events/update/{eventId}
-     * US-027
+     * ✅ MODIFIÉ pour utiliser EventRequestDTO
      */
     @PutMapping("/update/{eventId}")
     public ResponseEntity<Event> updateEvent(
             @PathVariable String eventId,
-            @RequestBody Event updatedData) {
+            @RequestBody EventRequestDTO dto) {
+
+        // Construire l'objet Event à partir du DTO
+        Event updatedData = new Event();
+        updatedData.setTitle(dto.getTitle());
+        updatedData.setStartDate(dto.getStartDate());
+        updatedData.setEndDate(dto.getEndDate());
+        updatedData.setIsPublic(dto.getIsPublic());
+        updatedData.setMaxParticipants(dto.getMaxParticipants());
+        updatedData.setIsPaid(dto.getIsPaid());
+        updatedData.setRegistrationFee(dto.getRegistrationFee());
+        updatedData.setPaymentDeadlineHours(dto.getPaymentDeadlineHours());
+
+        // Charger Location si fourni
+        if (dto.getLocationId() != null && !dto.getLocationId().isEmpty()) {
+            locationRepository.findById(dto.getLocationId()).ifPresent(updatedData::setLocationId);
+        }
+
         return ResponseEntity.ok(eventService.updateEvent(eventId, updatedData));
     }
 
     /**
      * Annule un événement.
      * DELETE /api/events/delete/{eventId}
-     * US-028
      */
     @DeleteMapping("/delete/{eventId}")
     public ResponseEntity<Void> cancelEvent(@PathVariable String eventId) {
@@ -95,9 +137,19 @@ public class EventController {
     }
 
     /**
+     * Retourne un événement par son ID.
+     * GET /api/events/get/{eventId}
+     * ✅ AJOUTÉ
+     */
+    @GetMapping("/get/{eventId}")
+    public ResponseEntity<Event> getEventById(@PathVariable String eventId) {
+        Event event = findEventOrThrow(eventId);
+        return ResponseEntity.ok(event);
+    }
+
+    /**
      * Retourne tous les événements d'une équipe.
      * GET /api/events/get/team/{teamId}
-     * US-032
      */
     @GetMapping("/get/team/{teamId}")
     public ResponseEntity<List<Event>> getEventsByTeam(@PathVariable String teamId) {
@@ -128,11 +180,6 @@ public class EventController {
     //  RSVP
     // ═══════════════════════════════════════════════════════════════
 
-    /**
-     * Un joueur répond YES ou NO à un événement.
-     * POST /api/events/rsvp/add/{eventId}/{userId}?status=YES&attendanceScore=75
-     * US-029 / US-030
-     */
     @PostMapping("/rsvp/add/{eventId}/{userId}")
     public ResponseEntity<EventParticipation> respondToEvent(
             @PathVariable String eventId,
@@ -147,11 +194,6 @@ public class EventController {
                 eventService.respondToEvent(event, user, status, attendanceScore));
     }
 
-    /**
-     * Retourne toutes les participations d'un événement.
-     * GET /api/events/participations/get/{eventId}
-     * US-031
-     */
     @GetMapping("/participations/get/{eventId}")
     public ResponseEntity<List<EventParticipation>> getParticipations(
             @PathVariable String eventId) {
@@ -164,10 +206,6 @@ public class EventController {
     //  PAIEMENT
     // ═══════════════════════════════════════════════════════════════
 
-    /**
-     * Confirme le paiement d'un joueur après validation Flouci.
-     * PUT /api/events/payment/confirm/{eventId}/{userId}
-     */
     @PutMapping("/payment/confirm/{eventId}/{userId}")
     public ResponseEntity<EventParticipation> confirmPayment(
             @PathVariable String eventId,
@@ -183,11 +221,6 @@ public class EventController {
     //  VALIDATION DES PRÉSENCES
     // ═══════════════════════════════════════════════════════════════
 
-    /**
-     * Le capitaine valide la présence réelle d'un joueur.
-     * PUT /api/events/presence/update/{eventId}/{userId}?isPresent=true
-     * US-031
-     */
     @PutMapping("/presence/update/{eventId}/{userId}")
     public ResponseEntity<EventParticipation> validatePresence(
             @PathVariable String eventId,
@@ -204,11 +237,6 @@ public class EventController {
     //  STATS ASSIDUITÉ
     // ═══════════════════════════════════════════════════════════════
 
-    /**
-     * Retourne le taux de présence d'un joueur (en %).
-     * GET /api/events/stats/attendance/{userId}
-     * US-037
-     */
     @GetMapping("/stats/attendance/{userId}")
     public ResponseEntity<Double> getAttendanceRate(@PathVariable String userId) {
         User user = findUserOrThrow(userId);

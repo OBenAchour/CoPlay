@@ -104,6 +104,14 @@ export class EventService {
   //  STATS ASSIDUITÉ
   // ═══════════════════════════════════════════════════════════════
 
+  // ✅ NOUVEAU : Mettre à jour uniquement le statut d'un event
+updateEventStatus(eventId: string, status: string): Observable<CoplayEvent> {
+  return this.http.put<CoplayEvent>(
+    `${this.apiUrl}/update/${eventId}/status?status=${status}`,
+    {}
+  );
+}
+
   getAttendanceRate(userId: string): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/stats/attendance/${userId}`);
   }

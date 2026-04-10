@@ -1,3 +1,7 @@
+.message-input-wrapper {
+  position: relative;
+}
+
 .message-input-container {
   display: flex;
   align-items: flex-end;
@@ -5,6 +9,10 @@
   border-top: 1px solid #eee;
   background: white;
   gap: 10px;
+}
+
+.message-input-container.with-suggestions {
+  border-radius: 0 0 16px 16px;
 }
 
 textarea {
@@ -44,4 +52,108 @@ textarea:focus {
 .send-btn:disabled {
   background: #bdc3c7;
   cursor: not-allowed;
+}
+
+/* Suggestions Popup */
+.suggestions-popup {
+  position: absolute;
+  bottom: 100%;
+  left: 15px;
+  right: 15px;
+  background: white;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.suggestions-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+}
+
+.close-suggestions {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.close-suggestions:hover {
+  color: #666;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+  background: #e9ecef;
+}
+
+.suggestion-number {
+  color: #999;
+  font-size: 12px;
+  margin-right: 8px;
+  min-width: 16px;
+}
+
+.suggestion-text {
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 10px;
+  color: #999;
+  font-size: 13px;
+}
+
+/* Scrollbar styling */
+.suggestions-popup::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestions-popup::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.suggestions-popup::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.suggestions-popup::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
 }

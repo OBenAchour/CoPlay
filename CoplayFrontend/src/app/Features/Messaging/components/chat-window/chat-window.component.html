@@ -32,7 +32,7 @@
             <span class="conv-time" *ngIf="conv.lastMessageTime">{{ formatTime(conv.lastMessageTime) }}</span>
           </div>
           <div class="conv-preview-row">
-            <span class="conv-preview">{{ conv.lastMessageContent || 'Aucun message' }}</span>
+            <span class="conv-preview">{{ conv.lastMessageContent || 'aucun message' }}</span>
             <span *ngIf="conv.unreadCount && conv.unreadCount > 0" class="unread-badge">{{ conv.unreadCount }}</span>
           </div>
         </div>
@@ -46,9 +46,10 @@
         [currentUserId]="currentUserId">
       </app-message-list>
       <app-message-input 
-        [(message)]="messageInput"
-        (send)="onSendMessage()">
-      </app-message-input>
+  [messages]="messages"   
+  [(message)]="messageInput"
+  (send)="onSendMessage()">
+</app-message-input>
     </div>
   </div>
 </div>

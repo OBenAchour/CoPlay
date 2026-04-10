@@ -6,7 +6,9 @@
       <button class="btn-back" (click)="cancel()">← Retour</button>
       <div>
         <h1 class="page-title">{{ isEditMode ? '✏️ Modifier l\'événement' : '➕ Créer un événement' }}</h1>
-        <p class="page-subtitle">{{ isEditMode ? 'Mettez à jour les informations de votre événement' : 'Planifiez un nouvel événement pour votre équipe' }}</p>
+        <p class="page-subtitle">
+          {{ isEditMode ? 'Mettez à jour les informations de votre événement' : 'Planifiez un nouvel événement pour votre équipe' }}
+        </p>
       </div>
     </div>
   </div>
@@ -18,10 +20,42 @@
   </div>
 
   <!-- Erreur globale -->
-  <div class="alert-error" *ngIf="errorMessage && !isLoading">⚠️ {{ errorMessage }}</div>
+  <div class="alert-error" *ngIf="errorMessage && !isLoading">
+    ⚠️ {{ errorMessage }}
+  </div>
 
   <!-- ══ FORMULAIRE ══ -->
   <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="event-form">
+
+    <!-- ── Section 0 : Équipe ── -->
+    <div class="form-section">
+      <div class="section-header">
+        <span class="section-number">0</span>
+        <div>
+          <h2 class="section-title">Équipe</h2>
+          <p class="section-hint">Sélectionnez l'équipe organisatrice</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Équipe <span class="required">*</span></label>
+        <div class="input-wrap">
+          <span class="input-prefix">👥</span>
+          <select
+            class="form-control"
+            [(ngModel)]="selectedTeamId"
+            [ngModelOptions]="{standalone: true}">
+            <option value="" disabled>-- Choisir une équipe --</option>
+            <option *ngFor="let team of teams" [value]="team.teamId">
+              {{ team.name }} ({{ team.sport }} - {{ team.city }})
+            </option>
+          </select>
+        </div>
+        <div class="field-error" *ngIf="!selectedTeamId && errorMessage">
+          Veuillez sélectionner une équipe.
+        </div>
+      </div>
+    </div>
 
     <!-- ── Section 1 : Informations générales ── -->
     <div class="form-section">

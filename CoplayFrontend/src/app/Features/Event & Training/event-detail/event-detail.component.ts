@@ -56,6 +56,87 @@ export class EventDetailComponent implements OnInit {
     }
   }
 
+  // Ajoute ces propriétés en haut de la classe
+isChangingStatus = false;
+statusError = '';
+
+// ✅ NOUVEAU : Obtenir les statuts disponibles selon le statut actuel
+getAvailableStatuses(): { value: string; label: string }[] {
+  const current = this.event?.status;
+  
+  const allStatuses = [
+    { value: 'SCHEDULED', label: '📅 Planifié' },
+    { value: 'ONGOING',   label: '▶️ En cours' },
+    { value: 'COMPLETED', label: '✅ Terminé' },
+    { value: 'CANCELLED', label: '❌ Annulé' }
+  ];
+
+  // Logique des transitions autorisées
+  switch (current) {
+    case EventStatus.SCHEDULED:
+      // Peut aller vers : ONGOING, CANCELLED
+      return allStatuses.filter(s => 
+        ['SCHEDULED', 'ONGOING', 'CANCELLED'].includes(s.value)
+      );
+    
+    case EventStatus.ONGOING:
+      // Peut aller vers : COMPLETED, CANCELLED
+      return allStatuses.filter(s => 
+        ['ONGOING', 'COMPLETED', 'CANCELLED'].includes(s.value)
+      );
+    
+    case EventStatus.CANCELLED:
+      // Peut revenir à : SCHEDULED (réactivation)
+      return allStatuses.filter(s => 
+        ['CANCELLED', 'SCHEDULED'].includes(s.value)
+      );
+    
+    case EventStatus.COMPLETED:
+      // Pas de changement possible
+      return allStatuses.filter(s => s.value === 'COMPLETED');
+    
+    default:
+      return allStatuses;
+  }
+}
+
+// ✅ NOUVEAU : Changer le statut
+changeStatus(newStatus: string): void {
+  if (!this.event?.eventId) return;
+  if (newStatus === this.event.status) return;
+
+  // Confirmation pour les actions critiques
+  if (newStatus === 'CANCELLED') {
+    if (!confirm('Êtes-vous sûr de vouloir annuler cet événement ?')) {
+      return;
+    }
+  }
+
+  if (newStatus === 'COMPLETED') {
+    if (!confirm('Marquer cet événement comme terminé ? Vous pourrez ensuite valider les présences.')) {
+      return;
+    }
+  }
+
+  this.isChangingStatus = true;
+  this.statusError = '';
+
+  // Appeler l'API pour mettre à jour le statut
+  this.eventService.updateEventStatus(this.event.eventId, newStatus).subscribe({
+    next: (updatedEvent) => {
+      this.event = updatedEvent;
+      this.isChangingStatus = false;
+    },
+    error: (err) => {
+      console.error('Erreur changement statut:', err);
+      this.statusError = 'Erreur lors du changement de statut.';
+      this.isChangingStatus = false;
+      // Recharger l'event pour remettre le bon statut
+      this.loadEvent(this.event!.eventId!);
+    }
+  });
+}
+
   // ─── Chargement ─────────────────────────────────────────────────────────────
 
   private loadEvent(id: string): void {

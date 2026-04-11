@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ListingService } from '../../../../Core/Services/Marketplace/listing.service';
 import { Listing, ListingType } from '../../../../Core/Models/Marketplace/Listing';
+import { NotificationService } from '../../../../Core/Services/Notification/notification.service';
 
 @Component({
   selector: 'app-listing-list',
@@ -27,7 +28,8 @@ export class ListingListComponent implements OnInit {
 
   constructor(
     private listingService: ListingService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -50,6 +52,7 @@ export class ListingListComponent implements OnInit {
       error: (err) => {
         this.error = 'Erreur lors du chargement des annonces';
         this.loading = false;
+        this.notificationService.error('❌ Erreur lors du chargement des annonces');
         console.error(err);
       }
     });

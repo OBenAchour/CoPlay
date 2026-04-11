@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../Core/Services/Auth/auth.service';
 import { SportLevel } from '../../Core/Models/Auth/SportLevel';
 import { Router } from '@angular/router';
+import { NotificationService } from '../../Core/Services/Notification/notification.service';
 
 @Component({
   selector: 'app-register',
@@ -11,14 +12,15 @@ import { Router } from '@angular/router';
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
-  levels = Object.values(SportLevel); 
+  levels = Object.values(SportLevel);
   passwordVisible: boolean = false;
-  isSuccess: boolean = false; // État pour le message de succès
+  isSuccess: boolean = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -40,18 +42,20 @@ export class RegisterComponent implements OnInit {
       this.authService.register(this.registerForm.value).subscribe({
         next: (response) => {
           console.log('Utilisateur créé !', response);
-          this.isSuccess = true; // Affiche la bannière de succès
-          
-          // Redirection après 3 secondes
+          this.isSuccess = true;
+          this.notificationService.success('✅ Compte créé avec succès ! Veuillez vous connecter');
+
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 3000);
         },
         error: (err) => {
           const errorMsg = err.error?.message || "Erreur de connexion au serveur";
-          alert("Erreur : " + errorMsg);
+          this.notificationService.error(`❌ ${errorMsg}`);
         }
       });
+    } else {
+      this.notificationService.warning('⚠️ Veuillez remplir tous les champs correctement');
     }
   }
 }

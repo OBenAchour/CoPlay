@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ListingService } from '../../../../Core/Services/Marketplace/listing.service';
 import { Listing, ListingStatus, ListingType } from '../../../../Core/Models/Marketplace/Listing';
+import { NotificationService } from '../../../../Core/Services/Notification/notification.service';
 
 @Component({
   selector: 'app-listing-detail',
@@ -18,7 +19,8 @@ export class ListingDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private listingService: ListingService
+    private listingService: ListingService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -100,10 +102,17 @@ export class ListingDetailComponent implements OnInit {
     this.listingService.reserveListing(this.listing.listingId).subscribe({
       next: (updated) => {
         this.listing = updated;
-        alert('Annonce réservée avec succès !');
+        this.notificationService.success('🎉 Annonce réservée avec succès !');
       },
       error: (err) => {
-        alert('Erreur lors de la réservation : ' + err.message);
+        // Analyse de l'erreur pour donner un message plus précis
+        if (err.status === 403) {
+          this.notificationService.error('⛔ Vous ne pouvez pas réserver votre propre annonce');
+        } else if (err.error && err.error.message) {
+          this.notificationService.error(`❌ Erreur : ${err.error.message}`);
+        } else {
+          this.notificationService.error('❌ Erreur lors de la réservation');
+        }
         console.error(err);
       }
     });
@@ -111,7 +120,7 @@ export class ListingDetailComponent implements OnInit {
 
   rateListing(): void {
     if (!this.listing || this.rating < 1 || this.rating > 5) {
-      alert('Veuillez sélectionner une note entre 1 et 5');
+      this.notificationService.warning('⚠️ Veuillez sélectionner une note entre 1 et 5');
       return;
     }
 
@@ -120,12 +129,16 @@ export class ListingDetailComponent implements OnInit {
       next: () => {
         this.submittingRating = false;
         this.rating = 0;
-        alert('Merci pour votre note !');
+        this.notificationService.success('⭐ Merci pour votre note !');
         this.loadListing(this.listing!.listingId);
       },
       error: (err) => {
         this.submittingRating = false;
-        alert('Erreur lors de la notation : ' + err.message);
+        if (err.error && err.error.message) {
+          this.notificationService.error(`❌ Erreur : ${err.error.message}`);
+        } else {
+          this.notificationService.error('❌ Erreur lors de la notation');
+        }
         console.error(err);
       }
     });

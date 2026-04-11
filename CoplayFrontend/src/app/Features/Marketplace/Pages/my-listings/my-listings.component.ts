@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ListingService } from '../../../../Core/Services/Marketplace/listing.service';
 import { Listing, ListingStatus, ListingType } from '../../../../Core/Models/Marketplace/Listing';
+import { NotificationService } from '../../../../Core/Services/Notification/notification.service';
 
 @Component({
   selector: 'app-my-listings',
@@ -16,7 +17,8 @@ export class MyListingsComponent implements OnInit {
 
   constructor(
     private listingService: ListingService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -91,12 +93,16 @@ export class MyListingsComponent implements OnInit {
     this.listingService.closeListing(id).subscribe({
       next: () => {
         this.closingId = null;
-        alert('Annonce clôturée avec succès !');
+        this.notificationService.success('✅ Annonce clôturée avec succès !');
         this.loadMyListings();
       },
       error: (err) => {
         this.closingId = null;
-        alert('Erreur lors de la clôture : ' + err.message);
+        if (err.error && err.error.message) {
+          this.notificationService.error(`❌ Erreur : ${err.error.message}`);
+        } else {
+          this.notificationService.error('❌ Erreur lors de la clôture');
+        }
         console.error(err);
       }
     });

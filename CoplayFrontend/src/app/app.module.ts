@@ -17,6 +17,7 @@ import { ListingListComponent } from './Features/Marketplace/Pages/listing-list/
 import { ListingDetailComponent } from './Features/Marketplace/Pages/listing-detail/listing-detail.component';
 import { CreateListingComponent } from './Features/Marketplace/Pages/create-listing/create-listing.component';
 import { MyListingsComponent } from './Features/Marketplace/Pages/my-listings/my-listings.component';
+import { ToastComponent } from './Shared/Components/toast/toast.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { MyListingsComponent } from './Features/Marketplace/Pages/my-listings/my
     ListingListComponent,
     ListingDetailComponent,
     CreateListingComponent,
-    MyListingsComponent
+    MyListingsComponent,
+    ToastComponent
   ],
   imports: [
     BrowserModule,

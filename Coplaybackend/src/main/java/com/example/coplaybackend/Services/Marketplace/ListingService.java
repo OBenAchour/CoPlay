@@ -129,6 +129,7 @@ public class ListingService {
     public Listing reserveListing(String listingId, String buyerEmail) {
         Listing listing = getListingById(listingId);
 
+        // Vérification que l'annonce est active
         if (listing.getStatus() != ListingStatus.ACTIVE) {
             throw new RuntimeException("Cette annonce n'est pas disponible à la réservation");
         }

@@ -1,5 +1,15 @@
 <div class="listing-detail-container">
-  <button class="btn-back" (click)="goBack()">← Retour à la liste</button>
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">← Retour aux annonces</button>
+    <div class="page-actions">
+      <button routerLink="/marketplace/my-listings" class="btn-my">
+        📋 Mes annonces
+      </button>
+      <button routerLink="/marketplace/create" class="btn-create">
+        ➕ Créer une annonce
+      </button>
+    </div>
+  </div>
 
   <!-- Loading -->
   <div *ngIf="loading" class="loading">Chargement de l'annonce...</div>

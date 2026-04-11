@@ -9,7 +9,8 @@
     <li><a routerLink="/profile" routerLinkActive="active">Mon Profil</a></li>
     <li><a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a></li>
     <li><a routerLink="/events" routerLinkActive="active">Événements</a></li>
-    
+    <li><a routerLink="/marketplace" routerLinkActive="active">Marketplace</a></li>
+
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">
         <span class="admin-icon">⚙️</span> Gestion Admin

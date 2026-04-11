@@ -38,7 +38,17 @@ public class SecurityConfig {
                         // Seuls les ADMIN peuvent accéder aux APIs users
                         // Remplace .hasAuthority("ADMIN") par cette version plus souple :
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/listings", "/api/listings/*").permitAll()
+                        // Endpoints Marketplace qui nécessitent une authentification
+                        .requestMatchers("/api/listings/my").authenticated()
+                        .requestMatchers("/api/listings/*/reserve").authenticated()
+                        .requestMatchers("/api/listings/*/close").authenticated()
+                        .requestMatchers("/api/listings/*/rate").authenticated()
+                        // Endpoints Images nécessitent une authentification
+                        .requestMatchers("/api/images/**").authenticated()
+                        // Accès public pour voir les annonces (recherche, détail, etc.)
+                        .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
+                        // Accès public pour voir les images uploadées
+                        .requestMatchers(HttpMethod.GET, "/uploads/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // ÉTAPE CRUCIALE : On dit à Spring de passer par notre filtre AVANT de vérifier les accès

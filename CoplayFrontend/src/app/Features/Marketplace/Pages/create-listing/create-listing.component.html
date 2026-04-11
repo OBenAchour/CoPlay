@@ -1,5 +1,15 @@
 <div class="create-listing-container">
-  <h1 class="page-title">Créer une annonce</h1>
+  <div class="page-header">
+    <h1 class="page-title">Créer une annonce</h1>
+    <div class="page-actions">
+      <button routerLink="/marketplace" class="btn-back">
+        ← Retour aux annonces
+      </button>
+      <button routerLink="/marketplace/my-listings" class="btn-my">
+        📋 Mes annonces
+      </button>
+    </div>
+  </div>
 
   <div class="form-wrapper">
     <!-- Formulaire -->
@@ -73,7 +83,7 @@
       </div>
 
       <div class="form-section">
-        <h2>Description</h2>
+        <h2>Description *</h2>
 
         <div class="form-group">
           <label for="description">Description *</label>
@@ -88,6 +98,88 @@
             {{ getErrorMessage('description') }}
           </span>
         </div>
+      </div>
+
+      <!-- Section Images -->
+      <div class="form-section">
+        <h2>Images</h2>
+
+        <!-- Zone d'upload -->
+        <div
+          class="upload-zone"
+          [ngClass]="{ 'dragover': isDragging }"
+          (dragover)="isDragging = true"
+          (dragleave)="isDragging = false"
+          (drop)="isDragging = false"
+        >
+          <div class="upload-content">
+            <div class="upload-icon">📷</div>
+            <p class="upload-text">
+              Glissez-déposez vos images ici ou
+              <label class="upload-link">
+                sélectionnez des fichiers
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                  multiple
+                  (change)="onFileSelected($event)"
+                  [disabled]="isMaxImagesReached()"
+                />
+              </label>
+            </p>
+            <p class="upload-hint">
+              Formats acceptés: JPG, PNG, WebP, GIF (max 5MB par image)<br />
+              <small>Les images seront automatiquement téléchargées après sélection</small>
+            </p>
+          </div>
+        </div>
+
+        <!-- Compteur d'images -->
+        <div class="image-counter">
+          <span>Images : {{ getTotalImages() }}/{{ maxImages }}</span>
+        </div>
+
+        <!-- Grille de prévisualisation -->
+        <div *ngIf="imagePreviews.length > 0" class="images-grid">
+          <div *ngFor="let image of imagePreviews; let i = index" class="image-card">
+            <div class="image-preview">
+              <img [src]="image.preview" alt="Prévisualisation" />
+
+              <!-- Barre de progression -->
+              <div *ngIf="image.uploading" class="upload-progress">
+                <div class="progress-bar" [style.width.%]="image.progress"></div>
+                <span class="progress-text">{{ image.progress }}%</span>
+              </div>
+            </div>
+
+            <!-- Actions sur l'image -->
+            <div class="image-actions">
+              <div class="upload-status">
+                <span *ngIf="image.uploading" class="uploading-text">⏳ Téléchargement en cours...</span>
+                <span *ngIf="!image.uploading && image.url !== ''" class="success-text">✓ Téléchargé</span>
+                <span *ngIf="!image.uploading && image.url === ''" class="pending-text">En attente de téléchargement</span>
+              </div>
+              <button
+                type="button"
+                class="btn-remove"
+                (click)="removeImage(i)"
+                [disabled]="image.uploading"
+              >
+                ✕ Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton tout effacer -->
+        <button
+          *ngIf="imagePreviews.length > 0"
+          type="button"
+          class="btn-clear-all"
+          (click)="clearImages()"
+        >
+          🗑️ Effacer toutes les images
+        </button>
       </div>
 
       <!-- Récapitulatif des frais -->

@@ -9,6 +9,68 @@
   text-align: center;
 }
 
+/* Section Marketplace */
+.marketplace-section {
+  margin-bottom: 2rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-top: 5px solid #e67e22;
+}
+
+.section-title {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.marketplace-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.marketplace-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+}
+
+.marketplace-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+.marketplace-btn .btn-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.marketplace-btn .btn-text {
+  font-size: 1rem;
+}
+
+.marketplace-btn-browse {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.marketplace-btn-create {
+  background: linear-gradient(135deg, #27ae60, #229954);
+}
+
+.marketplace-btn-my {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
 .stats-grid {
   display: flex;
   gap: 20px;

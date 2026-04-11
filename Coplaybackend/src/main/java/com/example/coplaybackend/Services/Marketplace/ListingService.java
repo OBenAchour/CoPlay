@@ -79,27 +79,60 @@ public class ListingService {
      * Recherche d'annonces avec filtres
      * US-057 : Recherche d'annonces
      */
-    public List<Listing> searchListings(String type, String category, String keyword) {
+    public List<Listing> searchListings(String type, String category, String keyword, Double minPrice, Double maxPrice) {
         ListingStatus activeStatus = ListingStatus.ACTIVE;
+        boolean hasPriceFilter = (minPrice != null && minPrice > 0) || (maxPrice != null && maxPrice > 0);
+        boolean hasTypeFilter = type != null && !type.isEmpty();
+        boolean hasCategoryFilter = category != null && !category.isEmpty();
 
-        // Filtre par type
-        if (type != null && !type.isEmpty()) {
+        // Filtre par mot-clé (prioritaire)
+        if (keyword != null && !keyword.isEmpty()) {
+            return listingRepository.findByTitleContainingIgnoreCaseAndStatus(keyword, activeStatus);
+        }
+
+        // Filtre combiné : type + catégorie + prix
+        if (hasTypeFilter && hasCategoryFilter && hasPriceFilter) {
             ListingType listingType = ListingType.valueOf(type.toUpperCase());
-            if (category != null && !category.isEmpty()) {
-                // Filtre par type ET catégorie
-                return listingRepository.findByTypeAndCategoryAndStatus(listingType, category, activeStatus);
-            }
+            return listingRepository.findByTypeAndCategoryAndPriceBetweenAndStatus(
+                listingType, category, minPrice, maxPrice, activeStatus
+            );
+        }
+
+        // Filtre combiné : type + prix
+        if (hasTypeFilter && hasPriceFilter) {
+            ListingType listingType = ListingType.valueOf(type.toUpperCase());
+            return listingRepository.findByTypeAndPriceBetweenAndStatus(
+                listingType, minPrice, maxPrice, activeStatus
+            );
+        }
+
+        // Filtre combiné : catégorie + prix
+        if (hasCategoryFilter && hasPriceFilter) {
+            return listingRepository.findByCategoryAndPriceBetweenAndStatus(
+                category, minPrice, maxPrice, activeStatus
+            );
+        }
+
+        // Filtre par prix uniquement
+        if (hasPriceFilter) {
+            return listingRepository.findByPriceBetweenAndStatus(minPrice, maxPrice, activeStatus);
+        }
+
+        // Filtre combiné : type + catégorie
+        if (hasTypeFilter && hasCategoryFilter) {
+            ListingType listingType = ListingType.valueOf(type.toUpperCase());
+            return listingRepository.findByTypeAndCategoryAndStatus(listingType, category, activeStatus);
+        }
+
+        // Filtre par type uniquement
+        if (hasTypeFilter) {
+            ListingType listingType = ListingType.valueOf(type.toUpperCase());
             return listingRepository.findByTypeAndStatus(listingType, activeStatus);
         }
 
         // Filtre par catégorie uniquement
-        if (category != null && !category.isEmpty()) {
+        if (hasCategoryFilter) {
             return listingRepository.findByCategoryAndStatus(category, activeStatus);
-        }
-
-        // Filtre par mot-clé
-        if (keyword != null && !keyword.isEmpty()) {
-            return listingRepository.findByTitleContainingIgnoreCaseAndStatus(keyword, activeStatus);
         }
 
         // Aucun filtre : retourne toutes les annonces actives

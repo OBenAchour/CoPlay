@@ -11,38 +11,130 @@
     </div>
   </div>
 
-  <!-- Filtres -->
-  <div class="filters-bar">
-    <div class="filter-group">
-      <label for="typeFilter">Type :</label>
-      <select id="typeFilter" [(ngModel)]="filters.type">
-        <option *ngFor="let option of typeOptions" [value]="option.value">
-          {{ option.label }}
-        </option>
-      </select>
+  <!-- Filtres améliorés -->
+  <div class="filters-container">
+    <div class="filters-header">
+      <h3 class="filters-title">🔍 Filtres</h3>
+      <button class="btn-reset" (click)="resetFilters()" *ngIf="filters.type || filters.category || filters.keyword || filters.minPrice > 0 || filters.maxPrice < 1000">
+        Réinitialiser
+      </button>
     </div>
 
-    <div class="filter-group">
-      <label for="keywordFilter">Recherche :</label>
-      <input
-        id="keywordFilter"
-        type="text"
-        [(ngModel)]="filters.keyword"
-        placeholder="Titre, description, catégorie..."
-      />
-      <button class="btn-search" (click)="onSearch()">Rechercher</button>
+    <div class="filters-bar">
+      <!-- Filtre par type -->
+      <div class="filter-group">
+        <label for="typeFilter">Type :</label>
+        <select id="typeFilter" [(ngModel)]="filters.type" (change)="onSearch()">
+          <option *ngFor="let option of typeOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Filtre par catégorie dynamique -->
+      <div class="filter-group">
+        <label for="categoryFilter">Catégorie :</label>
+        <select id="categoryFilter" [(ngModel)]="filters.category" (change)="onSearch()">
+          <option value="">Toutes les catégories</option>
+          <option *ngIf="categoriesLoading" value="" disabled>Chargement...</option>
+          <option *ngFor="let category of categories" [value]="category.name">
+            {{ category.icon }} {{ category.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Filtre par mot-clé -->
+      <div class="filter-group">
+        <label for="keywordFilter">Recherche :</label>
+        <input
+          id="keywordFilter"
+          type="text"
+          [(ngModel)]="filters.keyword"
+          placeholder="Titre, description..."
+          (keyup.enter)="onSearch()"
+        />
+      </div>
+
+      <!-- Filtre par prix -->
+      <div class="filter-group price-filter">
+        <label>Prix :</label>
+        <div class="price-inputs">
+          <div class="price-input-wrapper">
+            <span class="price-label">Min</span>
+            <input
+              type="number"
+              [(ngModel)]="filters.minPrice"
+              placeholder="0"
+              min="0"
+              (change)="onPriceRangeChange()"
+            />
+            <span class="currency">€</span>
+          </div>
+          <span class="price-separator">-</span>
+          <div class="price-input-wrapper">
+            <span class="price-label">Max</span>
+            <input
+              type="number"
+              [(ngModel)]="filters.maxPrice"
+              placeholder="1000"
+              min="0"
+              (change)="onPriceRangeChange()"
+            />
+            <span class="currency">€</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton de recherche -->
+      <div class="filter-actions">
+        <button class="btn-search" (click)="onSearch()">
+          🔎 Rechercher
+        </button>
+      </div>
+    </div>
+
+    <!-- Tags de filtres actifs -->
+    <div class="active-filters" *ngIf="filters.type || filters.category || filters.keyword || filters.minPrice > 0 || filters.maxPrice < 1000">
+      <span class="filter-tag" *ngIf="filters.type" (click)="filters.type = ''; onSearch()">
+        Type: {{ getFilterTypeLabel() }} ✕
+      </span>
+      <span class="filter-tag" *ngIf="filters.category" (click)="filters.category = ''; onSearch()">
+        Catégorie: {{ getCategoryIcon(filters.category) }} {{ filters.category }} ✕
+      </span>
+      <span class="filter-tag" *ngIf="filters.keyword" (click)="filters.keyword = ''; onSearch()">
+        "{{ filters.keyword }}" ✕
+      </span>
+      <span class="filter-tag" *ngIf="filters.minPrice > 0 || filters.maxPrice < 1000" (click)="filters.minPrice = 0; filters.maxPrice = 1000; onSearch()">
+        Prix: {{ filters.minPrice }}€ - {{ filters.maxPrice }}€ ✕
+      </span>
     </div>
   </div>
 
   <!-- Loading -->
-  <div *ngIf="loading" class="loading">Chargement des annonces...</div>
+  <div *ngIf="loading" class="loading">
+    <div class="loading-spinner"></div>
+    <p>Chargement des annonces...</p>
+  </div>
 
   <!-- Error -->
-  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="error" class="error">
+    <span class="error-icon">⚠️</span>
+    {{ error }}
+  </div>
 
   <!-- Liste vide -->
-  <div *ngIf="!loading && !error && listings.length === 0" class="empty">
-    Aucune annonce trouvée.
+  <div *ngIf="!loading && !error && listings.length === 0" class="empty-state">
+    <div class="empty-icon">📦</div>
+    <h2>Aucune annonce trouvée</h2>
+    <p>Essayez d'ajuster vos filtres ou <a routerLink="/marketplace/create">créez une nouvelle annonce</a></p>
+    <button class="btn-reset-filters" (click)="resetFilters()" *ngIf="filters.type || filters.category || filters.keyword">
+      Réinitialiser les filtres
+    </button>
+  </div>
+
+  <!-- Résultats -->
+  <div *ngIf="!loading && !error && listings.length > 0" class="results-info">
+    <span class="results-count">{{ listings.length }} annonce{{ listings.length > 1 ? 's' : '' }} trouvée{{ listings.length > 1 ? 's' : '' }}</span>
   </div>
 
   <!-- Grille des annonces -->
@@ -55,7 +147,10 @@
         </span>
       </div>
 
-      <div class="listing-category">{{ listing.category }}</div>
+      <div class="listing-category">
+        <span class="category-icon">{{ getCategoryIcon(listing.category) }}</span>
+        <span>{{ listing.category }}</span>
+      </div>
 
       <div class="listing-description">
         {{ listing.description | slice: 0:150 }}{{ listing.description.length > 150 ? '...' : '' }}

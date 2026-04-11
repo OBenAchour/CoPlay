@@ -52,4 +52,34 @@ public interface ListingRepository extends MongoRepository<Listing, String> {
      * Recherche par type, catégorie et statut
      */
     List<Listing> findByTypeAndCategoryAndStatus(ListingType type, String category, ListingStatus status);
+
+    /**
+     * Recherche par fourchette de prix et statut
+     */
+    List<Listing> findByPriceBetweenAndStatus(Double minPrice, Double maxPrice, ListingStatus status);
+
+    /**
+     * Recherche par prix minimum et statut
+     */
+    List<Listing> findByPriceGreaterThanEqualAndStatus(Double minPrice, ListingStatus status);
+
+    /**
+     * Recherche par prix maximum et statut
+     */
+    List<Listing> findByPriceLessThanEqualAndStatus(Double maxPrice, ListingStatus status);
+
+    /**
+     * Recherche par type, prix et statut
+     */
+    List<Listing> findByTypeAndPriceBetweenAndStatus(ListingType type, Double minPrice, Double maxPrice, ListingStatus status);
+
+    /**
+     * Recherche par catégorie, prix et statut
+     */
+    List<Listing> findByCategoryAndPriceBetweenAndStatus(String category, Double minPrice, Double maxPrice, ListingStatus status);
+
+    /**
+     * Recherche par type, catégorie, prix et statut
+     */
+    List<Listing> findByTypeAndCategoryAndPriceBetweenAndStatus(ListingType type, String category, Double minPrice, Double maxPrice, ListingStatus status);
 }

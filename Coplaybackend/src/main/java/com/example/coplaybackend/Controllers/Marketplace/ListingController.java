@@ -53,16 +53,18 @@ public class ListingController {
 
     /**
      * Recherche d'annonces (public)
-     * GET /api/listings?type=SALE&category=FOOTBALL&keyword=ballon
+     * GET /api/listings?type=SALE&category=FOOTBALL&keyword=ballon&minPrice=10&maxPrice=100
      * US-057 : Recherche d'annonces
      */
     @GetMapping
     public ResponseEntity<List<Listing>> searchListings(
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
 
-        List<Listing> listings = listingService.searchListings(type, category, keyword);
+        List<Listing> listings = listingService.searchListings(type, category, keyword, minPrice, maxPrice);
         return ResponseEntity.ok(listings);
     }
 

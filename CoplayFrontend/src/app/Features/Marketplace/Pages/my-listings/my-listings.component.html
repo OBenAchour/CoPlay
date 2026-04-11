@@ -1,0 +1,75 @@
+<div class="my-listings-container">
+  <div class="header-section">
+    <h1 class="page-title">Mes annonces</h1>
+    <div class="header-actions">
+      <button class="btn-back" (click)="goToMarketplace()">← Voir le marketplace</button>
+      <button class="btn-create" (click)="goToCreate()">+ Créer une annonce</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">Chargement de vos annonces...</div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <!-- Liste vide -->
+  <div *ngIf="!loading && !error && listings.length === 0" class="empty-state">
+    <div class="empty-icon">📦</div>
+    <h2>Vous n'avez pas encore d'annonces</h2>
+    <p>Commencez par créer votre première annonce !</p>
+    <button class="btn-create-large" (click)="goToCreate()">Créer une annonce</button>
+  </div>
+
+  <!-- Liste des annonces -->
+  <div *ngIf="!loading && !error && listings.length > 0" class="listings-list">
+    <div *ngFor="let listing of listings" class="listing-item">
+      <div class="listing-info">
+        <div class="listing-header">
+          <h3 class="listing-title">{{ listing.title }}</h3>
+          <div class="badges">
+            <span [class]="['badge', getTypeClass(listing.type)]">
+              {{ getTypeLabel(listing.type) }}
+            </span>
+            <span [class]="['badge', 'status', getStatusClass(listing.status)]">
+              {{ getStatusLabel(listing.status) }}
+            </span>
+          </div>
+        </div>
+
+        <p class="listing-description">
+          {{ listing.description | slice: 0:120 }}{{ listing.description.length > 120 ? '...' : '' }}
+        </p>
+
+        <div class="listing-meta">
+          <span class="meta-item">Catégorie : {{ listing.category }}</span>
+          <span class="meta-item">Créée le : {{ listing.createdAt | date:'dd/MM/yyyy' }}</span>
+          <span class="meta-item" *ngIf="listing.ratingCount > 0">
+            Note : ★ {{ listing.averageRating.toFixed(1) }} ({{ listing.ratingCount }})
+          </span>
+        </div>
+      </div>
+
+      <div class="listing-actions">
+        <div class="listing-price">
+          <span class="price-label">Total TTC</span>
+          <span class="price-value">{{ listing.totalWithCommission }} €</span>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn-view" (click)="goToDetail(listing.listingId)">
+            Voir le détail
+          </button>
+          <button
+            *ngIf="canClose(listing)"
+            class="btn-close"
+            (click)="closeListing(listing.listingId)"
+            [disabled]="closingId === listing.listingId"
+          >
+            {{ closingId === listing.listingId ? 'Clôture...' : 'Clôturer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

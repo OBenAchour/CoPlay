@@ -1,0 +1,123 @@
+<div class="listing-detail-container">
+  <button class="btn-back" (click)="goBack()">← Retour à la liste</button>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">Chargement de l'annonce...</div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <!-- Détail de l'annonce -->
+  <div *ngIf="!loading && !error && listing" class="detail-content">
+    <div class="detail-header">
+      <h1 class="detail-title">{{ listing.title }}</h1>
+      <div class="header-badges">
+        <span [class]="['badge', getTypeClass(listing.type)]">
+          {{ getTypeLabel(listing.type) }}
+        </span>
+        <span [class]="['badge', 'status', getStatusClass(listing.status)]">
+          {{ getStatusLabel(listing.status) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <!-- Informations principales -->
+      <div class="detail-main">
+        <div class="info-section">
+          <h2>Description</h2>
+          <p class="description">{{ listing.description }}</p>
+        </div>
+
+        <div class="info-section">
+          <h2>Images</h2>
+          <div *ngIf="listing.images && listing.images.length > 0" class="images-gallery">
+            <img *ngFor="let img of listing.images" [src]="img" alt="Image" class="listing-image" />
+          </div>
+          <div *ngIf="!listing.images || listing.images.length === 0" class="no-images">
+            Aucune image disponible
+          </div>
+        </div>
+
+        <!-- Section Notation -->
+        <div class="info-section rating-section">
+          <h2>Noter cette annonce</h2>
+          <div class="rating-form">
+            <div class="rating-input">
+              <label for="rating">Note (1-5) :</label>
+              <input
+                id="rating"
+                type="number"
+                min="1"
+                max="5"
+                [(ngModel)]="rating"
+                placeholder="5"
+              />
+            </div>
+            <button
+              class="btn-rate"
+              (click)="rateListing()"
+              [disabled]="submittingRating"
+            >
+              {{ submittingRating ? 'Envoi...' : 'Noter' }}
+            </button>
+          </div>
+          <div class="current-rating" *ngIf="listing.ratingCount > 0">
+            Note moyenne : <strong>{{ listing.averageRating.toFixed(1) }}/5</strong>
+            ({{ listing.ratingCount }} avis)
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Prix & Actions -->
+      <div class="detail-sidebar">
+        <div class="price-card">
+          <h3>Prix</h3>
+          <div class="price-row">
+            <span class="price-label">Prix HT :</span>
+            <span class="price-value">{{ listing.price }} €</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Commission ({{ listing.commissionRate * 100 }}%) :</span>
+            <span class="price-value">{{ getCommissionAmount() }} €</span>
+          </div>
+          <div class="price-row total">
+            <span class="price-label">Total TTC :</span>
+            <span class="price-value">{{ listing.totalWithCommission }} €</span>
+          </div>
+
+          <button
+            *ngIf="canReserve()"
+            class="btn-reserve"
+            (click)="reserveListing()"
+          >
+            Réserver cette annonce
+          </button>
+          <div *ngIf="!canReserve()" class="reservation-notice">
+            Cette annonce ne peut plus être réservée
+          </div>
+        </div>
+
+        <div class="meta-card">
+          <h3>Informations</h3>
+          <div class="meta-row">
+            <span class="meta-label">Catégorie :</span>
+            <span class="meta-value">{{ listing.category }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Vendeur ID :</span>
+            <span class="meta-value">{{ listing.sellerId }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Créée le :</span>
+            <span class="meta-value">{{ listing.createdAt | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Expire le :</span>
+            <span class="meta-value">{{ listing.expiresAt | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

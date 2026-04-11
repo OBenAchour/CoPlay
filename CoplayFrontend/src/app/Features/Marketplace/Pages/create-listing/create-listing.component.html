@@ -1,0 +1,143 @@
+<div class="create-listing-container">
+  <h1 class="page-title">Créer une annonce</h1>
+
+  <div class="form-wrapper">
+    <!-- Formulaire -->
+    <form [formGroup]="listingForm" (ngSubmit)="onSubmit()">
+      <div class="form-section">
+        <h2>Informations générales</h2>
+
+        <div class="form-group">
+          <label for="title">Titre *</label>
+          <input
+            id="title"
+            type="text"
+            formControlName="title"
+            placeholder="Titre de votre annonce"
+            [ngClass]="{ 'invalid': isFieldInvalid('title') }"
+          />
+          <span *ngIf="isFieldInvalid('title')" class="error-message">
+            {{ getErrorMessage('title') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="type">Type *</label>
+          <select
+            id="type"
+            formControlName="type"
+            [ngClass]="{ 'invalid': isFieldInvalid('type') }"
+          >
+            <option *ngFor="let option of typeOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <span *ngIf="isFieldInvalid('type')" class="error-message">
+            {{ getErrorMessage('type') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Catégorie *</label>
+          <input
+            id="category"
+            type="text"
+            formControlName="category"
+            placeholder="Ex: Équipement, Coaching, Transport..."
+            [ngClass]="{ 'invalid': isFieldInvalid('category') }"
+          />
+          <span *ngIf="isFieldInvalid('category')" class="error-message">
+            {{ getErrorMessage('category') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Prix et commission</h2>
+
+        <div class="form-group">
+          <label for="price">Prix HT (€) *</label>
+          <input
+            id="price"
+            type="number"
+            formControlName="price"
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+            [ngClass]="{ 'invalid': isFieldInvalid('price') }"
+          />
+          <span *ngIf="isFieldInvalid('price')" class="error-message">
+            {{ getErrorMessage('price') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Description</h2>
+
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="6"
+            placeholder="Décrivez votre annonce en détail..."
+            [ngClass]="{ 'invalid': isFieldInvalid('description') }"
+          ></textarea>
+          <span *ngIf="isFieldInvalid('description')" class="error-message">
+            {{ getErrorMessage('description') }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Récapitulatif des frais -->
+      <div class="summary-card">
+        <h3>Récapitulatif des frais</h3>
+        <div class="summary-row">
+          <span>Taux de commission :</span>
+          <span class="commission-rate">{{ (commissionRate * 100).toFixed(0) }}%</span>
+        </div>
+        <div class="summary-row">
+          <span>Prix HT :</span>
+          <span>{{ listingForm.get('price')?.value || 0 }} €</span>
+        </div>
+        <div class="summary-row">
+          <span>Commission :</span>
+          <span>{{ commissionAmount.toFixed(2) }} €</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total que vous recevrez :</span>
+          <span class="total-amount">{{ listingForm.get('price')?.value || 0 }} €</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total payé par l'acheteur :</span>
+          <span class="total-amount">{{ totalWithCommission.toFixed(2) }} €</span>
+        </div>
+      </div>
+
+      <!-- Messages d'erreur -->
+      <div *ngIf="error" class="error-alert">
+        {{ error }}
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cancel()"
+          [disabled]="submitting"
+        >
+          Annuler
+        </button>
+        <button
+          type="submit"
+          class="btn-submit"
+          [disabled]="submitting || listingForm.invalid"
+        >
+          {{ submitting ? 'Création en cours...' : 'Créer l\'annonce' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

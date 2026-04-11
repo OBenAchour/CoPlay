@@ -1,0 +1,135 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ListingService } from '../../../../Core/Services/Marketplace/listing.service';
+import { Listing, ListingType } from '../../../../Core/Models/Marketplace/Listing';
+
+@Component({
+  selector: 'app-create-listing',
+  templateUrl: './create-listing.component.html',
+  styleUrls: ['./create-listing.component.css']
+})
+export class CreateListingComponent implements OnInit {
+  listingForm: FormGroup;
+  submitting = false;
+  error: string | null = null;
+
+  commissionRate = 0;
+  commissionAmount = 0;
+  totalWithCommission = 0;
+
+  typeOptions = [
+    { value: ListingType.SALE, label: 'Vente' },
+    { value: ListingType.RENTAL, label: 'Location' },
+    { value: ListingType.SERVICE, label: 'Service' }
+  ];
+
+  constructor(
+    private fb: FormBuilder,
+    private listingService: ListingService,
+    private router: Router
+  ) {
+    this.listingForm = this.fb.group({
+      title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+      description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1000)]],
+      type: [ListingType.SALE, [Validators.required]],
+      price: [0, [Validators.required, Validators.min(0)]],
+      category: ['', [Validators.required, Validators.minLength(2)]],
+      images: [[]]
+    });
+  }
+
+  ngOnInit(): void {
+    this.calculateCommission();
+    this.listingForm.valueChanges.subscribe(() => {
+      this.calculateCommission();
+    });
+  }
+
+  calculateCommission(): void {
+    const type = this.listingForm.get('type')?.value as ListingType;
+    const price = this.listingForm.get('price')?.value || 0;
+
+    switch (type) {
+      case ListingType.SALE:
+        this.commissionRate = 0.05;
+        break;
+      case ListingType.RENTAL:
+        this.commissionRate = 0.10;
+        break;
+      case ListingType.SERVICE:
+        this.commissionRate = 0.15;
+        break;
+      default:
+        this.commissionRate = 0.05;
+    }
+
+    this.commissionAmount = price * this.commissionRate;
+    this.totalWithCommission = price + this.commissionAmount;
+  }
+
+  onSubmit(): void {
+    if (this.listingForm.invalid) {
+      this.listingForm.markAllAsTouched();
+      return;
+    }
+
+    this.submitting = true;
+    this.error = null;
+
+    const formValue = this.listingForm.value;
+    const listingData: Partial<Listing> = {
+      title: formValue.title,
+      description: formValue.description,
+      type: formValue.type,
+      price: formValue.price,
+      category: formValue.category,
+      images: formValue.images || [],
+      commissionRate: this.commissionRate,
+      totalWithCommission: this.totalWithCommission
+    };
+
+    this.listingService.createListing(listingData).subscribe({
+      next: (created) => {
+        this.submitting = false;
+        alert('Annonce créée avec succès !');
+        this.router.navigate(['/marketplace', created.listingId]);
+      },
+      error: (err) => {
+        this.submitting = false;
+        this.error = 'Erreur lors de la création de l\'annonce : ' + err.message;
+        console.error(err);
+      }
+    });
+  }
+
+  cancel(): void {
+    if (confirm('Voulez-vous vraiment annuler ? Les données saisies seront perdues.')) {
+      this.router.navigate(['/marketplace']);
+    }
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.listingForm.get(fieldName);
+    return field ? (field.invalid && (field.dirty || field.touched)) : false;
+  }
+
+  getErrorMessage(fieldName: string): string {
+    const field = this.listingForm.get(fieldName);
+    if (!field) return '';
+
+    if (field.hasError('required')) {
+      return 'Ce champ est requis';
+    }
+    if (field.hasError('minlength')) {
+      return `Minimum ${field.errors?.['minlength'].requiredLength} caractères`;
+    }
+    if (field.hasError('maxlength')) {
+      return `Maximum ${field.errors?.['maxlength'].requiredLength} caractères`;
+    }
+    if (field.hasError('min')) {
+      return `Valeur minimale : ${field.errors?.['min'].min}`;
+    }
+    return '';
+  }
+}

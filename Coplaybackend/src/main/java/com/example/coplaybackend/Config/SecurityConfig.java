@@ -3,6 +3,7 @@ package com.example.coplaybackend.Config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -37,6 +38,7 @@ public class SecurityConfig {
                         // Seuls les ADMIN peuvent accéder aux APIs users
                         // Remplace .hasAuthority("ADMIN") par cette version plus souple :
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/listings", "/api/listings/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 // ÉTAPE CRUCIALE : On dit à Spring de passer par notre filtre AVANT de vérifier les accès

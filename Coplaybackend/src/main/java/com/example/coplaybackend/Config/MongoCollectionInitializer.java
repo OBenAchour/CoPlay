@@ -13,8 +13,7 @@ import com.example.coplaybackend.Entities.Events.Event;
 import com.example.coplaybackend.Entities.Events.Location;
 import com.example.coplaybackend.Entities.Events.TrainingProgram;
 import com.example.coplaybackend.Entities.Competitions.*;
-import com.example.coplaybackend.Entities.Marketplace.Equipment;
-import com.example.coplaybackend.Entities.Marketplace.MarketplaceService;
+import com.example.coplaybackend.Entities.Marketplace.Listing;
 import com.example.coplaybackend.Entities.Marketplace.Review;
 import com.example.coplaybackend.Entities.Messaging.Conversation;
 import com.example.coplaybackend.Entities.Messaging.Message;
@@ -74,8 +73,7 @@ public class MongoCollectionInitializer implements CommandLineRunner {
         createIfNotExists(StatistiqueEquipe.class);
 
         // ── M7 MARKETPLACE ───────────────────────────────────────
-        createIfNotExists(Equipment.class);
-        createIfNotExists(MarketplaceService.class);
+        createIfNotExists(Listing.class);
         createIfNotExists(Review.class);
 
         System.out.println("✅ Toutes les collections MongoDB sont prêtes.");

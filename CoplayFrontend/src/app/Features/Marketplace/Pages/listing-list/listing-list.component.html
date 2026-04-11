@@ -1,0 +1,81 @@
+<div class="listing-list-container">
+  <h1 class="page-title">Marketplace</h1>
+
+  <!-- Filtres -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label for="typeFilter">Type :</label>
+      <select id="typeFilter" [(ngModel)]="filters.type">
+        <option *ngFor="let option of typeOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="keywordFilter">Recherche :</label>
+      <input
+        id="keywordFilter"
+        type="text"
+        [(ngModel)]="filters.keyword"
+        placeholder="Titre, description, catégorie..."
+      />
+      <button class="btn-search" (click)="onSearch()">Rechercher</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">Chargement des annonces...</div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <!-- Liste vide -->
+  <div *ngIf="!loading && !error && listings.length === 0" class="empty">
+    Aucune annonce trouvée.
+  </div>
+
+  <!-- Grille des annonces -->
+  <div *ngIf="!loading && !error" class="listings-grid">
+    <div *ngFor="let listing of listings" class="listing-card">
+      <div class="listing-header">
+        <h3 class="listing-title">{{ listing.title }}</h3>
+        <span [class]="['badge', getTypeClass(listing.type)]">
+          {{ getTypeLabel(listing.type) }}
+        </span>
+      </div>
+
+      <div class="listing-category">{{ listing.category }}</div>
+
+      <div class="listing-description">
+        {{ listing.description | slice: 0:150 }}{{ listing.description.length > 150 ? '...' : '' }}
+      </div>
+
+      <div class="listing-price-section">
+        <div class="price-row">
+          <span class="price-label">Prix HT :</span>
+          <span class="price-value">{{ listing.price }} €</span>
+        </div>
+        <div class="price-row">
+          <span class="price-label">Commission ({{ listing.commissionRate * 100 }}%) :</span>
+          <span class="price-value">{{ getCommissionAmount(listing) }} €</span>
+        </div>
+        <div class="price-row total">
+          <span class="price-label">Total TTC :</span>
+          <span class="price-value">{{ listing.totalWithCommission }} €</span>
+        </div>
+      </div>
+
+      <div class="listing-footer">
+        <div class="rating" *ngIf="listing.ratingCount > 0">
+          <span class="stars">★</span>
+          <span>{{ listing.averageRating.toFixed(1) }}</span>
+          <span class="rating-count">({{ listing.ratingCount }} avis)</span>
+        </div>
+        <button class="btn-detail" (click)="goToDetail(listing.listingId)">
+          Voir le détail
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

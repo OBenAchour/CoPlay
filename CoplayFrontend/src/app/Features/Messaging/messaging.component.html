@@ -1,0 +1,38 @@
+<app-chat-bubble *ngIf="!isChatOpen" [unreadCount]="totalUnreadCount" (toggleChat)="toggleChat()"></app-chat-bubble>
+<div *ngIf="isChatOpen" class="messaging-container">
+  <app-chat-window
+    [conversations]="conversations"
+    [selectedConversation]="selectedConversation"
+    [messages]="messages"
+    [currentUserId]="currentUserId"
+    (close)="toggleChat()"
+    (selectConversation)="selectConversation($event)"
+    (sendMessage)="onSendMessage($event)"
+    (searchConversation)="onSearch($event)"
+    (newMessage)="openNewMessage()">
+  </app-chat-window>
+</div>
+<div *ngIf="showNewMessageModal" class="new-msg-modal-overlay" (click)="closeNewMessage()">
+  <div class="new-msg-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <button (click)="closeNewMessage()">←</button>
+      <span>Nouveau message</span>
+    </div>
+    <div class="modal-search">
+      <input 
+        type="text" 
+        placeholder="Rechercher des personnes..."
+        [(ngModel)]="searchQuery"
+        (input)="searchUsers(searchQuery)">
+    </div>
+    <div class="user-list">
+      <div *ngFor="let user of searchedUsers" class="user-item" (click)="startConversation(user)">
+        <div class="avatar">{{ user.profile.displayName?.charAt(0) || '?' }}</div>
+        <span>{{ user.profile.displayName }}</span>
+      </div>
+      <div *ngIf="searchedUsers.length === 0 && searchQuery" class="no-results">
+        Aucun utilisateur trouvé
+      </div>
+    </div>
+  </div>
+</div>

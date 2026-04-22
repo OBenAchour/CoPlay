@@ -19,10 +19,10 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor // Pour injecter automatiquement le filtre
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter; // Injection du filtre JWT
+    private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -31,20 +31,18 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // On ouvre largement l'accès aux routes d'authentification
+                        // Routes ouvertes
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/api/teams/**").permitAll()
-                        .requestMatchers("/api/sponsors/**").permitAll() // <- autorise ce endpoint
+                        .requestMatchers("/api/sponsors/**").permitAll()
+                        .requestMatchers("/ws-call/**").permitAll()
 
-                        .requestMatchers("/api/users/me").authenticated()
-                        // Seuls les ADMIN peuvent accéder aux APIs users
-                        // Remplace .hasAuthority("ADMIN") par cette version plus souple :
-                        .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
-                        .anyRequest().authenticated()
+                        // Toutes les autres routes ouvertes
+                        .anyRequest().permitAll()
                 )
-                // On s'assure que le filtre JWT est bien placé
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
@@ -52,7 +50,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:4200"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
 

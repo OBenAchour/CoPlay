@@ -8,7 +8,7 @@ import { JwtHelperService } from '@auth0/angular-jwt';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = 'http://localhost:8081/api/auth';
   private jwtHelper = new JwtHelperService();
 
   constructor(private http: HttpClient) { }
@@ -60,6 +60,21 @@ export class AuthService {
     return localStorage.getItem('user_role');
   }
 
+
+getUserId(): string {
+  const token = localStorage.getItem('token');
+  if (!token) return '';
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.userId || payload.sub || '';
+  } catch (e) {
+    return '';
+  }
+}
+  /**
+   * Utile pour vérifier combien de temps il reste avant l'expiration (en secondes)
+   */
   getTokenExpiration(): number | null {
     const token = localStorage.getItem('token');
     if (token) {
@@ -83,6 +98,10 @@ export class AuthService {
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/forgot-password`, { email });
   }
+
+getCurrentUser(): Observable<User> {
+  return this.http.get<User>(`${this.apiUrl}/users/me`);
+}
 
   // ✅ URL corrigée — pointe vers /api/users/me/password
   // Le token est ajouté automatiquement par l'interceptor

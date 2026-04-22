@@ -1,1 +1,103 @@
-<p>historique-action works!</p>
+<div class="page">
+
+  <!-- Sidebar gauche -->
+  <div class="sidebar">
+    <div class="sidebar-title">Équipes</div>
+    <div class="team-item"
+         *ngFor="let t of teams"
+         [class.active]="t.teamId === selectedTeamId"
+         (click)="selectedTeamId = t.teamId!; onTeamChange()">
+      <div class="team-dot"></div>
+      <span>{{ t.name }}</span>
+    </div>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="main">
+
+    <!-- Header -->
+    <div class="top-bar">
+      <div>
+        <div class="page-title">Journal d'activité</div>
+        <div class="page-sub">{{ selectedTeamName || 'Sélectionne une équipe' }}</div>
+      </div>
+      <div class="search-box">
+        <input [(ngModel)]="searchText" placeholder="Rechercher une action..." class="search-inp" />
+      </div>
+    </div>
+
+    <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+    <div class="alert error"   *ngIf="errorMsg">{{ errorMsg }}</div>
+
+    <!-- Formulaire -->
+    <div class="add-box">
+      <div class="add-box-left">
+        <div class="add-icon">+</div>
+      </div>
+      <div class="add-box-right">
+        <div class="suggestions">
+          <span class="chip"
+                *ngFor="let s of actionSuggestions"
+                (click)="useSuggestion(s)">{{ s }}</span>
+        </div>
+        <div class="add-row">
+          <input
+            [(ngModel)]="newAction"
+            placeholder="Décrire l'action..."
+            class="add-inp"
+            (keyup.enter)="addAction()"
+          />
+          <button class="btn-add" (click)="addAction()" [disabled]="loading || !newAction.trim()">
+            {{ loading ? '...' : 'Ajouter' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats rapides -->
+    <div class="quick-stats">
+      <div class="qs">
+        <span class="qs-num">{{ actions.length }}</span>
+        <span class="qs-lbl">actions totales</span>
+      </div>
+      <div class="qs-sep"></div>
+      <div class="qs">
+        <span class="qs-num">{{ actionsFiltrees.length }}</span>
+        <span class="qs-lbl">résultats</span>
+      </div>
+      <div class="qs-sep"></div>
+      <div class="qs">
+        <span class="qs-num">{{ teams.length }}</span>
+        <span class="qs-lbl">équipes</span>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div *ngIf="loading" class="empty">Chargement...</div>
+    <div *ngIf="!loading && actionsFiltrees.length === 0" class="empty">
+      Aucune action enregistrée
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item" *ngFor="let a of actionsFiltrees; let last = last">
+        <div class="tl-left">
+          <div class="tl-icon" [ngClass]="getIconClass(a.action)">
+            {{ getActionIcon(a.action) }}
+          </div>
+          <div class="tl-line" *ngIf="!last"></div>
+        </div>
+        <div class="tl-card">
+          <div class="tl-action">{{ a.action }}</div>
+          <div class="tl-meta">
+            <div class="tl-actor">
+              <div class="mini-avatar">{{ getInitiales(a.actorId) }}</div>
+              <span>{{ a.actorId }}</span>
+            </div>
+            <span class="tl-date">{{ a.performedAt | date:'dd MMM yyyy · HH:mm' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

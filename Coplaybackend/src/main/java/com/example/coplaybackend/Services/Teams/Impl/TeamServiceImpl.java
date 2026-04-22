@@ -26,6 +26,7 @@ public class TeamServiceImpl implements TeamService {
     public Team createTeam(Team team, String creatorId) {
 
         team.setStatus(TeamStatus.ACTIVE);
+        team.setCreatorId(creatorId); // ← AJOUTE ÇA
 
         Team saved = teamRepository.save(team);
 
@@ -42,6 +43,13 @@ public class TeamServiceImpl implements TeamService {
 
         return saved;
     }
+
+    // ← AJOUTE CETTE MÉTHODE
+    @Override
+    public List<Team> getTeamsByCreator(String creatorId) {
+        return teamRepository.findByCreatorId(creatorId);
+    }
+
 
     @Override
     public Team updateTeam(String teamId,Team team) {

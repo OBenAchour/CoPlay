@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
+import {User} from "../../Models/Auth/User";
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8080/api/users';
+  private apiUrl = 'http://localhost:8081/api/users';
 
   constructor(private http: HttpClient) { }
 
@@ -33,6 +34,12 @@ export class UserService {
   changePassword(data: any): Observable<any> {
   return this.http.put(`http://localhost:8080/api/auth/change-password`, data);
 }
+
+  // ← AJOUTE JUSTE CETTE MÉTHODE
+  searchUsers(q: string): Observable<User[]> {
+    const params = new HttpParams().set('q', q);
+    return this.http.get<User[]>(`${this.apiUrl}/search`, { params });
+  }
 
 
 }

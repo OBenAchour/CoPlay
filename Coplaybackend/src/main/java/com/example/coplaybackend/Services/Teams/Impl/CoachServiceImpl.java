@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,15 +22,18 @@ public class CoachServiceImpl implements CoachService {
     @Override
     public PropositionCoach proposerCoach(String teamId, String coachId) {
 
-        PropositionCoach proposition = PropositionCoach.builder()
-                .teamId(teamId)
-                .coachId(coachId)
-                .statut(StatutDemande.PENDING)
-                .createdAt(LocalDateTime.now())
-                .build();
+        PropositionCoach p = new PropositionCoach();
 
-        return repository.save(proposition);
+        p.setTeamId(teamId);
+
+        // 🔥 IMPORTANT
+        p.setCoachId(coachId);
+
+        p.setStatut(StatutDemande.PENDING);
+
+        return repository.save(p);
     }
+
 
     @Override
     public PropositionCoach accepterProposition(String propositionId) {
@@ -55,5 +59,15 @@ public class CoachServiceImpl implements CoachService {
         proposition.setStatut(StatutDemande.REJECTED);
 
         return repository.save(proposition);
+    }
+
+    @Override
+    public List<PropositionCoach> getPropositionsByTeam(String teamId) {
+        return repository.findByTeamId(teamId);
+    }
+
+    @Override
+    public List<PropositionCoach> getPropositionsByCoach(String coachId) {
+        return repository.findByCoachId(coachId);
     }
 }

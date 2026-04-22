@@ -13,4 +13,7 @@ public interface TeamRepository extends MongoRepository<Team,String> {
 
     List<Team> findByStatus(String status);
 
+    List<Team> findByCreatorId(String creatorId); // ← AJOUTE
+
+
 }

@@ -10,4 +10,7 @@ public interface DemandeAdhesionRepository extends MongoRepository<DemandeAdhesi
 
     List<DemandeAdhesion> findByUserId(String userId);
 
+
+
+
 }

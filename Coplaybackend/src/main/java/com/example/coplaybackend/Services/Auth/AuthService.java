@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -28,6 +29,7 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email déjà utilisé !");
         }
+
         User user = User.builder()
                 .email(request.getEmail().trim().toLowerCase())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
@@ -41,6 +43,7 @@ public class AuthService {
                         .updatedAt(LocalDateTime.now())
                         .build())
                 .build();
+
         return userRepository.save(user);
     }
 
@@ -48,9 +51,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        // ✅ Vérification stricte du statut
         if (user.getIsActive() != null && !user.getIsActive()) {
-            // On lance une exception avec le message exact souhaité
             throw new RuntimeException("Votre compte est bloqué. Veuillez contacter l'administrateur.");
         }
 
@@ -59,6 +60,7 @@ public class AuthService {
         }
 
         String token = jwtUtils.generateToken(user);
+
         return AuthResponse.builder()
                 .token(token)
                 .email(user.getEmail())
@@ -67,26 +69,34 @@ public class AuthService {
                 .build();
     }
 
+    public List<User> searchUsers(String query) {
+        return userRepository
+                .findByProfileDisplayNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query);
+    }
+
     public String resetUserPassword(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
         String tempPassword = generateRandomPassword(8);
         user.setPasswordHash(passwordEncoder.encode(tempPassword));
         userRepository.save(user);
+
         return tempPassword;
     }
 
     public void forgotPassword(String email) {
         User user = userRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("L'email n'existe pas."));
+
         String tempPass = generateRandomPassword(8);
         user.setPasswordHash(passwordEncoder.encode(tempPass));
         userRepository.save(user);
+
         emailService.sendTempPassword(user.getEmail(), tempPass);
     }
 
     public void updateOwnPassword(String email, String oldPassword, String newPassword) {
-        // ✅ trim().toLowerCase() ajouté
         User user = userRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
@@ -102,9 +112,11 @@ public class AuthService {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
         StringBuilder sb = new StringBuilder();
         Random random = new Random();
+
         for (int i = 0; i < length; i++) {
             sb.append(chars.charAt(random.nextInt(chars.length())));
         }
+
         return sb.toString();
     }
 }

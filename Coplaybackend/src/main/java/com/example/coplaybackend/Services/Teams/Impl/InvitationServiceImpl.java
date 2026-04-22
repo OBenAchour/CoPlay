@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -56,5 +57,15 @@ public class InvitationServiceImpl implements InvitationService {
         invitation.setStatut(StatutDemande.REJECTED);
 
         return invitationRepository.save(invitation);
+    }
+
+    @Override
+    public List<Invitation> getInvitationsByUser(String userId) {
+        return invitationRepository.findByInvitedUserId(userId);
+    }
+
+    @Override
+    public List<Invitation> getInvitationsByTeam(String teamId) {
+        return invitationRepository.findByTeamId(teamId);
     }
 }

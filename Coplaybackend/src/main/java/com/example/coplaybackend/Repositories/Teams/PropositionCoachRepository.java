@@ -8,4 +8,7 @@ public interface PropositionCoachRepository extends MongoRepository<PropositionC
 
     List<PropositionCoach> findByCoachId(String coachId);
 
+    List<PropositionCoach> findByTeamId(String teamId);
+
+
 }

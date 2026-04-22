@@ -7,4 +7,6 @@ export interface Team {
   description?: string;
   capacityMax?: number;
   status?:      TeamStatus;
+  creatorId?:  string; // ← AJOUTE
+
 }

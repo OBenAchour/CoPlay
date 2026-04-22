@@ -1,1 +1,172 @@
-<p>invitation works!</p>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <h2>Invitations</h2>
+      <p class="header-sub">Gérez vos invitations reçues et envoyées</p>
+    </div>
+  </div>
+
+  <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+  <div class="alert error"   *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- Switch vue -->
+  <div class="view-switch">
+    <button class="switch-btn" [class.active]="activeView === 'recues'"
+            (click)="activeView = 'recues'">
+      Invitations reçues
+      <span class="notif" *ngIf="invitationsEnAttente.length > 0">
+        {{ invitationsEnAttente.length }}
+      </span>
+    </button>
+    <button class="switch-btn" [class.active]="activeView === 'envoyees'"
+            (click)="activeView = 'envoyees'"
+            *ngIf="isCaptain">
+      Invitations envoyées
+    </button>
+  </div>
+
+  <!-- ══════════════════════════ -->
+  <!-- VUE INVITATIONS REÇUES    -->
+  <!-- ══════════════════════════ -->
+  <div *ngIf="activeView === 'recues'">
+
+    <div class="stats">
+      <div class="stat">
+        <div class="num">{{ mesInvitations.length }}</div>
+        <div class="lbl">Total reçues</div>
+      </div>
+      <div class="stat pending">
+        <div class="num">{{ invitationsEnAttente.length }}</div>
+        <div class="lbl">En attente</div>
+      </div>
+      <div class="stat accepted">
+        <div class="num">{{ mesInvitations.length - invitationsEnAttente.length }}</div>
+        <div class="lbl">Acceptées</div>
+      </div>
+    </div>
+
+    <div class="section-title">{{ mesInvitations.length }} invitation(s) reçue(s)</div>
+
+    <div *ngIf="mesInvitations.length === 0" class="empty">
+      Vous n'avez reçu aucune invitation
+    </div>
+
+    <div class="card" *ngFor="let inv of mesInvitations">
+      <div class="team-avatar">
+        {{ getTeamName(inv.teamId).charAt(0).toUpperCase() }}
+      </div>
+      <div class="card-info">
+        <div class="name">{{ getTeamName(inv.teamId) }}</div>
+        <div class="meta">
+          Invité par : {{ inv.invitedByUserId }}
+          <span *ngIf="inv.createdAt"> · {{ inv.createdAt | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+      <span class="badge"
+            [class.pending]="inv.statut === StatutDemande.PENDING"
+            [class.accepted]="inv.statut === StatutDemande.ACCEPTED"
+            [class.refused]="inv.statut === StatutDemande.REJECTED">
+        {{ getStatutLabel(inv.statut) }}
+      </span>
+      <div class="card-actions" *ngIf="inv.statut === StatutDemande.PENDING">
+        <button class="btn-accept" (click)="accepter(inv)">Accepter</button>
+        <button class="btn-refuse" (click)="refuser(inv)">Refuser</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════ -->
+  <!-- VUE INVITATIONS ENVOYÉES  -->
+  <!-- ══════════════════════════ -->
+  <div *ngIf="activeView === 'envoyees' && isCaptain">
+
+    <!-- Sélection équipe -->
+    <div class="captain-box">
+      <label class="box-label">Équipe</label>
+      <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" class="inp"
+              style="margin-bottom: 14px;">
+        <option *ngFor="let t of myTeams" [value]="t.teamId">{{ t.name }}</option>
+      </select>
+
+      <!-- Recherche joueur -->
+      <label class="box-label">Inviter un joueur</label>
+      <div class="search-row">
+        <div class="search-wrap">
+          <input
+            [(ngModel)]="searchQuery"
+            placeholder="Rechercher par nom ou email..."
+            class="inp"
+            (keyup.enter)="searchUsers()"
+          />
+          <button class="btn-clear" *ngIf="selectedUser" (click)="clearSearch()">✕</button>
+        </div>
+        <button class="btn-search" (click)="searchUsers()" [disabled]="searchLoading">
+          {{ searchLoading ? '...' : 'Chercher' }}
+        </button>
+      </div>
+
+      <!-- Résultats -->
+      <div class="search-results" *ngIf="searchResults.length > 0">
+        <div class="result-item" *ngFor="let u of searchResults" (click)="selectUser(u)">
+          <div class="result-avatar">
+            {{ (u.profile?.displayName || u.email).substring(0,2).toUpperCase() }}
+          </div>
+          <div class="result-info">
+            <div class="result-name">{{ u.profile?.displayName || 'Sans nom' }}</div>
+            <div class="result-email">{{ u.email }}</div>
+          </div>
+          <span class="result-select">Inviter</span>
+        </div>
+      </div>
+
+      <div class="no-results" *ngIf="searchDone && searchResults.length === 0">
+        Aucun utilisateur trouvé
+      </div>
+
+      <!-- Joueur sélectionné -->
+      <div class="selected-user" *ngIf="selectedUser">
+        <div class="selected-avatar">
+          {{ (selectedUser.profile?.displayName || selectedUser.email).substring(0,2).toUpperCase() }}
+        </div>
+        <div class="selected-info">
+          <div class="selected-name">{{ selectedUser.profile?.displayName || 'Sans nom' }}</div>
+          <div class="selected-email">{{ selectedUser.email }}</div>
+        </div>
+        <button class="btn-join" (click)="envoyerInvitation()" [disabled]="loading">
+          {{ loading ? '...' : 'Envoyer' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Liste invitations envoyées -->
+    <div class="section-title">
+      {{ invitationsEnvoyees.length }} invitation(s) envoyée(s)
+    </div>
+
+    <div *ngIf="invitationsEnvoyees.length === 0" class="empty">
+      Aucune invitation envoyée pour cette équipe
+    </div>
+
+    <div class="card" *ngFor="let inv of invitationsEnvoyees">
+      <div class="player-avatar">
+        {{ inv.invitedUserId.substring(0,2).toUpperCase() }}
+      </div>
+      <div class="card-info">
+        <div class="name">{{ inv.invitedUserId }}</div>
+        <div class="meta" *ngIf="inv.createdAt">
+          Envoyée le {{ inv.createdAt | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+      <span class="badge"
+            [class.pending]="inv.statut === StatutDemande.PENDING"
+            [class.accepted]="inv.statut === StatutDemande.ACCEPTED"
+            [class.refused]="inv.statut === StatutDemande.REJECTED">
+        {{ getStatutLabel(inv.statut) }}
+      </span>
+    </div>
+
+  </div>
+
+</div>

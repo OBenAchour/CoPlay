@@ -46,4 +46,13 @@ public class TeamMemberController {
         List<TeamMember> members = teamMemberService.getMembers(teamId);
         return ResponseEntity.ok(members);
     }
+
+    @GetMapping("/is-captain")
+    public ResponseEntity<Boolean> isCaptain(
+            @PathVariable String teamId,
+            @RequestParam String userId) {
+        return ResponseEntity.ok(teamMemberService.isCaptain(teamId, userId));
+    }
+
+
 }

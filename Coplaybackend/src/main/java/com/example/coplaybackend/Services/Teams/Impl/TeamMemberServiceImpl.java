@@ -56,4 +56,17 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     public List<TeamMember> getMembers(String teamId) {
         return teamMemberRepository.findByTeamId(teamId);
     }
+
+    @Override
+    public boolean isCaptain(String teamId, String userId) {
+        return teamMemberRepository
+                .findByTeamIdAndUserIdAndActiveTrue(teamId, userId)
+                .map(m -> m.getRoleEquipe() == RoleEquipe.CAPTAIN)
+                .orElse(false);
+    }
+
+    @Override
+    public List<TeamMember> getMembersByUserId(String userId) {
+        return teamMemberRepository.findByUserId(userId);
+    }
 }

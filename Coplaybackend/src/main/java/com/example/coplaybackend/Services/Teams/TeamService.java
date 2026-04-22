@@ -13,4 +13,7 @@ public interface TeamService {
 
     List<Team> getAllTeams();
 
+    List<Team> getTeamsByCreator(String creatorId); // ← AJOUTE
+
+
 }

@@ -1,51 +1,215 @@
-<div class="team-box">
+<div class="page">
 
   <div class="header">
-    <h2>👥 Membres de l’équipe</h2>
+    <div>
+      <h2>Membres de l'équipe</h2>
+      <p class="header-sub">
+        {{ selectedTeamName || 'Sélectionne une équipe' }}
+        <span class="captain-tag" *ngIf="isCaptain">· Vous êtes capitaine</span>
+      </p>
+    </div>
   </div>
 
-  <!-- 🔹 FORM -->
-  <div class="form">
+  <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+  <div class="alert error"   *ngIf="errorMsg">{{ errorMsg }}</div>
 
-    <input
-      [(ngModel)]="newUserId"
-      placeholder="ID utilisateur existant"
-    />
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="num">{{ members.length }}</div>
+      <div class="lbl">Total</div>
+    </div>
+    <div class="stat">
+      <div class="num">{{ countByRole.CAPTAIN }}</div>
+      <div class="lbl">Capitaines</div>
+    </div>
+    <div class="stat">
+      <div class="num">{{ countByRole.PLAYER }}</div>
+      <div class="lbl">Joueurs</div>
+    </div>
+    <div class="stat">
+      <div class="num">{{ countByRole.COACH }}</div>
+      <div class="lbl">Coachs</div>
+    </div>
+  </div>
 
-    <select [(ngModel)]="newRole">
-      <option value="PLAYER">Joueur</option>
-      <option value="CAPTAIN">Capitaine</option>
-      <option value="COACH">Coach</option>
-      <option value="STAFF">Staff</option>
+  <!-- Sélection équipe -->
+  <div class="section-box">
+    <label class="box-label">Équipe sélectionnée</label>
+    <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" class="inp">
+      <option *ngFor="let t of myTeams" [value]="t.teamId">{{ t.name }}</option>
     </select>
-
-    <button (click)="addMember()">Ajouter</button>
-
+    <div class="no-teams" *ngIf="myTeams.length === 0">
+      Vous n'avez pas encore créé d'équipe.
+      <a routerLink="/teams">Créer une équipe</a>
+    </div>
   </div>
 
-  <!-- 🔹 LOADING -->
-  <div *ngIf="loading" class="loading">Chargement...</div>
+  <!-- Formulaire ajout — visible seulement si capitaine -->
+  <div class="section-box" *ngIf="isCaptain">
+    <label class="box-label">Ajouter un membre</label>
 
-  <!-- 🔹 LIST -->
-  <div *ngIf="members.length > 0" class="list">
-
-    <div class="card" *ngFor="let m of members">
-
-      <div class="info">
-        <span class="user">{{ m.userId }}</span>
-        <span class="role">{{ m.roleEquipe }}</span>
+    <!-- Recherche -->
+    <div class="search-row">
+      <div class="search-wrap">
+        <input
+          [(ngModel)]="searchQuery"
+          placeholder="Rechercher par nom ou email..."
+          class="inp"
+          (keyup.enter)="searchUsers()"
+          [class.selected]="selectedUser !== null"
+        />
+        <button class="btn-clear" *ngIf="selectedUser" (click)="clearSelection()">✕</button>
       </div>
-
-      <button class="delete" (click)="removeMember(m.userId)">
-        ✖
+      <button class="btn-search" (click)="searchUsers()" [disabled]="searchLoading">
+        {{ searchLoading ? '...' : 'Rechercher' }}
       </button>
-
     </div>
 
+    <!-- Résultats recherche -->
+    <div class="search-results" *ngIf="searchResults.length > 0">
+      <div class="result-item" *ngFor="let u of searchResults" (click)="selectUser(u)">
+        <div class="result-avatar">
+          {{ (u.profile?.displayName || u.email).substring(0,2).toUpperCase() }}
+        </div>
+        <div class="result-info">
+          <div class="result-name">{{ u.profile?.displayName || 'Sans nom' }}</div>
+          <div class="result-email">{{ u.email }}</div>
+        </div>
+        <span class="result-select">Sélectionner</span>
+      </div>
+    </div>
+
+    <div class="no-results" *ngIf="searchDone && searchResults.length === 0 && !searchLoading">
+      Aucun utilisateur trouvé ou déjà membre
+    </div>
+
+    <!-- Utilisateur sélectionné -->
+    <div class="selected-user" *ngIf="selectedUser">
+      <div class="selected-avatar">
+        {{ (selectedUser.profile?.displayName || selectedUser.email).substring(0,2).toUpperCase() }}
+      </div>
+      <div class="selected-info">
+        <div class="selected-name">{{ selectedUser.profile?.displayName || 'Sans nom' }}</div>
+        <div class="selected-email">{{ selectedUser.email }}</div>
+      </div>
+      <span class="selected-check">✓</span>
+    </div>
+
+    <!-- Rôle + IA -->
+    <div class="role-row" *ngIf="selectedUser">
+      <div class="role-wrap">
+        <label class="box-label" style="margin-bottom:6px;">Rôle attribué</label>
+        <select [(ngModel)]="selectedRole" class="inp">
+          <option *ngFor="let r of roles" [value]="r">{{ getRoleLabel(r) }}</option>
+        </select>
+      </div>
+
+      <!-- Bouton IA -->
+      <button class="btn-ai" (click)="showAiPanel = !showAiPanel">
+        ✦ Suggérer via IA
+      </button>
+    </div>
+
+    <!-- Panel IA -->
+    <div class="ai-panel" *ngIf="showAiPanel && selectedUser">
+      <div class="ai-header">
+        <span class="ai-badge">IA</span>
+        <span class="ai-title">Recommandation de rôle intelligente</span>
+      </div>
+      <p class="ai-desc">Décris le profil du joueur et l'IA recommandera le meilleur rôle.</p>
+      <textarea
+        [(ngModel)]="playerDescription"
+        placeholder="Ex: Ancien capitaine, 5 ans d'expérience, bon leadership..."
+        class="ai-textarea"
+        rows="3">
+      </textarea>
+      <button class="btn-analyze" (click)="analyzeWithAI()" [disabled]="aiLoading || !playerDescription.trim()">
+        <span *ngIf="!aiLoading">✦ Analyser</span>
+        <span *ngIf="aiLoading">Analyse...</span>
+      </button>
+      <div class="ai-result" *ngIf="aiResult">
+        <div class="ai-result-top">Recommandation</div>
+        <div class="ai-result-body">
+          <span class="badge" [ngClass]="getRoleClass(aiResult.role)">{{ getRoleLabel(aiResult.role) }}</span>
+          <p class="ai-reason">{{ aiResult.reason }}</p>
+        </div>
+        <button class="btn-apply" (click)="applyAiRole()">Appliquer ce rôle</button>
+      </div>
+    </div>
+
+    <div style="text-align:right; margin-top:12px;" *ngIf="selectedUser">
+      <button class="btn-join" (click)="addMember()" [disabled]="loading">
+        {{ loading ? 'Ajout...' : 'Confirmer l\'ajout' }}
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="!loading && members.length === 0" class="empty">
-    Aucun membre dans cette équipe
+  <!-- 🔥 IA ANALYSE COMPATIBILITÉ ÉQUIPE (AJOUTÉ ICI) -->
+  <div class="analyse-trigger" *ngIf="members.length > 0">
+    <div class="analyse-left">
+      <div class="analyse-icon">✦</div>
+      <div>
+        <div class="analyse-title">Analyse IA de l'équipe</div>
+        <div class="analyse-sub">Obtenez un rapport intelligent sur la composition</div>
+      </div>
+    </div>
+    <button class="btn-analyse" (click)="analyserEquipe()" [disabled]="aiAnalyseLoading">
+      {{ aiAnalyseLoading ? 'Analyse...' : 'Analyser' }}
+    </button>
+  </div>
+
+  <div class="analyse-result" *ngIf="showAnalyse">
+    <div class="analyse-result-header">
+      <span class="ai-badge">IA</span>
+      <span class="analyse-result-title">Rapport de compatibilité — {{ selectedTeamName }}</span>
+      <button class="btn-close-analyse" (click)="showAnalyse = false">✕</button>
+    </div>
+
+    <div class="analyse-loading" *ngIf="aiAnalyseLoading">
+      <div class="pulse-dot"></div>
+      <span>Analyse en cours...</span>
+    </div>
+
+    <div class="analyse-content" *ngIf="!aiAnalyseLoading && aiAnalyse">
+      {{ aiAnalyse }}
+    </div>
+  </div>
+  <!-- FIN IA -->
+
+  <!-- Message si pas capitaine -->
+  <div class="info-box" *ngIf="!isCaptain && myTeams.length > 0">
+    Seul le capitaine peut ajouter ou retirer des membres.
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab" [class.active]="activeTab==='TOUS'"    (click)="setTab('TOUS')">Tous <span class="count">{{ members.length }}</span></div>
+    <div class="tab" [class.active]="activeTab==='CAPTAIN'" (click)="setTab('CAPTAIN')">Capitaines <span class="count">{{ countByRole.CAPTAIN }}</span></div>
+    <div class="tab" [class.active]="activeTab==='PLAYER'"  (click)="setTab('PLAYER')">Joueurs <span class="count">{{ countByRole.PLAYER }}</span></div>
+    <div class="tab" [class.active]="activeTab==='COACH'"   (click)="setTab('COACH')">Coachs <span class="count">{{ countByRole.COACH }}</span></div>
+    <div class="tab" [class.active]="activeTab==='STAFF'"   (click)="setTab('STAFF')">Staff <span class="count">{{ countByRole.STAFF }}</span></div>
+  </div>
+
+  <div class="section-title">{{ membresFiltres.length }} membre(s)</div>
+  <div *ngIf="loading" class="empty">Chargement...</div>
+  <div *ngIf="!loading && membresFiltres.length === 0" class="empty">Aucun membre</div>
+
+  <div class="card" *ngFor="let m of membresFiltres">
+    <div class="avatar" [ngClass]="'avatar-' + m.roleEquipe.toLowerCase()">
+      {{ getInitiales(m.userId) }}
+    </div>
+    <div class="card-info">
+      <div class="name">{{ m.userId }}</div>
+      <div class="meta">
+        <span *ngIf="m.joinedAt">Rejoint le {{ m.joinedAt | date:'dd/MM/yyyy' }}</span>
+        <span *ngIf="!m.active" class="inactive-tag">Inactif</span>
+      </div>
+    </div>
+    <span class="badge" [ngClass]="getRoleClass(m.roleEquipe)">{{ getRoleLabel(m.roleEquipe) }}</span>
+    <button class="btn-delete" *ngIf="isCaptain && m.userId !== currentUserId" (click)="removeMember(m.userId)">
+      Retirer
+    </button>
   </div>
 
 </div>

@@ -45,6 +45,11 @@ public class TeamController {
         teamService.deleteTeam(id);
     }
 
+    @GetMapping("/my-teams")
+    public List<Team> getMyTeams(@RequestParam String creatorId) {
+        return teamService.getTeamsByCreator(creatorId);
+    }
+
 
 
 }

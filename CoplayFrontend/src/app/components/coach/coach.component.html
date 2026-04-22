@@ -1,1 +1,173 @@
-<p>coach works!</p>
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-label">Gestion des coachs</div>
+      <h1 class="hero-title">Propositions Coach</h1>
+      <div class="hero-sub">
+        {{ propositionsEnAttente.length }} proposition(s) en attente
+      </div>
+    </div>
+  </div>
+
+  <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+  <div class="alert error"   *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- Switch vue -->
+  <div class="view-switch">
+    <button class="switch-btn" [class.active]="activeView === 'recues'"
+            (click)="activeView = 'recues'">
+      Propositions reçues
+      <span class="notif" *ngIf="propositionsEnAttente.length > 0">
+        {{ propositionsEnAttente.length }}
+      </span>
+    </button>
+    <button class="switch-btn" [class.active]="activeView === 'envoyees'"
+            (click)="activeView = 'envoyees'"
+            *ngIf="isCaptain">
+      Propositions envoyées
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════ -->
+  <!-- VUE PROPOSITIONS REÇUES       -->
+  <!-- ══════════════════════════════ -->
+  <div *ngIf="activeView === 'recues'">
+
+    <div class="stats">
+      <div class="stat">
+        <div class="num">{{ mesPropositionsRecues.length }}</div>
+        <div class="lbl">Total reçues</div>
+      </div>
+      <div class="stat pending">
+        <div class="num">{{ propositionsEnAttente.length }}</div>
+        <div class="lbl">En attente</div>
+      </div>
+      <div class="stat accepted">
+        <div class="num">{{ mesPropositionsRecues.length - propositionsEnAttente.length }}</div>
+        <div class="lbl">Traitées</div>
+      </div>
+    </div>
+
+    <div class="section-title">{{ mesPropositionsRecues.length }} proposition(s) reçue(s)</div>
+
+    <div *ngIf="mesPropositionsRecues.length === 0" class="empty">
+      Vous n'avez reçu aucune proposition de coaching
+    </div>
+
+    <div class="card" *ngFor="let p of mesPropositionsRecues">
+      <div class="coach-icon">C</div>
+      <div class="card-info">
+        <div class="name">{{ getTeamName(p.teamId) }}</div>
+        <div class="meta">
+          Proposé par le capitaine
+          <span *ngIf="p.createdAt"> · {{ p.createdAt | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+      <span class="badge"
+            [class.pending]="p.statut === StatutDemande.PENDING"
+            [class.accepted]="p.statut === StatutDemande.ACCEPTED"
+            [class.refused]="p.statut === StatutDemande.REJECTED">
+        {{ getStatutLabel(p.statut) }}
+      </span>
+      <div class="card-actions" *ngIf="p.statut === StatutDemande.PENDING">
+        <button class="btn-accept" (click)="accepter(p)">Accepter</button>
+        <button class="btn-refuse" (click)="refuser(p)">Refuser</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════ -->
+  <!-- VUE PROPOSITIONS ENVOYÉES     -->
+  <!-- ══════════════════════════════ -->
+  <div *ngIf="activeView === 'envoyees' && isCaptain">
+
+    <div class="captain-box">
+      <label class="box-label">Équipe</label>
+      <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" class="inp"
+              style="margin-bottom:14px;">
+        <option *ngFor="let t of myTeams" [value]="t.teamId">{{ t.name }}</option>
+      </select>
+
+      <label class="box-label">Proposer un coach</label>
+      <div class="search-row">
+        <div class="search-wrap">
+          <input
+            [(ngModel)]="searchQuery"
+            placeholder="Rechercher par nom ou email..."
+            class="inp"
+            (keyup.enter)="searchUsers()"
+          />
+          <button class="btn-clear" *ngIf="selectedCoach" (click)="clearSearch()">✕</button>
+        </div>
+        <button class="btn-search" (click)="searchUsers()" [disabled]="searchLoading">
+          {{ searchLoading ? '...' : 'Chercher' }}
+        </button>
+      </div>
+
+      <!-- Résultats -->
+      <div class="search-results" *ngIf="searchResults.length > 0">
+        <div class="result-item" *ngFor="let u of searchResults" (click)="selectCoach(u)">
+          <div class="result-avatar">
+            {{ (u.profile?.displayName || u.email).substring(0,2).toUpperCase() }}
+          </div>
+          <div class="result-info">
+            <div class="result-name">{{ u.profile?.displayName || 'Sans nom' }}</div>
+            <div class="result-email">{{ u.email }}</div>
+          </div>
+          <span class="result-select">Proposer</span>
+        </div>
+      </div>
+
+      <div class="no-results" *ngIf="searchDone && searchResults.length === 0">
+        Aucun utilisateur trouvé
+      </div>
+
+      <!-- Coach sélectionné -->
+      <div class="selected-user" *ngIf="selectedCoach">
+        <div class="selected-avatar">
+          {{ (selectedCoach.profile?.displayName || selectedCoach.email).substring(0,2).toUpperCase() }}
+        </div>
+        <div class="selected-info">
+          <div class="selected-name">{{ selectedCoach.profile?.displayName || 'Sans nom' }}</div>
+          <div class="selected-email">{{ selectedCoach.email }}</div>
+        </div>
+        <button class="btn-propose" (click)="proposer()" [disabled]="loading">
+          {{ loading ? '...' : 'Proposer' }}
+        </button>
+      </div>
+
+      <div class="coach-info" *ngIf="selectedCoach">
+        En acceptant, cet utilisateur deviendra <strong>COACH</strong> de votre équipe.
+      </div>
+    </div>
+
+    <!-- Liste propositions envoyées -->
+    <div class="section-title">
+      {{ propositionsEnvoyees.length }} proposition(s) envoyée(s)
+    </div>
+
+    <div *ngIf="propositionsEnvoyees.length === 0" class="empty">
+      Aucune proposition envoyée pour cette équipe
+    </div>
+
+    <div class="card" *ngFor="let p of propositionsEnvoyees">
+      <div class="coach-icon">C</div>
+      <div class="card-info">
+        <div class="name">{{ p.coachId }}</div>
+        <div class="meta" *ngIf="p.createdAt">
+          Envoyée le {{ p.createdAt | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+      <span class="badge"
+            [class.pending]="p.statut === StatutDemande.PENDING"
+            [class.accepted]="p.statut === StatutDemande.ACCEPTED"
+            [class.refused]="p.statut === StatutDemande.REJECTED">
+        {{ getStatutLabel(p.statut) }}
+      </span>
+    </div>
+
+  </div>
+
+</div>

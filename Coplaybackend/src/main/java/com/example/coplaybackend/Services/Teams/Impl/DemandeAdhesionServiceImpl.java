@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,17 @@ public class DemandeAdhesionServiceImpl implements DemandeAdhesionService {
                 .build();
 
         return demandeRepo.save(demande);
+    }
+
+    // Dans DemandeAdhesionServiceImpl.java — ajoute :
+    @Override
+    public List<DemandeAdhesion> getDemandesByUser(String userId) {
+        return demandeRepo.findByUserId(userId);
+    }
+
+    @Override
+    public List<DemandeAdhesion> getDemandesByTeam(String teamId) {
+        return demandeRepo.findByTeamId(teamId);
     }
 
     @Override

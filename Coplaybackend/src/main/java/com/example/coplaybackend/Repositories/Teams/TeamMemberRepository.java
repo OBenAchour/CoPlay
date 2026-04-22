@@ -14,6 +14,9 @@ public interface TeamMemberRepository extends MongoRepository<TeamMember,String>
 
     List<TeamMember> findByUserId(String userId);
 
+    Optional<TeamMember> findByTeamIdAndUserIdAndActiveTrue(String teamId, String userId);
+
+
     Long countByTeamIdAndActiveTrue(String teamId);
 
 }

@@ -1,1 +1,163 @@
-<p>demande-adhesion works!</p>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <h2>Demandes d'adhésion</h2>
+      <p class="header-sub">Rejoins une équipe ou gère les demandes reçues</p>
+    </div>
+  </div>
+
+  <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+  <div class="alert error"   *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- Switch vue -->
+  <div class="view-switch">
+    <button class="switch-btn" [class.active]="activeView === 'joueur'"
+            (click)="activeView = 'joueur'">
+      Mes demandes
+    </button>
+    <button class="switch-btn" [class.active]="activeView === 'capitaine'"
+            (click)="activeView = 'capitaine'"
+            *ngIf="isCaptainOfAnyTeam">
+      Demandes reçues
+      <span class="notif" *ngIf="demandesEnAttente.length > 0">
+        {{ demandesEnAttente.length }}
+      </span>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <!-- VUE JOUEUR                      -->
+  <!-- ═══════════════════════════════ -->
+  <div *ngIf="activeView === 'joueur'">
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="num">{{ mesDemandes.length }}</div>
+        <div class="lbl">Total envoyées</div>
+      </div>
+      <div class="stat pending">
+        <div class="num">{{ countMesDemandes['pending'] }}
+        </div>
+        <div class="lbl">En attente</div>
+      </div>
+      <div class="stat accepted">
+        <div class="num">{{ countMesDemandes['accepted'] }}
+        </div>
+        <div class="lbl">Acceptées</div>
+      </div>
+      <div class="stat rejected">
+        <div class="num">{{ countMesDemandes['rejected'] }}
+        </div>
+        <div class="lbl">Refusées</div>
+      </div>
+    </div>
+
+    <!-- Formulaire rejoindre -->
+    <div class="join-box">
+      <h3>Rejoindre une équipe</h3>
+      <div class="join-row">
+        <select [(ngModel)]="selectedTeamId" class="inp">
+          <option value="" disabled>Choisir une équipe...</option>
+          <option *ngFor="let t of equipesDisponibles" [value]="t.teamId">
+            {{ t.name }} — {{ t.sport }}
+          </option>
+        </select>
+        <button class="btn-join"
+                (click)="envoyerDemande()"
+                [disabled]="loading || !selectedTeamId">
+          {{ loading ? 'Envoi...' : 'Envoyer la demande' }}
+        </button>
+      </div>
+      <p class="join-info">
+        Votre demande sera examinée par le capitaine de l'équipe.
+      </p>
+    </div>
+
+    <!-- Mes demandes -->
+    <div class="section-title">Mes demandes ({{ mesDemandes.length }})</div>
+
+    <div *ngIf="mesDemandes.length === 0" class="empty">
+      Vous n'avez pas encore envoyé de demande
+    </div>
+
+    <div class="card" *ngFor="let d of mesDemandes">
+      <div class="team-avatar">{{ getTeamName(d.teamId).charAt(0).toUpperCase() }}</div>
+      <div class="card-info">
+        <div class="name">{{ getTeamName(d.teamId) }}</div>
+        <div class="meta" *ngIf="d.createdAt">
+          Envoyée le {{ d.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+        </div>
+      </div>
+      <span class="badge"
+            [class.pending]="d.statut === StatutDemande.PENDING"
+            [class.accepted]="d.statut === StatutDemande.ACCEPTED"
+            [class.refused]="d.statut === StatutDemande.REJECTED">
+        {{ getStatutLabel(d.statut) }}
+      </span>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <!-- VUE CAPITAINE                   -->
+  <!-- ═══════════════════════════════ -->
+  <div *ngIf="activeView === 'capitaine'">
+
+    <!-- Sélection équipe capitaine -->
+    <div class="captain-select-box">
+      <label class="box-label">Équipe concernée</label>
+      <select [(ngModel)]="selectedTeamForCaptain"
+              (change)="onCaptainTeamChange()" class="inp">
+        <option *ngFor="let t of myTeams" [value]="t.teamId">{{ t.name }}</option>
+      </select>
+    </div>
+
+    <!-- Stats capitaine -->
+    <div class="stats">
+      <div class="stat pending">
+        <div class="num">{{ demandesEnAttente.length }}</div>
+        <div class="lbl">En attente</div>
+      </div>
+      <div class="stat accepted">
+        <div class="num">{{ demandesRecues.length - demandesEnAttente.length }}</div>
+        <div class="lbl">Traitées</div>
+      </div>
+      <div class="stat">
+        <div class="num">{{ demandesRecues.length }}</div>
+        <div class="lbl">Total reçues</div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      Demandes reçues ({{ demandesRecues.length }})
+    </div>
+
+    <div *ngIf="demandesRecues.length === 0" class="empty">
+      Aucune demande reçue pour cette équipe
+    </div>
+
+    <div class="card" *ngFor="let d of demandesRecues">
+      <div class="player-avatar">{{ d.userId.substring(0,2).toUpperCase() }}</div>
+      <div class="card-info">
+        <div class="name">{{ d.userId }}</div>
+        <div class="meta" *ngIf="d.createdAt">
+          Reçue le {{ d.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+        </div>
+      </div>
+      <span class="badge"
+            [class.pending]="d.statut === StatutDemande.PENDING"
+            [class.accepted]="d.statut === StatutDemande.ACCEPTED"
+            [class.refused]="d.statut === StatutDemande.REJECTED">
+        {{ getStatutLabel(d.statut) }}
+      </span>
+      <div class="card-actions" *ngIf="d.statut === StatutDemande.PENDING">
+        <button class="btn-accept" (click)="accepter(d)">Accepter</button>
+        <button class="btn-refuse" (click)="refuser(d)">Refuser</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

@@ -9,4 +9,5 @@ public interface InvitationRepository extends MongoRepository<Invitation,String>
 
     List<Invitation> findByTeamId(String teamId);
 
+
 }

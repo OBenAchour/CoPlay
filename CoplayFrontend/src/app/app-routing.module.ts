@@ -9,6 +9,11 @@ import { ProfileComponent } from './Features/User/profile/profile.component';
 import { AuthGuard } from './Core/Guards/auth.guard'; // <-- AJOUTE CET IMPORT
 import { TeamComponent } from './components/team/team.component';
 import {TeamMemberComponent} from "./components/team-member/team-member.component";
+import {DemandeAdhesionComponent} from "./components/demande-adhesion/demande-adhesion.component";
+import {InvitationComponent} from "./components/invitation/invitation.component";
+import {CoachComponent} from "./components/coach/coach.component";
+import {HistoriqueActionComponent} from "./components/historique-action/historique-action.component";
+import {EquipeSponsorComponent} from "./components/equipe-sponsor/equipe-sponsor.component";
 
 const routes: Routes = [
   { path: 'register', component: RegisterComponent },
@@ -19,7 +24,17 @@ const routes: Routes = [
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   //routiong pour le module Team
   { path: 'team', component: TeamComponent },
-  { path: 'teammember', component: TeamMemberComponent }
+  { path: 'teammember', component: TeamMemberComponent },
+  { path: 'adhesion', component: DemandeAdhesionComponent },
+  { path: 'invitation', component: InvitationComponent },
+  { path: 'coach', component: CoachComponent },
+  { path: 'historique', component: HistoriqueActionComponent },
+  { path: 'sponsor', component: EquipeSponsorComponent }
+
+
+
+
+
 ];
 
 @NgModule({

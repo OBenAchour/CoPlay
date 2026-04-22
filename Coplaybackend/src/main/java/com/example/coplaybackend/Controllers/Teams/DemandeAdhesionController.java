@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/demandes")
 @RequiredArgsConstructor
@@ -29,6 +31,25 @@ public class DemandeAdhesionController {
             @RequestParam String adminId){
 
         return service.accepterDemande(id,adminId);
+    }
+
+    // Dans DemandeAdhesionController.java — ajoute :
+    @GetMapping("/my-demandes")
+    public List<DemandeAdhesion> getMyDemandes(@RequestParam String userId) {
+        return service.getDemandesByUser(userId);
+    }
+
+    @GetMapping("/team/{teamId}")
+    public List<DemandeAdhesion> getDemandesByTeam(@PathVariable String teamId) {
+        return service.getDemandesByTeam(teamId);
+    }
+
+    // Et expose refuserDemande qui existe dans le service mais pas dans le controller !
+    @PutMapping("/refuse/{id}")
+    public DemandeAdhesion refuse(
+            @PathVariable String id,
+            @RequestParam String adminId) {
+        return service.refuserDemande(id, adminId);
     }
 
 }

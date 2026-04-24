@@ -12,6 +12,7 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   passwordVisible: boolean = false;
   errorMessage: string = '';
+
   isLoading = false;
 
   // Variables pour le modal "Mot de passe oublié"
@@ -24,6 +25,7 @@ export class LoginComponent implements OnInit {
     private router: Router
   ) {}
 
+  // Initialise le formulaire de connexion avec les validations (email requis et format, mot de passe min 6 caractères)
   ngOnInit(): void {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -31,12 +33,15 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  // Alterne l'affichage du mot de passe entre texte clair et caractères masqués
   togglePasswordVisibility(): void {
     this.passwordVisible = !this.passwordVisible;
   }
 
+  // Gère la soumission du formulaire de connexion et redirige vers le dashboard en cas de succès
   onLogin(): void {
     if (this.loginForm.valid) {
+
       this.errorMessage = '';
       this.isLoading = true;
 
@@ -47,34 +52,34 @@ export class LoginComponent implements OnInit {
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
-  this.isLoading = false;
-  
-  // Le backend envoie maintenant { "message": "Votre compte est bloqué..." }
-  if (err.error && err.error.message) {
-    this.errorMessage = err.error.message;
-  } else if (typeof err.error === 'string') {
-    this.errorMessage = err.error;
-  } else {
-    this.errorMessage = "Email ou mot de passe incorrect.";
-  }
-}
+          this.isLoading = false;
+          
+          if (err.error && err.error.message) {
+            this.errorMessage = err.error.message;
+          } else if (typeof err.error === 'string') {
+            this.errorMessage = err.error;
+          } else {
+            this.errorMessage = "Email ou mot de passe incorrect.";
+          }
+        }
       });
     }
   }
 
-  // === GESTION DU MODAL (RÉPARE VOS ERREURS TS2339) ===
-
+  // Ouvre la boîte de dialogue (modal) pour la récupération du mot de passe
   openForgotPasswordModal(): void {
     this.forgotEmail = '';
     this.showForgotModal = true;
-    this.errorMessage = ''; // Optionnel : nettoie les erreurs de login en ouvrant le modal
+    this.errorMessage = ''; 
   }
 
+  // Ferme la boîte de dialogue de récupération et réinitialise le champ email
   closeForgotPasswordModal(): void {
     this.showForgotModal = false;
     this.forgotEmail = '';
   }
 
+  // Envoie la demande de réinitialisation de mot de passe au service AuthService
   sendForgotPassword(): void {
     if (!this.forgotEmail) return;
 
@@ -88,4 +93,5 @@ export class LoginComponent implements OnInit {
       }
     });
   }
+
 }

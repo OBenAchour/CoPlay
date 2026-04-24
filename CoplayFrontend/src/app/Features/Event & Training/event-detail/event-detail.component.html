@@ -1,0 +1,296 @@
+<div class="detail-page">
+
+  <!-- ══ LOADING ══ -->
+  <div class="loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement de l'événement...</p>
+  </div>
+
+  <!-- ══ ERREUR ══ -->
+  <div class="alert-error" *ngIf="errorMessage && !isLoading">
+    <span>⚠️ {{ errorMessage }}</span>
+    <button (click)="goBack()">← Retour</button>
+  </div>
+
+  <ng-container *ngIf="event && !isLoading">
+
+    <!-- ══ HERO HEADER ══ -->
+    <div class="hero-header" [ngClass]="'hero-' + getStatusKey(event.status)">
+      <div class="hero-nav">
+        <button class="btn-back" (click)="goBack()">← Retour</button>
+
+        <div class="hero-actions">
+          <button class="btn-edit" (click)="goToEdit()">✏️ Modifier</button>
+
+          <div class="status-dropdown" *ngIf="!isCompleted" [class.is-loading]="isChangingStatus">
+            <div class="status-dropdown-icon">⚡</div>
+
+            <div class="status-dropdown-content">
+              <label class="status-dropdown-label">Statut</label>
+
+              <div class="status-select-wrap">
+                <select
+                  class="status-select"
+                  [value]="event.status"
+                  (change)="changeStatus($any($event.target).value)"
+                  [disabled]="isChangingStatus">
+                  <option
+                    *ngFor="let opt of getAvailableStatuses()"
+                    [value]="opt.value">
+                    {{ opt.label }}
+                  </option>
+                </select>
+
+                <span class="status-select-arrow">⌄</span>
+              </div>
+            </div>
+
+            <span class="status-saving" *ngIf="isChangingStatus">Mise à jour...</span>
+          </div>
+
+          <button
+            class="btn-cancel-event"
+            (click)="cancelEvent()"
+            [disabled]="isCancelling || isCancelled"
+            *ngIf="!isCancelled">
+            {{ isCancelling ? '...' : '🚫 Annuler' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-body">
+        <span class="status-badge" [ngClass]="getStatusClass(event.status)">
+          {{ getStatusLabel(event.status) }}
+        </span>
+
+        <h1 class="hero-title">{{ event.title }}</h1>
+
+        <div class="hero-chips">
+          <span class="hero-chip">🗓️ {{ formatDate(event.startDate) }}</span>
+          <span class="hero-chip" *ngIf="event.location">📍 {{ event.location.name }}</span>
+          <span class="hero-chip" *ngIf="event.maxParticipants">👥 Max {{ event.maxParticipants }}</span>
+          <span class="hero-chip public" *ngIf="event.isPublic">🌍 Public</span>
+          <span class="hero-chip paid" *ngIf="event.isPaid">💰 {{ event.registrationFee }} DT</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-error" *ngIf="cancelError">⚠️ {{ cancelError }}</div>
+
+    <!-- ══ CORPS ══ -->
+    <div class="detail-body">
+
+      <!-- ── Colonne principale ── -->
+      <div class="main-col">
+
+        <!-- RSVP -->
+        <div class="card rsvp-card" *ngIf="!isCancelled">
+          <div class="card-title-row">
+            <span class="card-icon rsvp">🙋</span>
+            <h2 class="card-title">Votre réponse</h2>
+          </div>
+
+          <div class="rsvp-current" *ngIf="userParticipation">
+            <div class="rsvp-status-line">
+              <span class="rsvp-label">{{ getRSVPLabel(userParticipation.rsvpStatus) }}</span>
+              <span class="pstatus-pill" [ngClass]="getParticipationStatusClass(userParticipation.participationStatus)">
+                {{ getParticipationStatusLabel(userParticipation.participationStatus) }}
+              </span>
+            </div>
+          </div>
+
+          <p class="rsvp-no-answer" *ngIf="!userParticipation">
+            Vous n'avez pas encore répondu à cet événement.
+          </p>
+
+          <div class="rsvp-error" *ngIf="rsvpError">⚠️ {{ rsvpError }}</div>
+
+          <div class="rsvp-buttons">
+            <button
+              class="btn-rsvp yes"
+              [class.active]="userParticipation?.rsvpStatus === RSVPStatus.YES"
+              (click)="respondToEvent(RSVPStatus.YES)"
+              [disabled]="isSubmittingRSVP">
+              <span class="rsvp-btn-icon">✅</span>
+              <span>Je participe</span>
+            </button>
+
+            <button
+              class="btn-rsvp no"
+              [class.active]="userParticipation?.rsvpStatus === RSVPStatus.NO"
+              (click)="respondToEvent(RSVPStatus.NO)"
+              [disabled]="isSubmittingRSVP">
+              <span class="rsvp-btn-icon">❌</span>
+              <span>Je ne participe pas</span>
+            </button>
+          </div>
+
+          <p class="rsvp-saving" *ngIf="isSubmittingRSVP">Enregistrement...</p>
+        </div>
+
+        <!-- PAIEMENT -->
+        <div class="card payment-card" *ngIf="event.isPaid">
+          <div class="card-title-row">
+            <span class="card-icon payment">💰</span>
+            <h2 class="card-title">Paiement requis</h2>
+          </div>
+
+          <div class="fee-row">
+            <div class="fee-amount-block">
+              <span class="fee-amount">{{ event.registrationFee }}</span>
+              <span class="fee-currency">DT</span>
+            </div>
+
+            <div class="fee-meta">
+              <span *ngIf="event.paymentDeadlineHours">
+                Délai : <strong>{{ event.paymentDeadlineHours }}h</strong> après inscription
+              </span>
+            </div>
+          </div>
+
+          <div class="user-payment-block" *ngIf="userParticipation?.paymentStatus">
+            <span class="pay-label">Votre statut :</span>
+            <span class="pay-pill" [ngClass]="'pay-' + userParticipation?.paymentStatus?.toLowerCase()">
+              {{ userParticipation?.paymentStatus }}
+            </span>
+            <span class="pay-deadline" *ngIf="userParticipation?.paymentDeadline">
+              ⏰ {{ formatDate(userParticipation?.paymentDeadline) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- LIEU -->
+        <div class="card location-card" *ngIf="event.location">
+          <div class="card-title-row">
+            <span class="card-icon location">📍</span>
+            <h2 class="card-title">Lieu</h2>
+          </div>
+
+          <div class="location-info">
+            <strong class="location-name">{{ event.location.name }}</strong>
+            <p class="location-addr" *ngIf="event.location.address">{{ event.location.address }}</p>
+          </div>
+
+          <a
+            *ngIf="mapsLink"
+            [href]="mapsLink"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-maps">
+            🗺️ Ouvrir dans Google Maps
+          </a>
+        </div>
+
+        <!-- INFOS COMPLÉMENTAIRES -->
+        <div class="card info-card">
+          <div class="card-title-row">
+            <span class="card-icon info">📋</span>
+            <h2 class="card-title">Informations</h2>
+          </div>
+
+          <div class="info-list">
+            <div class="info-item" *ngIf="event.endDate">
+              <span class="info-label">Date de fin</span>
+              <span class="info-value">{{ formatDate(event.endDate) }}</span>
+            </div>
+
+            <div class="info-item">
+              <span class="info-label">Visibilité</span>
+              <span class="info-value">{{ event.isPublic ? '🌍 Public' : '🔒 Privé' }}</span>
+            </div>
+
+            <div class="info-item" *ngIf="event.maxParticipants">
+              <span class="info-label">Capacité</span>
+              <span class="info-value">{{ event.maxParticipants }} joueurs max</span>
+            </div>
+
+            <div class="info-item">
+              <span class="info-label">Paiement</span>
+              <span class="info-value">{{ event.isPaid ? '💰 Payant' : 'Gratuit' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Colonne latérale ── -->
+      <div class="side-col">
+
+        <!-- Participants confirmés -->
+        <div class="card participants-card">
+          <div class="card-title-row">
+            <span class="card-icon confirmed">✅</span>
+            <h2 class="card-title">
+              Confirmés
+              <span class="count-badge">{{ confirmedParticipants.length }}</span>
+            </h2>
+          </div>
+
+          <p class="no-participants" *ngIf="confirmedParticipants.length === 0">
+            Aucun participant confirmé pour l'instant.
+          </p>
+
+          <ul class="participant-list" *ngIf="confirmedParticipants.length > 0">
+            <li class="participant-row" *ngFor="let p of confirmedParticipants">
+              <div class="participant-avatar">{{ (p.userId ?? '??').slice(0,2).toUpperCase() }}</div>
+              <span class="participant-id">{{ p.userId }}</span>
+              <span class="pstatus-pill small" [ngClass]="getParticipationStatusClass(p.participationStatus)">
+                {{ getParticipationStatusLabel(p.participationStatus) }}
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Liste d'attente -->
+        <div class="card waiting-card" *ngIf="waitingParticipants.length > 0">
+          <div class="card-title-row">
+            <span class="card-icon waiting">⏳</span>
+            <h2 class="card-title">
+              En attente
+              <span class="count-badge warning">{{ waitingParticipants.length }}</span>
+            </h2>
+          </div>
+
+          <ul class="participant-list">
+            <li class="participant-row" *ngFor="let p of waitingParticipants">
+              <div class="participant-avatar waiting">{{ (p.userId ?? '??').slice(0,2).toUpperCase() }}</div>
+              <span class="participant-id">{{ p.userId }}</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ VALIDATION DES PRÉSENCES ══ -->
+    <div class="card attendance-card" *ngIf="canValidatePresences">
+      <div class="card-title-row">
+        <span class="card-icon attendance">📋</span>
+        <h2 class="card-title">Validation des présences</h2>
+      </div>
+
+      <p class="attendance-subtitle">Cochez les joueurs présents lors de cet événement.</p>
+
+      <p class="no-participants" *ngIf="participations.length === 0">Aucun participant inscrit.</p>
+
+      <div class="attendance-grid">
+        <div class="attendance-row" *ngFor="let p of participations">
+          <div class="attendance-player">
+            <div class="participant-avatar">{{ (p.userId ?? '??').slice(0,2).toUpperCase() }}</div>
+            <span class="participant-id">{{ p.userId }}</span>
+          </div>
+
+          <button
+            class="btn-presence"
+            [class.present]="p.isPresent === true"
+            [class.absent]="p.isPresent === false"
+            (click)="togglePresence(p, !p.isPresent)">
+            <span *ngIf="p.isPresent === true">✅ Présent</span>
+            <span *ngIf="p.isPresent === false">❌ Absent</span>
+            <span *ngIf="p.isPresent === undefined || p.isPresent === null">— À valider</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

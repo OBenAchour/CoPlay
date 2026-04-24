@@ -8,7 +8,7 @@ import { Team } from 'src/app/Core/Models/Teams/Team'; // adapte le chemin si be
 })
 export class TeamService {
 
-  private apiUrl = 'http://localhost:8081/api/teams';
+  private apiUrl = 'http://localhost:8080/api/teams';
 
   constructor(private http: HttpClient) {
   }

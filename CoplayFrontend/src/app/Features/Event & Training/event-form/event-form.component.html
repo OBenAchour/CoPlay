@@ -1,0 +1,289 @@
+<div class="form-page">
+
+  <!-- ══ HEADER ══ -->
+  <div class="page-header">
+    <div class="header-content">
+      <button class="btn-back" (click)="cancel()">← Retour</button>
+      <div>
+        <h1 class="page-title">{{ isEditMode ? '✏️ Modifier l\'événement' : '➕ Créer un événement' }}</h1>
+        <p class="page-subtitle">
+          {{ isEditMode ? 'Mettez à jour les informations de votre événement' : 'Planifiez un nouvel événement pour votre équipe' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading (mode édition) -->
+  <div class="loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement de l'événement...</p>
+  </div>
+
+  <!-- Erreur globale -->
+  <div class="alert-error" *ngIf="errorMessage && !isLoading">
+    ⚠️ {{ errorMessage }}
+  </div>
+
+  <!-- ══ FORMULAIRE ══ -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="event-form">
+
+    <!-- ── Section 0 : Équipe ── -->
+    <div class="form-section">
+      <div class="section-header">
+        <span class="section-number">0</span>
+        <div>
+          <h2 class="section-title">Équipe</h2>
+          <p class="section-hint">Sélectionnez l'équipe organisatrice</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Équipe <span class="required">*</span></label>
+        <div class="input-wrap">
+          <span class="input-prefix">👥</span>
+          <select
+            class="form-control"
+            [(ngModel)]="selectedTeamId"
+            [ngModelOptions]="{standalone: true}">
+            <option value="" disabled>-- Choisir une équipe --</option>
+            <option *ngFor="let team of teams" [value]="team.teamId">
+              {{ team.name }} ({{ team.sport }} - {{ team.city }})
+            </option>
+          </select>
+        </div>
+        <div class="field-error" *ngIf="!selectedTeamId && errorMessage">
+          Veuillez sélectionner une équipe.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 1 : Informations générales ── -->
+    <div class="form-section">
+      <div class="section-header">
+        <span class="section-number">1</span>
+        <div>
+          <h2 class="section-title">Informations générales</h2>
+          <p class="section-hint">Titre, dates et capacité de l'événement</p>
+        </div>
+      </div>
+
+      <!-- Titre -->
+      <div class="form-group full">
+        <label class="form-label">Titre <span class="required">*</span></label>
+        <div class="input-wrap">
+          <span class="input-prefix">📋</span>
+          <input
+            type="text"
+            class="form-control"
+            [class.invalid]="f['title'].invalid && f['title'].touched"
+            formControlName="title"
+            placeholder="Ex : Entraînement du mercredi, Match amical…">
+        </div>
+        <div class="field-error" *ngIf="f['title'].invalid && f['title'].touched">
+          <span *ngIf="f['title'].errors?.['required']">Le titre est obligatoire.</span>
+          <span *ngIf="f['title'].errors?.['minlength']">Minimum 3 caractères.</span>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Date de début <span class="required">*</span></label>
+          <div class="input-wrap">
+            <span class="input-prefix">🗓️</span>
+            <input
+              type="datetime-local"
+              class="form-control"
+              [class.invalid]="f['startDate'].invalid && f['startDate'].touched"
+              formControlName="startDate">
+          </div>
+          <div class="field-error" *ngIf="f['startDate'].invalid && f['startDate'].touched">
+            La date de début est obligatoire.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Date de fin <span class="optional">(optionnelle)</span></label>
+          <div class="input-wrap">
+            <span class="input-prefix">🏁</span>
+            <input
+              type="datetime-local"
+              class="form-control"
+              formControlName="endDate">
+          </div>
+        </div>
+      </div>
+
+      <!-- Erreurs dates globales -->
+      <div class="alert-warning" *ngIf="hasDateError && (f['startDate'].touched || f['endDate'].touched)">
+        <span *ngIf="form.errors?.['startInPast']">⚠️ La date de début doit être dans le futur.</span>
+        <span *ngIf="form.errors?.['endBeforeStart']">⚠️ La date de fin doit être après la date de début.</span>
+      </div>
+
+      <!-- Capacité + Visibilité -->
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Nombre max de participants</label>
+          <div class="input-wrap">
+            <span class="input-prefix">👥</span>
+            <input
+              type="number"
+              class="form-control"
+              [class.invalid]="f['maxParticipants'].invalid && f['maxParticipants'].touched"
+              formControlName="maxParticipants"
+              placeholder="Ex : 20"
+              min="2">
+          </div>
+          <div class="field-error" *ngIf="f['maxParticipants'].invalid && f['maxParticipants'].touched">
+            Minimum 2 participants.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Visibilité</label>
+          <label class="toggle-card">
+            <input type="checkbox" class="toggle-input" formControlName="isPublic">
+            <div class="toggle-display">
+              <span class="toggle-switch-wrap">
+                <span class="toggle-switch"></span>
+              </span>
+              <span class="toggle-text">
+                <strong>{{ form.get('isPublic')?.value ? '🌍 Public' : '🔒 Privé' }}</strong>
+                <small>{{ form.get('isPublic')?.value ? 'Visible par tous' : 'Équipe uniquement' }}</small>
+              </span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 2 : Lieu ── -->
+    <div class="form-section">
+      <div class="section-header">
+        <span class="section-number">2</span>
+        <div>
+          <h2 class="section-title">Lieu</h2>
+          <p class="section-hint">Géolocalisez automatiquement l'adresse via Google Maps</p>
+        </div>
+      </div>
+
+      <!-- Recherche -->
+      <div *ngIf="!selectedLocation">
+        <div class="form-group">
+          <label class="form-label">Rechercher par adresse</label>
+          <div class="location-search">
+            <div class="input-wrap flex-1">
+              <span class="input-prefix">📍</span>
+              <input
+                type="text"
+                class="form-control"
+                [value]="locationQuery"
+                (input)="locationQuery = $any($event.target).value"
+                placeholder="Ex : Stade Municipal, Tunis…"
+                (keyup.enter)="searchLocation()">
+            </div>
+            <button
+              type="button"
+              class="btn-search"
+              (click)="searchLocation()"
+              [disabled]="isSearchingLocation || !locationQuery.trim()">
+              <span *ngIf="!isSearchingLocation">🔍 Rechercher</span>
+              <span *ngIf="isSearchingLocation" class="searching-dots">···</span>
+            </button>
+          </div>
+          <div class="field-error" *ngIf="locationError">⚠️ {{ locationError }}</div>
+          <p class="field-hint">Les coordonnées GPS seront calculées automatiquement.</p>
+        </div>
+      </div>
+
+      <!-- Lieu sélectionné -->
+      <div class="location-selected" *ngIf="selectedLocation">
+        <div class="location-map-icon">📍</div>
+        <div class="location-details">
+          <strong class="location-name">{{ selectedLocation.name }}</strong>
+          <span class="location-addr" *ngIf="selectedLocation.address">{{ selectedLocation.address }}</span>
+          <span class="location-coords" *ngIf="selectedLocation.latitude">
+            {{ selectedLocation.latitude | number:'1.4-4' }}, {{ selectedLocation.longitude | number:'1.4-4' }}
+          </span>
+        </div>
+        <button type="button" class="btn-change" (click)="clearLocation()">✕ Changer</button>
+      </div>
+    </div>
+
+    <!-- ── Section 3 : Paiement ── -->
+    <div class="form-section">
+      <div class="section-header">
+        <span class="section-number">3</span>
+        <div>
+          <h2 class="section-title">Paiement</h2>
+          <p class="section-hint">Définissez les frais d'inscription si l'événement est payant</p>
+        </div>
+      </div>
+
+      <label class="toggle-card">
+        <input type="checkbox" class="toggle-input" formControlName="isPaid">
+        <div class="toggle-display">
+          <span class="toggle-switch-wrap">
+            <span class="toggle-switch"></span>
+          </span>
+          <span class="toggle-text">
+            <strong>{{ isPaid ? '💰 Événement payant' : 'Événement gratuit' }}</strong>
+            <small>{{ isPaid ? 'Les joueurs devront payer pour s\'inscrire' : 'Inscription libre et gratuite' }}</small>
+          </span>
+        </div>
+      </label>
+
+      <div class="payment-fields" *ngIf="isPaid">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Montant (DT) <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="input-prefix">DT</span>
+              <input
+                type="number"
+                class="form-control"
+                [class.invalid]="f['registrationFee'].invalid && f['registrationFee'].touched"
+                formControlName="registrationFee"
+                placeholder="Ex : 15.00"
+                min="0.1"
+                step="0.5">
+            </div>
+            <div class="field-error" *ngIf="f['registrationFee'].invalid && f['registrationFee'].touched">
+              <span *ngIf="f['registrationFee'].errors?.['required']">Le montant est obligatoire.</span>
+              <span *ngIf="f['registrationFee'].errors?.['min']">Doit être supérieur à 0.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Délai de paiement (heures) <span class="required">*</span></label>
+            <div class="input-wrap">
+              <span class="input-prefix">⏱️</span>
+              <input
+                type="number"
+                class="form-control"
+                [class.invalid]="f['paymentDeadlineHours'].invalid && f['paymentDeadlineHours'].touched"
+                formControlName="paymentDeadlineHours"
+                placeholder="Ex : 48"
+                min="1">
+            </div>
+            <div class="field-error" *ngIf="f['paymentDeadlineHours'].invalid && f['paymentDeadlineHours'].touched">
+              <span *ngIf="f['paymentDeadlineHours'].errors?.['required']">Le délai est obligatoire.</span>
+              <span *ngIf="f['paymentDeadlineHours'].errors?.['min']">Minimum 1 heure.</span>
+            </div>
+            <p class="field-hint">Délai après inscription pour effectuer le paiement.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Actions ── -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="cancel()">Annuler</button>
+      <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+        <span *ngIf="!isSubmitting">{{ isEditMode ? '💾 Enregistrer' : '✅ Créer l\'événement' }}</span>
+        <span *ngIf="isSubmitting">Enregistrement...</span>
+      </button>
+    </div>
+
+  </form>
+</div>

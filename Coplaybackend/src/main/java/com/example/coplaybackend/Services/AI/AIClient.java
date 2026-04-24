@@ -1,14 +1,18 @@
 package com.example.coplaybackend.Services.AI;
 
 import com.example.coplaybackend.Config.AIConfig;
+import io.netty.channel.ChannelOption;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
+import java.time.Duration;
 import java.util.*;
 
 @Service
@@ -24,6 +28,11 @@ public class AIClient {
     public void init() {
         this.webClient = WebClient.builder()
                 .baseUrl(aiConfig.getApiUrl())
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.create()
+                                .responseTimeout(Duration.ofSeconds(30))
+                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
+                ))
                 .build();
     }
 

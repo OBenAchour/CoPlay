@@ -31,14 +31,18 @@ public class AutoCompleteService {
     }
 
     public List<String> suggestMultiple(String messagePrefix, String context, int count) {
-        String prompt = buildPromptMultiple(messagePrefix, context, count);
-        String suggestions = aiClient.complete(prompt);
+        try {
+            String prompt = buildPromptMultiple(messagePrefix, context, count);
+            String suggestions = aiClient.complete(prompt);
 
-        if (suggestions != null) {
-            return parseMultipleSuggestions(suggestions, count);
+            if (suggestions != null) {
+                return parseMultipleSuggestions(suggestions, count);
+            }
+        } catch (Exception e) {
+            log.warn("OpenAI API failed, using fallback: {}", e.getMessage());
         }
 
-        return List.of();
+        return getFallbackSuggestions(messagePrefix);
     }
 
     private String buildPrompt(String prefix, String context) {
@@ -96,5 +100,17 @@ public class AutoCompleteService {
                 .filter(s -> !s.isEmpty())
                 .limit(count)
                 .toList();
+    }
+
+    private List<String> getFallbackSuggestions(String prefix) {
+        List<List<String>> fallbacks = List.of(
+                List.of(" ça ressemble", " on y va", " bonne idée"),
+                List.of(" je suis d'accord", " parfait", " top"),
+                List.of(" à bientôt", " bon match", " c'est parti"),
+                List.of(" oui, exactement", " bien joué", " super")
+        );
+
+        int index = Math.abs(prefix.hashCode()) % fallbacks.size();
+        return fallbacks.get(index);
     }
 }

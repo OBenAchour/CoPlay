@@ -3,6 +3,7 @@ package com.example.coplaybackend.Entities.Events;
 import com.example.coplaybackend.Entities.Teams.Team;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -18,15 +19,19 @@ public class Event {
     @Id
     private String eventId;
 
+
     private Team teamId;          // ref → Team (module Teams)
 
     private String title;
+
 
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
 
+
     private Location locationId;      // ref → Location
+
 
     private EventStatus status;     // SCHEDULED | ONGOING | COMPLETED | CANCELLED
 

@@ -14,6 +14,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './Core/Interceptors/auth.interceptor';
 import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './Features/User/profile/profile.component';
+
 import { ChatBubbleComponent } from './Features/Messaging/components/chat-bubble/chat-bubble.component';
 import { ChatWindowComponent } from './Features/Messaging/components/chat-window/chat-window.component';
 import { MessageListComponent } from './Features/Messaging/components/message-list/message-list.component';
@@ -28,7 +29,14 @@ import { EquipeSponsorComponent } from './components/equipe-sponsor/equipe-spons
 import { HistoriqueActionComponent } from './components/historique-action/historique-action.component';
 import { InvitationComponent } from './components/invitation/invitation.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
+
+// Imports de la branche hsan
 import { HomeComponent } from './Features/home/home.component';
+
+// Imports de la branche main
+import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
+import { EventDetailComponent } from './Features/Event & Training/event-detail/event-detail.component';
+import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
 
 @NgModule({
   // Répertorie tous les composants, directives et pipes appartenant à ce module
@@ -40,6 +48,9 @@ import { HomeComponent } from './Features/home/home.component';
     NavbarComponent,
     UserListComponent,
     ProfileComponent,
+    EventListComponent,
+    EventDetailComponent,
+    EventFormComponent,
     ChatBubbleComponent,
     MessageListComponent,
     MessageBubbleComponent,

@@ -1,0 +1,164 @@
+:root {
+  --primary: #4361ee;
+  --primary-grad: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+  --dark: #0f172a;
+  --bg-page: #f8fafc;
+  --radius: 16px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.training-page {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-page);
+  min-height: 100vh;
+}
+
+/* --- HEADER PREMIUM --- */
+.page-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border-radius: 24px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  color: white !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.page-title { font-size: 1.8rem; font-weight: 800; margin: 0; color: white !important; }
+.page-subtitle { color: #94a3b8; font-size: 0.95rem; margin-top: 5px; }
+
+/* --- FILTRES MODERNES (PILLS) --- */
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: white !important;
+  color: #64748b !important;
+  border: 1.5px solid #e2e8f0 !important;
+  padding: 10px 22px !important;
+  border-radius: 100px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: var(--transition) !important;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+  transform: translateY(-2px);
+}
+
+/* État Actif : Correction de la visibilité */
+.filter-btn.active {
+  background: #4361ee !important; /* Le bleu de ton thème */
+  color: #ffffff !important;    /* Force le texte en BLANC pur */
+  border-color: #4361ee !important;
+  box-shadow: 0 8px 15px rgba(67, 97, 238, 0.3) !important;
+  font-weight: 700 !important;   /* On peut même l'épaissir un peu */
+}
+
+/* Optionnel : Si tu veux un effet au survol même quand il est actif */
+.filter-btn.active:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+/* --- BOUTONS DYNAMIQUES --- */
+.btn-primary, .btn-create {
+  background: var(--primary-grad) !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.8rem 1.8rem !important;
+  border-radius: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: var(--transition) !important;
+  box-shadow: 0 8px 20px -6px rgba(67, 97, 238, 0.45);
+}
+
+.btn-primary:hover, .btn-create:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px -5px rgba(67, 97, 238, 0.55);
+}
+
+.btn-ghost {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: none !important;
+  padding: 0.8rem 1.5rem !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+/* --- CARDS & ACCORDÉONS --- */
+.program-card {
+  background: white;
+  border-radius: 20px;
+  margin-bottom: 1.2rem;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.program-header {
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out;
+  background: #fcfdfe;
+}
+
+.accordion-body.open { max-height: 1200px; padding-bottom: 1.5rem; }
+
+/* --- EXERCICES --- */
+.exercise-item {
+  display: flex;
+  gap: 15px;
+  margin: 0.5rem 2rem;
+  padding: 1.2rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  transition: var(--transition);
+}
+
+.exercise-item:hover { border-color: var(--primary); transform: translateX(5px); }
+
+.ex-number {
+  background: var(--dark);
+  color: white;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 800;
+}
+
+.ex-delete {
+  background: #fff1f2 !important;
+  color: #fb7185 !important;
+  border: none; width: 32px; height: 32px;
+  border-radius: 10px; cursor: pointer;
+  transition: 0.2s;
+}
+
+.ex-delete:hover { transform: rotate(90deg); background: #fb7185 !important; color: white !important; }
+
+.accordion-arrow { transition: transform 0.3s; color: #94a3b8; margin-left: 15px; }
+.accordion-arrow.open { transform: rotate(180deg); color: var(--primary); }

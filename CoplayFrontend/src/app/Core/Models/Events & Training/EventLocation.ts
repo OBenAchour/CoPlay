@@ -1,4 +1,4 @@
-export interface Location {
+export interface EventLocation {
   locationId?: string;
   name:        string;
   address?:    string;

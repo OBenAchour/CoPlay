@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class UserProfile {
+
     // Plus d'ID ici, c'est l'ID du User qui compte
+
 
     private String displayName;
 

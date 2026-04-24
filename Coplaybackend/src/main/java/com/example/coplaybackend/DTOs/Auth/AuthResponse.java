@@ -10,6 +10,6 @@ public class AuthResponse {
     private String token;
     private String email;
     private Role role;
-    // On peut ajouter le displayName ici pour l'afficher sur Angular
+
     private String displayName;
 }

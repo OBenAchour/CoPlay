@@ -21,6 +21,7 @@ export class RegisterComponent implements OnInit {
     private router: Router
   ) {}
 
+  // Initialise le formulaire avec les champs requis et les règles de validation (email, mot de passe, profil)
   ngOnInit(): void {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -31,10 +32,12 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  // Permet de basculer l'affichage du mot de passe entre le mode masqué et le mode texte
   togglePasswordVisibility(): void {
     this.passwordVisible = !this.passwordVisible;
   }
 
+  // Traite l'envoi du formulaire, crée l'utilisateur via le service et redirige vers la connexion en cas de succès
   onSubmit(): void {
     if (this.registerForm.valid) {
       this.authService.register(this.registerForm.value).subscribe({
@@ -42,7 +45,7 @@ export class RegisterComponent implements OnInit {
           console.log('Utilisateur créé !', response);
           this.isSuccess = true; // Affiche la bannière de succès
           
-          // Redirection après 3 secondes
+          // Redirection vers la page de login après un délai de 3 secondes
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 3000);

@@ -29,6 +29,7 @@ export class ProfileComponent implements OnInit {
     private authService: AuthService
   ) { }
 
+  // Charge les données du profil au démarrage et initialise l'email de l'utilisateur
   ngOnInit(): void {
     this.userService.getMyProfile().subscribe({
       next: (data) => {
@@ -46,6 +47,7 @@ export class ProfileComponent implements OnInit {
     this.currentUserEmail = email || JSON.parse(localStorage.getItem('user') || '{}').email || '';
   }
 
+  // Enregistre les modifications globales du profil (pseudo, bio, rôle) via le service utilisateur
   saveProfile(): void {
     if (this.user?.profile) {
       this.userService.updateProfile(this.user.profile).subscribe({
@@ -58,6 +60,7 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  // Vérifie les nouveaux mots de passe et appelle le service d'authentification pour effectuer le changement
   updatePassword(): void {
     if (!this.pwData.oldPassword || !this.pwData.newPassword || !this.pwData.confirmPassword) {
       alert("Veuillez remplir tous les champs.");
@@ -81,6 +84,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // Gère la sélection d'une image locale, la convertit en Base64 et l'assigne à l'aperçu du profil
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
@@ -92,11 +96,13 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  // Réinitialise les champs de saisie du mot de passe et masque les indicateurs de visibilité
   resetPwFields(): void {
     this.pwData = { oldPassword: '', newPassword: '', confirmPassword: '' };
     this.showOld = this.showNew = this.showConfirm = false;
   }
 
+  // Annule la procédure de changement de mot de passe et ferme le formulaire dédié
   cancelPasswordChange(): void {
     this.showPwForm = false;
     this.resetPwFields();

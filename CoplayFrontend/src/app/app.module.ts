@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http'; // <-- AJOUTER CECI
-import { ReactiveFormsModule } from '@angular/forms'; // Utile pour les formulaires plus tard
+import { HttpClientModule } from '@angular/common/http'; 
+import { ReactiveFormsModule } from '@angular/forms'; 
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -29,11 +29,17 @@ import { EquipeSponsorComponent } from './components/equipe-sponsor/equipe-spons
 import { HistoriqueActionComponent } from './components/historique-action/historique-action.component';
 import { InvitationComponent } from './components/invitation/invitation.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
+
+// Imports de la branche hsan
+import { HomeComponent } from './Features/home/home.component';
+
+// Imports de la branche main
 import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
 import { EventDetailComponent } from './Features/Event & Training/event-detail/event-detail.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
 
 @NgModule({
+  // Répertorie tous les composants, directives et pipes appartenant à ce module
   declarations: [
     AppComponent,
     RegisterComponent,
@@ -46,7 +52,6 @@ import { EventFormComponent } from './Features/Event & Training/event-form/event
     EventDetailComponent,
     EventFormComponent,
     ChatBubbleComponent,
-    
     MessageListComponent,
     MessageBubbleComponent,
     ChatWindowComponent,
@@ -59,8 +64,10 @@ import { EventFormComponent } from './Features/Event & Training/event-form/event
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
-    TeamMemberComponent
+    TeamMemberComponent,
+    HomeComponent
   ],
+  // Importe les modules externes nécessaires au fonctionnement des composants (Navigation, Formulaires, Requêtes HTTP)
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -68,7 +75,11 @@ import { EventFormComponent } from './Features/Event & Training/event-form/event
     FormsModule,   
     ReactiveFormsModule 
   ],
-  providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }],
+  // Déclare les services et les intercepteurs (ici l'intercepteur de jeton JWT pour les appels API)
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+  ],
+  // Définit le composant racine que Angular doit charger au démarrage de l'application
   bootstrap: [AppComponent]
 })
 export class AppModule { }

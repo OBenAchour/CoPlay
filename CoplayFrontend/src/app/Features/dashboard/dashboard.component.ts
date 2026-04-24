@@ -8,13 +8,14 @@ import { AuthService } from '../../Core/Services/Auth/auth.service';
 })
 export class DashboardComponent implements OnInit {
   
-  // 1. Déclare la variable userName ici !
+  // Stocke le nom de l'utilisateur pour l'affichage dans le template du tableau de bord
   userName: string | null = '';
 
+  // Injecte le service d'authentification pour accéder aux informations de session
   constructor(private authService: AuthService) {}
 
+  // Initialise le composant en récupérant le nom de l'utilisateur connecté via le service AuthService
   ngOnInit(): void {
-    // 2. On récupère la valeur (assure-toi que getUserName() existe dans ton service)
     this.userName = this.authService.getUserName();
   }
 }

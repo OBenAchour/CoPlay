@@ -13,10 +13,12 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
+  // Envoie les données d'inscription au serveur pour créer un nouveau compte utilisateur
   register(registerData: any): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/register`, registerData);
   }
 
+  // Authentifie l'utilisateur et stocke le token JWT ainsi que les infos de base dans le stockage local
   login(loginData: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, loginData).pipe(
       tap(response => {
@@ -30,16 +32,19 @@ export class AuthService {
     );
   }
 
+  // Déconnecte l'utilisateur en vidant l'intégralité du stockage local (localStorage)
   logout() {
     localStorage.clear();
   }
 
+  // Vérifie si un utilisateur est connecté en validant la présence et l'expiration du token JWT
   isLoggedIn(): boolean {
     const token = localStorage.getItem('token');
     if (!token) return false;
     return !this.jwtHelper.isTokenExpired(token);
   }
 
+  // Récupère le nom de l'utilisateur en décodant la charge utile (payload) du token JWT
   getUserName(): string {
     const token = localStorage.getItem('token');
     if (!token) return '';
@@ -47,10 +52,12 @@ export class AuthService {
     return payload.name || 'Utilisateur';
   }
 
+  // Récupère l'adresse email de l'utilisateur stockée localement lors de la connexion
   getUserEmail(): string | null {
     return localStorage.getItem('user_email');
   }
 
+  // Extrait le rôle de l'utilisateur depuis le token JWT ou le stockage local en dernier recours
   getUserRole(): string | null {
     const token = localStorage.getItem('token');
     if (token) {
@@ -60,21 +67,20 @@ export class AuthService {
     return localStorage.getItem('user_role');
   }
 
-  
-getUserId(): string {
-  const token = localStorage.getItem('token');
-  if (!token) return '';
-  
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.userId || payload.sub || '';
-  } catch (e) {
-    return '';
+  // Récupère l'identifiant unique de l'utilisateur à partir du payload du token
+  getUserId(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.userId || payload.sub || '';
+    } catch (e) {
+      return '';
+    }
   }
-}
-  /**
-   * Utile pour vérifier combien de temps il reste avant l'expiration (en secondes)
-   */
+
+  // Renvoie la date d'expiration du token sous forme de timestamp (millisecondes)
   getTokenExpiration(): number | null {
     const token = localStorage.getItem('token');
     if (token) {
@@ -84,6 +90,7 @@ getUserId(): string {
     return null;
   }
 
+  // Vérifie rapidement si l'utilisateur possède les privilèges d'administrateur via le token
   isAdmin(): boolean {
     const token = localStorage.getItem('token');
     if (!token) return false;
@@ -95,16 +102,17 @@ getUserId(): string {
     }
   }
 
+  // Envoie une demande de réinitialisation de mot de passe pour l'adresse email fournie
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/forgot-password`, { email });
   }
 
-getCurrentUser(): Observable<User> {
-  return this.http.get<User>(`${this.apiUrl}/users/me`);
-}
+  // Récupère les informations complètes du profil de l'utilisateur actuellement authentifié
+  getCurrentUser(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/users/me`);
+  }
 
-  // ✅ URL corrigée — pointe vers /api/users/me/password
-  // Le token est ajouté automatiquement par l'interceptor
+  // Permet à l'utilisateur de modifier son mot de passe actuel via une requête PUT sécurisée
   changePassword(data: any): Observable<any> {
     return this.http.put(`http://localhost:8080/api/users/me/password`, data);
   }

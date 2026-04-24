@@ -1,7 +1,7 @@
 package com.example.coplaybackend.Entities.Auth;
 
 import lombok.*;
-import org.springframework.data.annotation.Id; // Ajouté pour la cohérence MongoDB
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class UserProfile {
 
     @Id
-    private String id; // L'ID du User qui sert de clé primaire ici
+    private String id; // Cet ID correspondra à l'ID de l'entité User
 
     private String displayName;
 

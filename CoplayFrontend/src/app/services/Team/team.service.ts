@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Team } from 'src/app/Core/Models/Teams/Team'; // adapte le chemin si besoin
+import { Team } from '../../Core/Models/Teams/Team';
 
 @Injectable({
   providedIn: 'root'

@@ -1,12 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Subscription } from 'rxjs';
+
+// Models
 import { Message } from 'src/app/Core/Models/Messaging/Message';
+import { ConversationListItem } from 'src/app/Core/Models/Messaging/ConversationListItem';
+import { User } from 'src/app/Core/Models/Auth/User';
+
+// Services
 import { MessagingService } from 'src/app/Core/Services/Messaging/messaging.service';
 import { WebSocketService } from 'src/app/Core/Services/Messaging/websocket.service';
 import { CallService } from 'src/app/Core/Services/Call/call.service';
-import { HttpClient } from '@angular/common/http';
-import { User } from 'src/app/Core/Models/Auth/User';
-import { Subscription } from 'rxjs';
-import { ConversationListItem } from 'src/app/Core/Models/Messaging/ConversationListItem';
 
 @Component({
   selector: 'app-messaging',

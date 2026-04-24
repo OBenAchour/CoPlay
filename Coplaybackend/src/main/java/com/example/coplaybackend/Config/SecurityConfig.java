@@ -3,6 +3,7 @@ package com.example.coplaybackend.Config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,10 +20,10 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor // Pour injecter automatiquement le filtre
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter; // Injection du filtre JWT
+    private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -32,28 +33,36 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        // On ouvre largement l'accès aux routes d'authentification
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/api/teams/**").permitAll()
-                        .requestMatchers("/api/sponsors/**").permitAll() // <- autorise ce endpoint
+                        .requestMatchers("/api/sponsors/**").permitAll()
+                        .requestMatchers("/ws-call/**").permitAll()
 
+                        // Nouvelles routes pour la Ligue Master Coplay
+                        .requestMatchers("/api/competitions/**").permitAll()
+                        .requestMatchers("/api/matches/**").permitAll()
+                        .requestMatchers("/api/statistiques/**").permitAll()
+
+                        // --- ROUTES PRIVÉES (Nécessitent une authentification) ---
                         .requestMatchers("/api/users/me").authenticated()
 
-                        // Seuls les ADMIN peuvent accéder aux APIs users
-                        // Remplace .hasAuthority("ADMIN") par cette version plus souple :
+                        // Routes réservées aux Administrateurs
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
-                        .requestMatchers("/ws-call/**").permitAll()
+
+                        // Tout le reste doit être authentifié
                         .anyRequest().authenticated()
                 )
-                // On s'assure que le filtre JWT est bien placé
+                // Injection du filtre JWT avant le filtre standard d'authentification
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        // Autorise ton frontend Angular
         config.setAllowedOrigins(List.of("http://localhost:4200"));
 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
@@ -62,6 +71,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Applique cette config à tous les endpoints
         source.registerCorsConfiguration("/**", config);
         return source;
     }

@@ -1,1 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
+/* Import de Bootstrap et des Icons via node_modules */
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+/* --- Tes styles globaux existants ici --- */
+
+body {
+    background-color: #f4f7f6; /* Pour un look pro, un fond légèrement gris */
+    color: #2c3e50;
+}

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Message } from 'src/app/Core/Models/Messaging/Message';
+import { Message } from '../../../../Core/Models/Messaging/Message';
 
 @Component({
   selector: 'app-message-list',

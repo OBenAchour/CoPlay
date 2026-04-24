@@ -17,4 +17,7 @@ public class Tournoi extends Competition {
     private Integer currentRound;
 
     private Integer totalRounds;
+
+    @Builder.Default
+    private Boolean isDoubleLeg = false;
 }

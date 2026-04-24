@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { TeamMember } from 'src/app/Core/Models/Teams/TeamMember';
-import {RoleEquipe} from "../../Core/Models/Teams/RoleEquipe"; // adapte le chemin si besoin
+import { TeamMember } from '../../Core/Models/Teams/TeamMember';
+import { RoleEquipe } from '../../Core/Models/Teams/RoleEquipe';
 @Injectable({
   providedIn: 'root'
 })

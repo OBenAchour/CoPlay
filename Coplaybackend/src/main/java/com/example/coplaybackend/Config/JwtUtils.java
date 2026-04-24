@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class JwtUtils {
 
     private final String SECRET_KEY = "ma_cle_secrete_tres_longue_et_securisee_pour_coplay_2026";
-    private final int JWT_EXPIRATION_MS = 3600000; // 1 heure
+    private final int JWT_EXPIRATION_MS = 7000000; // 1 heure
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));

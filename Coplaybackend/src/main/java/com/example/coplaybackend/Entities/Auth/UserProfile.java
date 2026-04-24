@@ -2,7 +2,6 @@ package com.example.coplaybackend.Entities.Auth;
 
 import lombok.*;
 
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -16,6 +15,10 @@ public class UserProfile {
 
     // Plus d'ID ici, c'est l'ID du User qui compte
 
+
+    @Getter
+    @Setter
+    private String id;
 
     private String displayName;
 

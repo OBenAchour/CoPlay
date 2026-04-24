@@ -119,6 +119,16 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    public User getUserById(String id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+    }
+
+    public void incrementStars(String userId, int stars) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        // Ajoutez ici la logique pour incrémenter les étoiles de l'utilisateur
+        userRepository.save(user);
+    }
+
     private String generateRandomPassword(int length) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$";
         StringBuilder sb = new StringBuilder();

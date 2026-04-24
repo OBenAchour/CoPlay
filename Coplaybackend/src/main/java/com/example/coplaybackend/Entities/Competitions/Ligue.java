@@ -12,11 +12,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @SuperBuilder
 public class Ligue extends Competition {
 
-    private Integer pointsVictoire;
+    @Builder.Default
+    private Integer pointsPerWin = 3;
 
-    private Integer pointsNul;
+    @Builder.Default
+    private Integer pointsPerDraw = 1;
 
-    private Integer pointsDefaite;
+    @Builder.Default
+    private Integer pointsPerLoss = 0;
 
     private Integer nbJournees;
 }

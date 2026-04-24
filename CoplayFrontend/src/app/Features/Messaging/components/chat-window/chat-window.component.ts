@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { ConversationListItem } from 'src/app/Core/Models/Messaging/ConversationListItem';
-import { Message } from 'src/app/Core/Models/Messaging/Message';
+import { ConversationListItem } from '../../../../Core/Models/Messaging/ConversationListItem';
+import { Message } from '../../../../Core/Models/Messaging/Message';
 
 @Component({
   selector: 'app-chat-window',

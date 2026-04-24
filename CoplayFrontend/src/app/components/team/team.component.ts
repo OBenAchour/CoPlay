@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { TeamService } from 'src/app/services/Team/team.service'; // adapte chemin
-import { Team } from 'src/app/Core/Models/Teams/Team'; // adapte le chemin si besoin
+import { TeamService } from '../../services/Team/team.service';
+import { Team } from '../../Core/Models/Teams/Team';
 
 @Component({
   selector: 'app-team',
@@ -10,8 +10,8 @@ import { Team } from 'src/app/Core/Models/Teams/Team'; // adapte le chemin si be
 export class TeamComponent implements OnInit {
 
   teams: Team[] = [];
-  selectedTeam: Team | null = null; // pour modal détails
-  editingTeam: Team | null = null;  // pour modal édition
+  selectedTeam: Team | null = null;
+  editingTeam: Team | null = null;
 
   newTeam: Team = {
     name: '',
@@ -21,7 +21,7 @@ export class TeamComponent implements OnInit {
     capacityMax: 0
   };
 
-  creatorId = '123'; // temporaire
+  creatorId = '123';
   loading = false;
 
   constructor(private teamService: TeamService) {}
@@ -30,22 +30,20 @@ export class TeamComponent implements OnInit {
     this.loadTeams();
   }
 
-  // 🔹 Charger toutes les teams
   loadTeams() {
     this.loading = true;
     this.teamService.getAllTeams().subscribe({
-      next: (data) => {
+      next: (data: any) => { // <--- AJOUTÉ :any
         this.teams = data;
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => { // <--- AJOUTÉ :any
         console.error('Erreur getAll:', err);
         this.loading = false;
       }
     });
   }
 
-  // 🔹 Créer une team
   createTeam() {
     if (!this.newTeam.name || !this.newTeam.sport) {
       alert('Nom et sport sont obligatoires');
@@ -53,55 +51,52 @@ export class TeamComponent implements OnInit {
     }
 
     this.teamService.createTeam(this.newTeam, this.creatorId).subscribe({
-      next: (team) => {
+      next: (team: any) => { // <--- AJOUTÉ :any
         console.log('Team créée:', team);
         this.loadTeams();
-
-        // reset formulaire
         this.newTeam = { name: '', sport: '', city: '', description: '', capacityMax: 0 };
       },
-      error: (err) => console.error('Erreur create:', err)
+      error: (err: any) => console.error('Erreur create:', err) // <--- AJOUTÉ :any
     });
   }
 
-  // 🔹 Sélection pour voir détails
   viewTeam(teamId: string) {
     this.teamService.getTeamById(teamId).subscribe({
-      next: (team) => this.selectedTeam = team,
-      error: (err) => console.error('Erreur getById:', err)
+      next: (team: any) => this.selectedTeam = team, // <--- AJOUTÉ :any
+      error: (err: any) => console.error('Erreur getById:', err) // <--- AJOUTÉ :any
     });
   }
 
-  // 🔹 Fermer détails
   closeDetails() {
     this.selectedTeam = null;
   }
 
-  // 🔥 Sélection pour édition
   editTeam(team: Team) {
-    this.editingTeam = { ...team }; // clone
+    this.editingTeam = { ...team };
   }
 
-  // 🔥 Annuler édition
   cancelEdit() {
     this.editingTeam = null;
   }
 
-  // 🔥 Update
   updateTeam() {
     if (!this.editingTeam || !this.editingTeam.teamId) return;
 
     this.teamService.updateTeam(this.editingTeam.teamId, this.editingTeam)
-      .subscribe(() => {
-        this.editingTeam = null;
-        this.loadTeams();
+      .subscribe({
+        next: () => { // On peut laisser vide ou mettre ()
+          this.editingTeam = null;
+          this.loadTeams();
+        },
+        error: (err: any) => console.error(err) // <--- AJOUTÉ :any
       });
   }
 
-  // 🔥 Delete
   deleteTeam(id: string) {
     this.teamService.deleteTeam(id)
-      .subscribe(() => this.loadTeams());
+      .subscribe({
+        next: () => this.loadTeams(),
+        error: (err: any) => console.error(err) // <--- AJOUTÉ :any
+      });
   }
-
 }

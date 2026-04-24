@@ -33,8 +33,12 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
         return MongoClients.create(settings);
     }
 
+    /**
+     * Désactivation de la création automatique d'index.
+     * Cela règle l'erreur "Index already defined" qui empêche le démarrage.
+     */
     @Override
     protected boolean autoIndexCreation() {
-        return true;
+        return false;
     }
 }

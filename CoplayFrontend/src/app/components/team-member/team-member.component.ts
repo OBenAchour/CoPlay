@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { TeamMemberService } from 'src/app/services/TeamMember/team-member.service';
-import { TeamMember } from 'src/app/Core/Models/Teams/TeamMember';
-import { RoleEquipe } from 'src/app/Core/Models/Teams/RoleEquipe';
+import { TeamMemberService } from '../../services/TeamMember/team-member.service';
+import { TeamMember } from '../../Core/Models/Teams/TeamMember';
+import { RoleEquipe } from '../../Core/Models/Teams/RoleEquipe';
 
 @Component({
   selector: 'app-team-member',

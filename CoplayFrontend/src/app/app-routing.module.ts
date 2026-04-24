@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
 import { RegisterComponent } from './Auth/register/register.component'; 
 import { LoginComponent } from './Auth/login/login.component';
 import { DashboardComponent } from './Features/dashboard/dashboard.component';
@@ -8,6 +7,7 @@ import { UserListComponent } from './Features/Admin/user-list/user-list.componen
 import { AdminGuard } from './Core/Guards/admin.guard';
 import { ProfileComponent } from './Features/User/profile/profile.component';
 import { AuthGuard } from './Core/Guards/auth.guard'; 
+
 
 // Imports de la branche hsan
 import { HomeComponent } from './Features/home/home.component';
@@ -30,14 +30,10 @@ const routes: Routes = [
   
   // Route pour l'authentification des utilisateurs
   { path: 'login', component: LoginComponent },
-  
-  // Route principale après connexion affichant le tableau de bord
+  { path: '', redirectTo: '/register', pathMatch: 'full' }, 
   { path: 'dashboard', component: DashboardComponent },
-  
-  // Route d'administration protégée par AdminGuard (accessible uniquement aux administrateurs)
-  { path: 'admin/users', component: UserListComponent, canActivate: [AdminGuard] },
-  
-  // Route du profil personnel protégée par AuthGuard (nécessite d'être connecté)
+  { path: 'admin/users', component: UserListComponent, canActivate: [AdminGuard]} ,
+
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
 
   // --- NOUVELLES ROUTES : GESTION DES ÉVÉNEMENTS ---

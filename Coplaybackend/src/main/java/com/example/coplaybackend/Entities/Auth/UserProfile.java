@@ -1,10 +1,8 @@
 package com.example.coplaybackend.Entities.Auth;
 
 import lombok.*;
-
-import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.annotation.Id; // Ajouté pour la cohérence MongoDB
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.LocalDateTime;
 
 @Document(collection = "user_profiles")
@@ -14,8 +12,8 @@ import java.time.LocalDateTime;
 @Builder
 public class UserProfile {
 
-    // Plus d'ID ici, c'est l'ID du User qui compte
-
+    @Id
+    private String id; // L'ID du User qui sert de clé primaire ici
 
     private String displayName;
 

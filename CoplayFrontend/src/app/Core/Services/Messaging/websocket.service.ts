@@ -10,7 +10,7 @@ export class WebSocketService implements OnDestroy {
   private messageSubject = new Subject<any>();
   private typingSubject = new Subject<any>();
   private connectionSubject = new Subject<boolean>();
-
+  private callEventSubject = new Subject<any>();
   private serverUrl = 'http://localhost:8080/ws-call';
   private userId: string = '';
 
@@ -45,6 +45,22 @@ export class WebSocketService implements OnDestroy {
     }
   }
 
+  subscribeToUserQueue(): void {
+    if (!this.stompClient || !this.stompClient.connected) return;
+
+    this.stompClient.subscribe(`/user/queue/messages`, (message: any) => {
+      this.messageSubject.next(JSON.parse(message.body));
+    });
+  }
+
+  subscribeToAvailableCalls(): void {
+    if (!this.stompClient || !this.stompClient.connected) return;
+
+    this.stompClient.subscribe('/topic/calls/available', (message: any) => {
+      this.callEventSubject.next(JSON.parse(message.body));
+    });
+  }
+
   subscribeToConversation(conversationId: string): void {
     if (!this.stompClient || !this.stompClient.connected) return;
 
@@ -54,14 +70,6 @@ export class WebSocketService implements OnDestroy {
 
     this.stompClient.subscribe(`/topic/conversation/${conversationId}/typing`, (message: any) => {
       this.typingSubject.next(JSON.parse(message.body));
-    });
-  }
-
-  private subscribeToUserQueue(): void {
-    if (!this.stompClient || !this.stompClient.connected) return;
-
-    this.stompClient.subscribe(`/user/queue/messages`, (message: any) => {
-      this.messageSubject.next(JSON.parse(message.body));
     });
   }
 
@@ -95,8 +103,16 @@ export class WebSocketService implements OnDestroy {
     return this.connectionSubject.asObservable();
   }
 
+  onCallEvent(): Observable<any> {
+    return this.callEventSubject.asObservable();
+  }
+
   isConnected(): boolean {
     return this.stompClient?.connected ?? false;
+  }
+
+  getStompClient() {
+    return this.stompClient;
   }
 
   ngOnDestroy(): void {

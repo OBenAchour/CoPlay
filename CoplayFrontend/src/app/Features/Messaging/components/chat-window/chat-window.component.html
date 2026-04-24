@@ -2,10 +2,14 @@
   <!-- Header -->
   <div class="chat-header">
     <button class="back-btn" (click)="selectConversation.emit(undefined)">←</button>
-    <h3 *ngIf="selectedConversation">{{ getConversationName(selectedConversation) }}</h3>
+    <h3 *ngIf="selectedConversation">{{ selectedConversation.name || 'Conversation' }}</h3>
     <h3 *ngIf="!selectedConversation">Messages</h3>
     <button class="close-btn" (click)="close.emit()">✕</button>
     <button class="new-msg-btn" (click)="newMessage.emit()">+</button>
+    <ng-container *ngIf="selectedConversation">
+      <button class="call-btn" (click)="startCall('AUDIO')">📞</button>
+      <button class="call-btn" (click)="startCall('VIDEO')">📹</button>
+    </ng-container>
   </div>
 
   <!-- Content -->
@@ -32,7 +36,7 @@
             <span class="conv-time" *ngIf="conv.lastMessageTime">{{ formatTime(conv.lastMessageTime) }}</span>
           </div>
           <div class="conv-preview-row">
-            <span class="conv-preview">{{ conv.lastMessageContent || 'Aucun message' }}</span>
+            <span class="conv-preview">{{ conv.lastMessageContent || 'aucun message' }}</span>
             <span *ngIf="conv.unreadCount && conv.unreadCount > 0" class="unread-badge">{{ conv.unreadCount }}</span>
           </div>
         </div>
@@ -46,6 +50,7 @@
         [currentUserId]="currentUserId">
       </app-message-list>
       <app-message-input 
+        [messages]="messages"
         [(message)]="messageInput"
         (send)="onSendMessage()">
       </app-message-input>

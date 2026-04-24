@@ -1,27 +1,28 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http'; 
-import { ReactiveFormsModule } from '@angular/forms'; 
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http'; 
+import { ReactiveFormsModule, FormsModule } from '@angular/forms'; 
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+
+// Auth & Core
 import { RegisterComponent } from './Auth/register/register.component';
 import { LoginComponent } from './Auth/login/login.component';
-import { DashboardComponent } from './Features/dashboard/dashboard.component';
-import { NavbarComponent } from './Shared/Components/navbar/navbar.component';
-import { UserListComponent } from './Features/Admin/user-list/user-list.component';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './Core/Interceptors/auth.interceptor';
-import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './Features/User/profile/profile.component';
 
-import { ChatBubbleComponent } from './Features/Messaging/components/chat-bubble/chat-bubble.component';
-import { ChatWindowComponent } from './Features/Messaging/components/chat-window/chat-window.component';
-import { MessageListComponent } from './Features/Messaging/components/message-list/message-list.component';
-import { MessageBubbleComponent } from './Features/Messaging/components/message-bubble/message-bubble.component';
-import { MessageInputComponent } from './Features/Messaging/components/message-input/message-input.component';
-import { TypingIndicatorComponent } from './Features/Messaging/components/typing-indicator/typing-indicator.component';
-import { MessagingComponent } from './Features/Messaging/messaging.component';
+// Features (Home & Admin)
+import { HomeComponent } from './Features/home/home.component';
+import { DashboardComponent } from './Features/dashboard/dashboard.component';
+import { UserListComponent } from './Features/Admin/user-list/user-list.component';
+import { NavbarComponent } from './Shared/Components/navbar/navbar.component';
+
+// Messaging - On importe UNIQUEMENT le module
+// Ne pas importer les composants individuels ici (ChatBubble, etc.) car ils sont déjà dans MessagingModule
+import { MessagingModule } from './Features/Messaging/messaging.module';
+
+// Team Components
 import { TeamComponent } from './components/team/team.component';
 import { CoachComponent } from './components/coach/coach.component';
 import { DemandeAdhesionComponent } from './components/demande-adhesion/demande-adhesion.component';
@@ -30,16 +31,13 @@ import { HistoriqueActionComponent } from './components/historique-action/histor
 import { InvitationComponent } from './components/invitation/invitation.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
 
-// Imports de la branche hsan
-import { HomeComponent } from './Features/home/home.component';
-
-// Imports de la branche main
+// Event & Training Components
 import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
 import { EventDetailComponent } from './Features/Event & Training/event-detail/event-detail.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
+import { TrainingListComponent } from './Features/Event & Training/training-list/training-list.component';
 
 @NgModule({
-  // Répertorie tous les composants, directives et pipes appartenant à ce module
   declarations: [
     AppComponent,
     RegisterComponent,
@@ -48,38 +46,37 @@ import { EventFormComponent } from './Features/Event & Training/event-form/event
     NavbarComponent,
     UserListComponent,
     ProfileComponent,
+    HomeComponent,
+    
+    // Events
     EventListComponent,
     EventDetailComponent,
     EventFormComponent,
-    ChatBubbleComponent,
-    MessageListComponent,
-    MessageBubbleComponent,
-    ChatWindowComponent,
-    MessageInputComponent,
-    TypingIndicatorComponent,
-    MessagingComponent,
+    TrainingListComponent,
+
+    // Teams
     TeamComponent,
     CoachComponent,
     DemandeAdhesionComponent,
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
-    TeamMemberComponent,
-    HomeComponent
+    TeamMemberComponent
+    
+    // IMPORTANT : MessagingComponent et ses sous-composants sont déclarés 
+    // dans MessagingModule, donc on ne les met PAS ici.
   ],
-  // Importe les modules externes nécessaires au fonctionnement des composants (Navigation, Formulaires, Requêtes HTTP)
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule, 
     FormsModule,   
-    ReactiveFormsModule 
+    ReactiveFormsModule,
+    MessagingModule // On importe le module global ici
   ],
-  // Déclare les services et les intercepteurs (ici l'intercepteur de jeton JWT pour les appels API)
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],
-  // Définit le composant racine que Angular doit charger au démarrage de l'application
   bootstrap: [AppComponent]
 })
 export class AppModule { }

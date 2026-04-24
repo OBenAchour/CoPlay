@@ -1,14 +1,36 @@
-<div class="message-input-container">
-  <textarea 
-    [(ngModel)]="message"
-    (input)="onInput($event)"
-    (keypress)="onKeyPress($event)"
-    placeholder="Écrire un message..."
-    rows="1">
-  </textarea>
-  <button class="send-btn" (click)="onSend()" [disabled]="!message.trim()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-    </svg>
-  </button>
+<div class="message-input-wrapper">
+  <div class="suggestions-popup" *ngIf="showSuggestions && suggestions.length > 0">
+    <div class="suggestions-header">
+      <span class="suggestions-title">💡 Suggestions IA</span>
+      <button class="close-suggestions" (click)="dismissSuggestions()">✕</button>
+    </div>
+    <div class="suggestions-list">
+      <div 
+        *ngFor="let suggestion of suggestions; let i = index"
+        class="suggestion-item"
+        (click)="selectSuggestion(suggestion)">
+        <span class="suggestion-number">{{ i + 1 }}.</span>
+        <span class="suggestion-text">{{ message }}{{ suggestion }}</span>
+      </div>
+    </div>
+    <div *ngIf="isLoadingSuggestions" class="loading-indicator">
+      <span>Chargement...</span>
+    </div>
+  </div>
+
+  <div class="message-input-container" [class.with-suggestions]="showSuggestions">
+    <textarea 
+      [(ngModel)]="message"
+      (input)="onInput($event)"
+      (keypress)="onKeyPress($event)"
+      (blur)="hideSuggestions()"
+      placeholder="Écrire un message..."
+      rows="1">
+    </textarea>
+    <button class="send-btn" (click)="onSend()" [disabled]="!message.trim()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
 </div>

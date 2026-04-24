@@ -1,17 +1,28 @@
-<app-chat-bubble *ngIf="!isChatOpen" [unreadCount]="totalUnreadCount" (toggleChat)="toggleChat()"></app-chat-bubble>
+<app-chat-bubble 
+  *ngIf="!isChatOpen" 
+  [unreadCount]="totalUnreadCount" 
+  (toggleChat)="toggleChat()">
+</app-chat-bubble>
+
 <div *ngIf="isChatOpen" class="messaging-container">
   <app-chat-window
     [conversations]="conversations"
     [selectedConversation]="selectedConversation"
     [messages]="messages"
     [currentUserId]="currentUserId"
+    [activeCall]="activeCall"
+    [incomingCall]="incomingCall"
     (close)="toggleChat()"
     (selectConversation)="selectConversation($event)"
     (sendMessage)="onSendMessage($event)"
     (searchConversation)="onSearch($event)"
-    (newMessage)="openNewMessage()">
+    (newMessage)="openNewMessage()"
+    (acceptCall)="acceptIncomingCall()"
+    (declineCall)="declineIncomingCall()"
+    (endCall)="onEndCall()">
   </app-chat-window>
 </div>
+
 <div *ngIf="showNewMessageModal" class="new-msg-modal-overlay" (click)="closeNewMessage()">
   <div class="new-msg-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -36,3 +47,21 @@
     </div>
   </div>
 </div>
+
+<app-call-notification
+  *ngIf="incomingCall && incomingCall.callId"
+  [callerName]="incomingCall.callerName"
+  [callType]="incomingCall.callType"
+  (accept)="acceptIncomingCall()"
+  (decline)="declineIncomingCall()">
+</app-call-notification>
+
+<app-call-window
+  *ngIf="activeCall && activeCall.callId"
+  [conversationId]="activeCall.conversationId"
+  [callType]="activeCall.type"
+  [isIncoming]="activeCall.isIncoming"
+  [incomingCallId]="activeCall.callId"
+  [incomingRoomId]="activeCall.roomId"
+  (endCall)="onEndCall()">
+</app-call-window>

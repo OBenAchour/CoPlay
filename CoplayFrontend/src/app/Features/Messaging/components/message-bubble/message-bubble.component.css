@@ -80,14 +80,13 @@
   border-color: #2196f3;
 }
 
-/* Reaction Container & Menu */
+/* Reaction Container & Button */
 .reaction-container {
   position: absolute;
   bottom: -8px;
   right: 8px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .reaction-btn {
@@ -109,19 +108,30 @@
   opacity: 1;
 }
 
+/* Reaction Menu Popup */
 .reaction-menu {
   display: flex;
   gap: 4px;
   background: #fff;
   border-radius: 20px;
-  padding: 4px 8px;
+  padding: 6px 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  margin-bottom: 4px;
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: calc(100% + 8px);
   white-space: nowrap;
+  z-index: 100;
+  overflow: visible;
+
+  /* Par défaut (messages reçus) : aligné à gauche */
+  left: 0;
+  right: auto;
+  transform: none;
+}
+
+/* Messages envoyés : aligné à droite */
+.message-bubble.own .reaction-menu {
+  left: auto;
+  right: 0;
 }
 
 .reaction-option {

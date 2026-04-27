@@ -36,6 +36,7 @@ import { EventListComponent } from './Features/Event & Training/event-list-compo
 import { EventDetailComponent } from './Features/Event & Training/event-detail/event-detail.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
 import { TrainingListComponent } from './Features/Event & Training/training-list/training-list.component';
+import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
 
 @NgModule({
   declarations: [
@@ -61,7 +62,8 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
-    TeamMemberComponent
+    TeamMemberComponent,
+    AdminReclamationComponent
     
     // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés 
     // exclusivement dans MessagingModule, pas ici.

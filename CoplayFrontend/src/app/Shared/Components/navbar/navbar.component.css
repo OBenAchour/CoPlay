@@ -5,85 +5,114 @@
   padding: 0 2rem;
   background-color: #2c3e50;
   color: white;
-  height: 75px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  height: 70px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-/* src/app/Shared/Components/navbar/navbar.component.css */
-
-.navbar-logo {
-    height: 100px; /* Conserve ta hauteur ajustée */
-    width: auto;
-    display: block;
-    
-    /* --- LA MAGIE CSS POUR LA TRANSPARENCE --- */
-    /* Cette propriété va fusionner le blanc du logo avec le fond sombre */
-    mix-blend-mode: multiply; 
-    
-    /* Optionnel : ajoute une transition douce pour le survol */
-    transition: transform 0.2s ease-in-out;
+/* Force le logo à gauche et l'auth à droite pour centrer le menu */
+.navbar-brand, .nav-auth {
+  flex: 1; 
+  display: flex;
+  align-items: center;
 }
 
-.navbar-logo:hover {
-  transform: scale(1.08);
+/* --- LOGO AVEC FOND ROND --- */
+.navbar-brand {
+  /* On crée une petite capsule blanche autour du logo */
+  background-color: white;
+  padding: 5px 15px;
+  border-radius: 50px; /* Rend le fond très arrondi */
+  max-width: fit-content; /* Empêche le fond blanc de prendre toute la largeur */
 }
 
+.nav-auth {
+  justify-content: flex-end; /* Pousse l'auth tout à droite */
+}
+
+/* --- ZONE CONNEXION AVEC FOND ROND --- */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* On crée une petite capsule blanche autour de l'auth */
+  background-color: white;
+  padding: 5px 15px;
+  border-radius: 50px;
+}
+
+/* --- NAVIGATION CENTRÉE --- */
 .nav-links {
   display: flex;
   list-style: none;
-  gap: 25px;
+  gap: 12px;
   margin: 0;
   padding: 0;
+  flex: 2; /* Donne plus d'espace au centre */
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-links li {
+  display: flex;
+  align-items: center;
 }
 
 .nav-links a {
-  color: #ecf0f1;
+  color: #bdc3c7;
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.8rem; /* Légère réduction pour éviter le wrap */
   font-weight: 500;
-  padding: 5px 0;
-  transition: color 0.3s;
+  padding: 8px 5px;
+  transition: all 0.3s;
+  white-space: nowrap; /* Empêche le texte de passer à la ligne */
 }
 
-.nav-links a:hover {
-  color: #3498db;
+/* --- LOGO --- */
+.navbar-logo {
+  height: 40px; /* Légèrement réduit pour bien respirer dans le fond blanc */
+  width: auto;
+  display: block;
 }
 
-.nav-links a.active {
-  border-bottom: 3px solid #3498db;
-  color: #3498db;
-}
-
-.admin-link {
-  color: #f1c40f !important; /* Jaune pour se démarquer */
-  font-weight: bold !important;
-}
-
-.welcome-text {
-  font-size: 0.9rem;
-  margin-right: 15px;
-}
-
+/* --- BOUTON DÉCONNEXION CADRÉ --- */
 .btn-logout {
   background-color: #e74c3c;
   color: white;
   border: none;
-  padding: 8px 18px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 5px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.3s;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  transition: background 0.2s;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .btn-logout:hover {
   background-color: #c0392b;
 }
 
-.btn-login {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 6px;
-  cursor: pointer;
+/* Texte ajusté pour être lisible sur le nouveau fond blanc */
+.welcome-text {
+  font-size: 0.8rem;
+  color: #2c3e50; /* Changé en sombre pour contraster avec le fond blanc */
+  white-space: nowrap;
+}
+
+/* Responsive : Si l'écran est trop petit, on réduit l'écart */
+@media (max-width: 1100px) {
+  .nav-links { gap: 5px; }
+  .nav-links a { font-size: 0.75rem; }
+  .welcome-text { display: none; } /* Cache "Salut..." sur petit écran */
+  
+  /* Optionnel : on peut enlever le fond blanc sur mobile pour gagner de la place */
+  .navbar-brand, .user-info {
+    background-color: transparent;
+    padding: 0;
+  }
 }

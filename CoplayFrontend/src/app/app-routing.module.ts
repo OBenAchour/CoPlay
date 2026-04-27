@@ -28,6 +28,7 @@ import { CompetitionDetailComponent } from './Features/Competitions/components/c
 import { ClassementComponent } from './Features/Competitions/components/classement.component';
 import { MatchListComponent } from './Features/Competitions/components/match-list.component';
 import { StatisticsComponent } from './Features/Competitions/components/statistics.component';
+import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
 
 const routes: Routes = [
   // Route principale (Accueil)
@@ -58,9 +59,13 @@ const routes: Routes = [
   { path: 'classement', component: ClassementComponent, canActivate: [AuthGuard] },
   { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
   { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
-
+  // Réclamations admin
+{ path: 'admin/reclamations', component: AdminReclamationComponent, canActivate: [AdminGuard] },
   // Redirection par défaut pour les routes inconnues
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: '' },
+
+ 
+
 ];
 
 @NgModule({

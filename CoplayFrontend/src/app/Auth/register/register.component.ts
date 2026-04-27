@@ -57,4 +57,40 @@ export class RegisterComponent implements OnInit {
       });
     }
   }
+
+  villesTunisie = [
+    'Tunis', 'Sfax', 'Sousse', 'Kairouan', 'Bizerte', 'Gabès', 'Ariana',
+    'Gafsa', 'Monastir', 'Ben Arous', 'Kasserine', 'Médenine', 'Nabeul',
+    'Tataouine', 'Béja', 'Jendouba', 'El Kef', 'Mahdia', 'Sidi Bouzid',
+    'Tozeur', 'Siliana', 'Zaghouan', 'Kebili', 'Manouba', 'La Marsa',
+    'Hammam-Lif', 'La Soukra', 'Radès', 'Zarzis', 'Djerba', 'Hammamet',
+    'Nabeul', 'Korba', 'Kélibia', 'Mateur', 'Menzel Bourguiba'
+  ];
+
+  villesFiltrees: string[] = [];
+  afficherSuggestions = false;
+
+  filtrerVilles(event: Event): void {
+    const valeur = (event.target as HTMLInputElement).value.toLowerCase();
+    if (valeur.length < 1) {
+      this.villesFiltrees = [];
+      this.afficherSuggestions = false;
+      return;
+    }
+    this.villesFiltrees = this.villesTunisie.filter(v =>
+      v.toLowerCase().includes(valeur)
+    );
+    this.afficherSuggestions = true;
+  }
+
+  selectionnerVille(ville: string): void {
+    this.registerForm.get('city')?.setValue(ville);
+    this.afficherSuggestions = false;
+    this.villesFiltrees = [];
+  }
+
+  cacherSuggestions(): void {
+    // Délai pour permettre le clic sur une suggestion
+    setTimeout(() => this.afficherSuggestions = false, 200);
+  }
 }

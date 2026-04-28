@@ -10,4 +10,6 @@ public interface HistoriqueActionService {
 
     List<HistoriqueAction> getActionsByTeam(String teamId);
 
+    void clearActionsByTeam(String teamId);
+
 }

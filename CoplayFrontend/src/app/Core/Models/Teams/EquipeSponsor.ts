@@ -3,4 +3,5 @@ export interface EquipeSponsor {
   teamId:      string;
   sponsorName: string;
   logoUrl?:    string;
+  link?:       string;
 }

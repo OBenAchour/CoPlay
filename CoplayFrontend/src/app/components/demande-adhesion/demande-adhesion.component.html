@@ -19,7 +19,7 @@
     <button class="switch-btn" [class.active]="activeView === 'capitaine'"
             (click)="activeView = 'capitaine'"
             *ngIf="isCaptainOfAnyTeam">
-      Demandes reçues
+      Historique
       <span class="notif" *ngIf="demandesEnAttente.length > 0">
         {{ demandesEnAttente.length }}
       </span>
@@ -35,7 +35,7 @@
     <div class="stats">
       <div class="stat">
         <div class="num">{{ mesDemandes.length }}</div>
-        <div class="lbl">Total envoyées</div>
+        <div class="lbl">Total demandées</div>
       </div>
       <div class="stat pending">
         <div class="num">{{ countMesDemandes['pending'] }}
@@ -54,15 +54,34 @@
       </div>
     </div>
 
+    <!-- Invitations reçues (NOUVEAU) -->
+    <div *ngIf="invitationsEnAttente.length > 0">
+      <div class="section-title" style="margin-top:16px;">Invitations reçues ({{ invitationsEnAttente.length }})</div>
+      <div class="card" *ngFor="let inv of invitationsEnAttente">
+        <div class="team-avatar">{{ (inv.teamName || 'Équipe').charAt(0).toUpperCase() }}</div>
+        <div class="card-info">
+          <div class="name">{{ inv.teamName || 'Équipe' }}</div>
+          <div class="meta">
+            Rôle proposé : <strong>{{ getRoleLabel(inv.proposedRole) }}</strong>
+          </div>
+        </div>
+        <button class="btn-join" (click)="acceptInvitation(inv)">Accepter</button>
+        <button class="btn-delete" (click)="refuseInvitation(inv)">Refuser</button>
+      </div>
+    </div>
+
     <!-- Formulaire rejoindre -->
     <div class="join-box">
       <h3>Rejoindre une équipe</h3>
-      <div class="join-row">
+      <div class="join-row" style="flex-wrap: wrap;">
         <select [(ngModel)]="selectedTeamId" class="inp">
           <option value="" disabled>Choisir une équipe...</option>
           <option *ngFor="let t of equipesDisponibles" [value]="t.teamId">
             {{ t.name }} — {{ t.sport }}
           </option>
+        </select>
+        <select [(ngModel)]="selectedRole" class="inp">
+          <option *ngFor="let r of ROLES" [value]="r">{{ getRoleLabel(r) }}</option>
         </select>
         <button class="btn-join"
                 (click)="envoyerDemande()"
@@ -86,6 +105,9 @@
       <div class="team-avatar">{{ getTeamName(d.teamId).charAt(0).toUpperCase() }}</div>
       <div class="card-info">
         <div class="name">{{ getTeamName(d.teamId) }}</div>
+        <div class="meta" *ngIf="d.proposedRole">
+          Rôle demandé : <strong>{{ getRoleLabel(d.proposedRole) }}</strong>
+        </div>
         <div class="meta" *ngIf="d.createdAt">
           Envoyée le {{ d.createdAt | date:'dd/MM/yyyy à HH:mm' }}
         </div>
@@ -96,6 +118,11 @@
             [class.refused]="d.statut === StatutDemande.REJECTED">
         {{ getStatutLabel(d.statut) }}
       </span>
+      <button class="btn-delete"
+              *ngIf="d.statut === StatutDemande.PENDING && d.demandeId"
+              (click)="supprimerDemande(d)">
+        Supprimer
+      </button>
     </div>
 
   </div>
@@ -126,24 +153,27 @@
       </div>
       <div class="stat">
         <div class="num">{{ demandesRecues.length }}</div>
-        <div class="lbl">Total reçues</div>
+        <div class="lbl">Total</div>
       </div>
     </div>
 
     <div class="section-title">
-      Demandes reçues ({{ demandesRecues.length }})
+      Demandes d'adhésion ({{ demandesRecues.length }})
     </div>
 
     <div *ngIf="demandesRecues.length === 0" class="empty">
-      Aucune demande reçue pour cette équipe
+      Aucune demande d'adhésion pour cette équipe
     </div>
 
     <div class="card" *ngFor="let d of demandesRecues">
-      <div class="player-avatar">{{ d.userId.substring(0,2).toUpperCase() }}</div>
+      <div class="player-avatar">{{ getUserName(d.userId).substring(0,2).toUpperCase() }}</div>
       <div class="card-info">
-        <div class="name">{{ d.userId }}</div>
+        <div class="name">{{ getUserName(d.userId) }}</div>
+        <div class="meta" *ngIf="d.proposedRole">
+          Rôle demandé : <strong>{{ getRoleLabel(d.proposedRole) }}</strong>
+        </div>
         <div class="meta" *ngIf="d.createdAt">
-          Reçue le {{ d.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+          Envoyée le {{ d.createdAt | date:'dd/MM/yyyy à HH:mm' }}
         </div>
       </div>
       <span class="badge"
@@ -155,6 +185,36 @@
       <div class="card-actions" *ngIf="d.statut === StatutDemande.PENDING">
         <button class="btn-accept" (click)="accepter(d)">Accepter</button>
         <button class="btn-refuse" (click)="refuser(d)">Refuser</button>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top: 20px;">
+      Invitations envoyées ({{ invitationsRecues.length }})
+    </div>
+
+    <div *ngIf="invitationsRecues.length === 0" class="empty">
+      Aucune invitation envoyée pour cette équipe
+    </div>
+
+    <div class="card" *ngFor="let inv of invitationsRecues">
+      <div class="player-avatar">{{ getInitiales(inv.invitedUserId) }}</div>
+      <div class="card-info">
+        <div class="name">{{ getUserName(inv.invitedUserId) }}</div>
+        <div class="meta">
+          Rôle : {{ getRoleLabel(inv.proposedRole) }}
+        </div>
+        <div class="meta" *ngIf="inv.createdAt">
+          Envoyée le {{ inv.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+        </div>
+      </div>
+      <span class="badge"
+            [class.pending]="inv.statut === StatutDemande.PENDING"
+            [class.accepted]="inv.statut === StatutDemande.ACCEPTED"
+            [class.refused]="inv.statut === StatutDemande.REJECTED">
+        {{ getStatutLabel(inv.statut) }}
+      </span>
+      <div class="card-actions" *ngIf="inv.statut === StatutDemande.PENDING">
+        <button class="btn-delete" (click)="supprimerInvitation(inv)">Supprimer</button>
       </div>
     </div>
 

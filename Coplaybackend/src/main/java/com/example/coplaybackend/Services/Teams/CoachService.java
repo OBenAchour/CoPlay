@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface CoachService {
 
-    PropositionCoach proposerCoach(String teamId, String coachId);
+    PropositionCoach proposerCoach(String teamId, String coachId, String captainId);
 
     PropositionCoach accepterProposition(String propositionId);
 
@@ -13,6 +13,5 @@ public interface CoachService {
 
     List<PropositionCoach> getPropositionsByTeam(String teamId);
     List<PropositionCoach> getPropositionsByCoach(String coachId);
-
 
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { EquipeSponsorService } from 'src/app/services/EquipeSponsor/equipe-sponsor.service';
 import { TeamService } from 'src/app/services/Team/team.service';
+import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
 import { EquipeSponsor } from 'src/app/Core/Models/Teams/EquipeSponsor';
 import { Team } from 'src/app/Core/Models/Teams/Team';
 
@@ -15,6 +16,7 @@ export class EquipeSponsorComponent implements OnInit {
   sponsors: EquipeSponsor[] = [];
   selectedTeamId: string = '';
   selectedTeamName: string = '';
+  currentUserId: string = '';
 
   newSponsorName: string = '';
   newLogoUrl: string = '';
@@ -25,13 +27,17 @@ export class EquipeSponsorComponent implements OnInit {
   errorMsg = '';
   showForm = false;
   confirmDeleteId: string | null = null;
+  newSponsorLink: string = '';
+
 
   constructor(
     private sponsorService: EquipeSponsorService,
-    private teamService: TeamService
+    private teamService: TeamService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.currentUserId = this.authService.getUserId();
     this.loadTeams();
   }
 
@@ -80,8 +86,10 @@ export class EquipeSponsorComponent implements OnInit {
     this.loading = true;
     this.sponsorService.addSponsor(
       this.selectedTeamId,
+      this.currentUserId,
       this.newSponsorName.trim(),
-      this.newLogoUrl.trim()
+      this.newLogoUrl.trim(),
+      this.newSponsorLink.trim()
     ).subscribe({
       next: (s) => {
         this.sponsors.push(s);
@@ -108,7 +116,7 @@ export class EquipeSponsorComponent implements OnInit {
   }
 
   removeSponsor(id: string) {
-    this.sponsorService.removeSponsor(id).subscribe({
+    this.sponsorService.removeSponsor(id, this.currentUserId, this.selectedTeamId).subscribe({
       next: () => {
         this.sponsors = this.sponsors.filter(s => s.id !== id);
         this.confirmDeleteId = null;

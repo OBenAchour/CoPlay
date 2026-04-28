@@ -7,65 +7,82 @@
       <h1 class="hero-title">Sponsors</h1>
       <div class="hero-sub">{{ sponsors.length }} partenaire(s) · {{ selectedTeamName }}</div>
     </div>
+
     <div class="hero-right">
       <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" class="team-select">
         <option *ngFor="let t of teams" [value]="t.teamId">{{ t.name }}</option>
       </select>
+
       <button class="btn-new" (click)="showForm = !showForm">
         {{ showForm ? 'Annuler' : '+ Ajouter un sponsor' }}
       </button>
     </div>
   </div>
 
+  <!-- Alerts -->
   <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
   <div class="alert error"   *ngIf="errorMsg">{{ errorMsg }}</div>
 
   <!-- Formulaire -->
   <div class="form-panel" *ngIf="showForm">
     <div class="form-panel-inner">
+
+      <!-- Preview -->
       <div class="form-preview">
         <div class="preview-card">
           <div class="preview-logo"
-               [style.background]="logoPreview ? 'white' : getGradient(newSponsorName || 'S')">
-            <img *ngIf="logoPreview" [src]="logoPreview" [alt]="newSponsorName"
-                 (error)="logoPreview=''" />
-            <span *ngIf="!logoPreview">{{ getInitiales(newSponsorName || 'SP') }}</span>
+               [style.background]="getGradient(newSponsorName || 'S')">
+
+            <!-- Toujours initiales maintenant -->
+            <span>{{ getInitiales(newSponsorName || 'SP') }}</span>
+
           </div>
           <div class="preview-name">{{ newSponsorName || 'Nom du sponsor' }}</div>
           <div class="preview-badge">Partenaire</div>
         </div>
       </div>
+
+      <!-- Champs -->
       <div class="form-fields">
         <label class="field-label">Nom du sponsor *</label>
-        <input [(ngModel)]="newSponsorName" placeholder="Ex: Nike, Adidas..." class="inp" />
+        <input [(ngModel)]="newSponsorName"
+               placeholder="Ex: Nike, Adidas..."
+               class="inp" />
 
-        <label class="field-label" style="margin-top:12px;">URL du logo</label>
-        <input [(ngModel)]="newLogoUrl" placeholder="https://..." class="inp"
-               (ngModelChange)="onLogoUrlChange()" />
+        <label class="field-label" style="margin-top:12px;">Lien du sponsor</label>
+        <input [(ngModel)]="newSponsorLink"
+               placeholder="https://www.sponsor.com"
+               class="inp" />
 
-        <button class="btn-submit" (click)="addSponsor()"
+        <button class="btn-submit"
+                (click)="addSponsor()"
                 [disabled]="loading || !newSponsorName.trim()">
           {{ loading ? 'Ajout...' : 'Confirmer l\'ajout' }}
         </button>
       </div>
+
     </div>
   </div>
 
   <!-- Loading -->
-  <div *ngIf="loading && sponsors.length === 0" class="empty">Chargement...</div>
+  <div *ngIf="loading && sponsors.length === 0" class="empty">
+    Chargement...
+  </div>
 
-  <!-- Empty -->
+  <!-- Empty state -->
   <div *ngIf="!loading && sponsors.length === 0 && !showForm" class="empty-state">
     <div class="empty-icon">★</div>
     <div class="empty-title">Aucun sponsor pour le moment</div>
-    <div class="empty-sub">Ajoutez votre premier partenaire en cliquant sur le bouton ci-dessus</div>
+    <div class="empty-sub">
+      Ajoutez votre premier partenaire en cliquant sur le bouton ci-dessus
+    </div>
   </div>
 
   <!-- Grille sponsors -->
   <div class="sponsors-grid">
     <div class="sponsor-card" *ngFor="let s of sponsors">
 
-      <!-- Confirm delete overlay -->
+      <!-- Confirm delete -->
       <div class="delete-overlay" *ngIf="confirmDeleteId === s.id">
         <div class="delete-msg">Retirer ce sponsor ?</div>
         <div class="delete-actions">
@@ -74,19 +91,26 @@
         </div>
       </div>
 
+      <!-- Logo remplacé par initiales -->
       <div class="sponsor-logo"
-           [style.background]="s.logoUrl ? 'white' : getGradient(s.sponsorName)">
-        <img *ngIf="s.logoUrl" [src]="s.logoUrl" [alt]="s.sponsorName"
-             (error)="s.logoUrl = ''" />
-        <span *ngIf="!s.logoUrl">{{ getInitiales(s.sponsorName) }}</span>
+           [style.background]="getGradient(s.sponsorName)">
+        <span>{{ getInitiales(s.sponsorName) }}</span>
       </div>
 
       <div class="sponsor-info">
         <div class="sponsor-name">{{ s.sponsorName }}</div>
+        <div style="font-size:12px;color:blue;word-break:break-all;">
+          {{ s.link || '(pas de lien)' }}
+        </div>
         <div class="sponsor-tag">Partenaire officiel</div>
       </div>
 
-      <button class="btn-remove" (click)="confirmDelete(s.id!)" title="Retirer">✕</button>
+      <button class="btn-remove"
+              (click)="confirmDelete(s.id!)"
+              title="Retirer">
+        ✕
+      </button>
+
     </div>
   </div>
 

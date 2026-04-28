@@ -17,10 +17,13 @@ public class Invitation {
     private String invitationId;
 
     private String teamId;           // ref → Team
+    private String teamName;        // nom de l'équipe
 
     private String invitedUserId;    // ref → User (invité)
 
     private String invitedByUserId;  // ref → User (qui invite)
+
+    private RoleEquipe proposedRole; // rôle proposé
 
     private StatutDemande statut;
 

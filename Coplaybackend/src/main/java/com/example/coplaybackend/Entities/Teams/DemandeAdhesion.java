@@ -20,6 +20,8 @@ public class DemandeAdhesion {
 
     private String userId;           // ref → User
 
+    private RoleEquipe proposedRole;
+
     private StatutDemande statut;
 
     private LocalDateTime createdAt;

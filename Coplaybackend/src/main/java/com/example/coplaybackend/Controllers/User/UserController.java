@@ -60,6 +60,13 @@ public class UserController {
         return ResponseEntity.ok(authService.searchUsers(q));
     }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<User> getUserById(@PathVariable String userId) {
+        return userRepository.findById(userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
 
     // ✅ Nouvel endpoint change-password (déplacé depuis AuthController)

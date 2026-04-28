@@ -17,4 +17,8 @@ export class HistoriqueActionService {
   addAction(teamId: string, action: HistoriqueAction): Observable<HistoriqueAction> {
     return this.http.post<HistoriqueAction>(`${this.apiUrl}/${teamId}/actions`, action);
   }
+
+  clearActions(teamId: string, captainId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${teamId}/actions/clear`, { params: { captainId } });
+  }
 }

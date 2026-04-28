@@ -2,6 +2,7 @@ package com.example.coplaybackend.Controllers.Teams;
 
 import com.example.coplaybackend.Entities.Teams.Team;
 import com.example.coplaybackend.Services.Teams.TeamService;
+import com.example.coplaybackend.Services.Teams.TeamMemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.List;
 public class TeamController {
 
     private final TeamService teamService;
+    private final TeamMemberService teamMemberService;
 
     @PostMapping
     public Team create(@RequestBody Team team, @RequestParam String creatorId){
@@ -33,15 +35,20 @@ public class TeamController {
         return teamService.getTeamById(id);
     }
 
-    // 🔹 UPDATE
     @PutMapping("/{id}")
-    public Team updateTeam(@PathVariable String id, @RequestBody Team team) {
+    public Team updateTeam(@PathVariable String id, @RequestBody Team team,
+                          @RequestParam String currentUserId) {
+        if (!teamMemberService.isCaptain(id, currentUserId)) {
+            throw new RuntimeException("Only team captain can update the team");
+        }
         return teamService.updateTeam(id, team);
     }
 
-    // 🔹 DELETE
     @DeleteMapping("/{id}")
-    public void deleteTeam(@PathVariable String id) {
+    public void deleteTeam(@PathVariable String id, @RequestParam String currentUserId) {
+        if (!teamMemberService.isCaptain(id, currentUserId)) {
+            throw new RuntimeException("Only team captain can delete the team");
+        }
         teamService.deleteTeam(id);
     }
 
@@ -50,6 +57,15 @@ public class TeamController {
         return teamService.getTeamsByCreator(creatorId);
     }
 
+    @GetMapping("/{teamId}/captain/{userId}")
+    public boolean isCaptain(@PathVariable String teamId, @PathVariable String userId) {
+        return teamMemberService.isCaptain(teamId, userId);
+    }
 
+    @GetMapping("/{teamId}/role/{userId}")
+    public String getUserRole(@PathVariable String teamId, @PathVariable String userId) {
+        var role = teamMemberService.getUserRole(teamId, userId);
+        return role != null ? role.name() : "NONE";
+    }
 
 }

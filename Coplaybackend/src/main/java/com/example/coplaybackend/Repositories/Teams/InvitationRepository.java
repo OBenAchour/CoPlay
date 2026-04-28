@@ -9,5 +9,7 @@ public interface InvitationRepository extends MongoRepository<Invitation,String>
 
     List<Invitation> findByTeamId(String teamId);
 
+    List<Invitation> findByTeamIdAndInvitedUserIdAndStatut(String teamId, String invitedUserId, com.example.coplaybackend.Entities.Teams.StatutDemande statut);
+
 
 }

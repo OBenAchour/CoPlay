@@ -28,6 +28,7 @@ import { EquipeSponsorComponent } from './components/equipe-sponsor/equipe-spons
 import { HistoriqueActionComponent } from './components/historique-action/historique-action.component';
 import { InvitationComponent } from './components/invitation/invitation.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
+import {TeamDetailComponent} from "./components/team-detail/team-detail.component";
 @NgModule({
   declarations: [
     AppComponent,
@@ -38,7 +39,7 @@ import { TeamMemberComponent } from './components/team-member/team-member.compon
     UserListComponent,
     ProfileComponent,
     ChatBubbleComponent,
-    
+
     MessageListComponent,
     MessageBubbleComponent,
     ChatWindowComponent,
@@ -51,14 +52,15 @@ import { TeamMemberComponent } from './components/team-member/team-member.compon
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
-    TeamMemberComponent
+    TeamMemberComponent,
+    TeamDetailComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule, 
-    FormsModule,   
-    ReactiveFormsModule 
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }],
   bootstrap: [AppComponent]

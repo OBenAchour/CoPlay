@@ -13,14 +13,17 @@
   <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
   <div class="alert error"   *ngIf="errorMsg">{{ errorMsg }}</div>
 
-  <!-- Formulaire création -->
   <div class="create-panel" *ngIf="showCreateForm">
     <h3 class="panel-title">Nouvelle équipe</h3>
     <div class="form-grid">
-      <input [(ngModel)]="newTeam.name"        placeholder="Nom de l'équipe *"     class="inp" />
-      <input [(ngModel)]="newTeam.sport"       placeholder="Sport *"               class="inp" />
-      <input [(ngModel)]="newTeam.city"        placeholder="Ville"                 class="inp" />
-      <input type="number" [(ngModel)]="newTeam.capacityMax" placeholder="Capacité max" class="inp" />
+      <input [(ngModel)]="newTeam.name"        placeholder="Nom de l'équipe *"  class="inp" />
+      <select [(ngModel)]="newTeam.sport" (change)="onSportChange($any($event.target).value)" class="inp">
+        <option value="">-- Sélectionner un sport * --</option>
+        <option *ngFor="let sport of sports" [value]="sport.name">{{ sport.name }} (max {{ sport.maxPlayers }} joueurs)</option>
+      </select>
+      <input [(ngModel)]="newTeam.city"        placeholder="Ville"              class="inp" />
+      <input type="number" [(ngModel)]="newTeam.capacityMax" placeholder="Capacité max" class="inp" 
+             [max]="selectedSport ? selectedSport.maxPlayers : null" />
     </div>
     <textarea [(ngModel)]="newTeam.description" placeholder="Description..." class="inp textarea"></textarea>
     <div class="panel-info">
@@ -33,7 +36,6 @@
     </div>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
     <div class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
       Toutes les équipes <span class="count">{{ allTeams.length }}</span>
@@ -48,7 +50,6 @@
     {{ activeTab === 'mine' ? 'Vous n\'avez pas encore créé d\'équipe' : 'Aucune équipe disponible' }}
   </div>
 
-  <!-- Liste équipes -->
   <div class="card" *ngFor="let team of displayedTeams">
     <div class="avatar">{{ team.name.charAt(0).toUpperCase() }}</div>
     <div class="card-info">
@@ -64,7 +65,11 @@
       <div class="description" *ngIf="team.description">{{ team.description }}</div>
     </div>
     <div class="card-actions">
-      <button class="btn-view"   (click)="viewTeam(team.teamId!)">Détails</button>
+      <!-- Tout le monde peut voir le détail -->
+      <button class="btn-view" (click)="goToDetail(team.teamId!)">
+        Voir l'équipe
+      </button>
+      <!-- Seulement le capitaine peut modifier/supprimer -->
       <ng-container *ngIf="isMyTeam(team)">
         <button class="btn-edit"   (click)="editTeam(team)">Modifier</button>
         <button class="btn-delete" (click)="deleteTeam(team.teamId!)">Supprimer</button>
@@ -72,51 +77,13 @@
     </div>
   </div>
 
-  <!-- Modal détails -->
-  <div class="modal-overlay" *ngIf="selectedTeam" (click)="closeDetails()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-avatar">{{ selectedTeam.name.charAt(0).toUpperCase() }}</div>
-        <div>
-          <div class="modal-title">{{ selectedTeam.name }}</div>
-          <div class="modal-sub">{{ selectedTeam.sport }}</div>
-        </div>
-      </div>
-      <div class="modal-body">
-        <div class="modal-row">
-          <span class="modal-lbl">Ville</span>
-          <span>{{ selectedTeam.city || '—' }}</span>
-        </div>
-        <div class="modal-row">
-          <span class="modal-lbl">Capacité</span>
-          <span>{{ selectedTeam.capacityMax || '—' }} joueurs</span>
-        </div>
-        <div class="modal-row">
-          <span class="modal-lbl">Statut</span>
-          <span class="status-badge">{{ selectedTeam.status }}</span>
-        </div>
-        <div class="modal-row">
-          <span class="modal-lbl">Description</span>
-          <span>{{ selectedTeam.description || '—' }}</span>
-        </div>
-        <div class="modal-row" *ngIf="isMyTeam(selectedTeam)">
-          <span class="modal-lbl">Votre rôle</span>
-          <span class="captain-badge">Capitaine</span>
-        </div>
-      </div>
-      <button class="btn-join" style="width:100%;margin-top:1rem;" (click)="closeDetails()">
-        Fermer
-      </button>
-    </div>
-  </div>
-
   <!-- Modal édition -->
   <div class="modal-overlay" *ngIf="editingTeam" (click)="cancelEdit()">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-title" style="margin-bottom:1rem;">Modifier l'équipe</div>
-      <input [(ngModel)]="editingTeam.name"        placeholder="Nom"         class="inp" style="margin-bottom:8px;" />
-      <input [(ngModel)]="editingTeam.sport"       placeholder="Sport"       class="inp" style="margin-bottom:8px;" />
-      <input [(ngModel)]="editingTeam.city"        placeholder="Ville"       class="inp" style="margin-bottom:8px;" />
+      <input [(ngModel)]="editingTeam.name"        placeholder="Nom"       class="inp" style="margin-bottom:8px;" />
+      <input [(ngModel)]="editingTeam.sport"       placeholder="Sport"     class="inp" style="margin-bottom:8px;" />
+      <input [(ngModel)]="editingTeam.city"        placeholder="Ville"     class="inp" style="margin-bottom:8px;" />
       <input type="number" [(ngModel)]="editingTeam.capacityMax" placeholder="Capacité" class="inp" style="margin-bottom:8px;" />
       <textarea [(ngModel)]="editingTeam.description" placeholder="Description" class="inp textarea" style="margin-bottom:1rem;"></textarea>
       <div style="display:flex;gap:8px;">

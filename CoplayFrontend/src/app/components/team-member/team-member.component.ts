@@ -3,6 +3,7 @@ import { TeamMemberService } from 'src/app/services/TeamMember/team-member.servi
 import { TeamService } from 'src/app/services/Team/team.service';
 import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
 import { UserService } from 'src/app/Core/Services/User/user.service';
+import { InvitationService } from 'src/app/services/Invitation/invitation.service';
 import { TeamMember } from 'src/app/Core/Models/Teams/TeamMember';
 import { RoleEquipe } from 'src/app/Core/Models/Teams/RoleEquipe';
 import { Team } from 'src/app/Core/Models/Teams/Team';
@@ -16,10 +17,12 @@ import { User } from '../../Core/Models/Auth/User';
 export class TeamMemberComponent implements OnInit {
 
   // Données
+  allTeams: Team[] = [];
   myTeams: Team[] = [];
   members: TeamMember[] = [];
   selectedTeamId: string = '';
   selectedTeamName: string = '';
+  userNames: Map<string, string> = new Map();
 
 
   // Recherche utilisateur
@@ -30,13 +33,7 @@ export class TeamMemberComponent implements OnInit {
   searchLoading = false;
   searchDone = false;
 
-  // Rôle IA
-  playerDescription: string = '';
-  aiLoading = false;
-  aiResult: { role: RoleEquipe; reason: string } | null = null;
-  showAiPanel = false;
-
-  // UI
+  
   activeTab: RoleEquipe | 'TOUS' = 'TOUS';
   loading = false;
   isCaptain = false;
@@ -44,14 +41,11 @@ export class TeamMemberComponent implements OnInit {
   errorMsg = '';
 
 
-  roles: RoleEquipe[] = ['CAPTAIN', 'PLAYER', 'COACH', 'STAFF'];
+  roles: RoleEquipe[] = ['PLAYER', 'COACH', 'STAFF'];
 
   currentUserId = '';
 
-  // IA — Analyse compatibilité
-  aiAnalyse: string = '';
-  aiAnalyseLoading = false;
-  showAnalyse = false;
+  
 
 
 
@@ -60,19 +54,20 @@ export class TeamMemberComponent implements OnInit {
     private memberService: TeamMemberService,
     private teamService: TeamService,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private invitationService: InvitationService
   ) {}
 
   ngOnInit(): void {
     this.currentUserId = this.authService.getUserId();
-    this.loadAllTeams(); // ← toutes les équipes, pas juste les miennes
+    this.loadAllTeams();
   }
 
   loadAllTeams() {
     this.loading = true;
     this.teamService.getAllTeams().subscribe({
       next: (data) => {
-        this.myTeams = data; // on réutilise myTeams comme liste
+        this.allTeams = data;
         if (data.length > 0) {
           this.selectedTeamId = data[0].teamId!;
           this.selectedTeamName = data[0].name;
@@ -92,12 +87,6 @@ export class TeamMemberComponent implements OnInit {
     this.teamService.getMyTeams(this.currentUserId).subscribe({
       next: (data) => {
         this.myTeams = data;
-        if (data.length > 0) {
-          this.selectedTeamId = data[0].teamId!;
-          this.selectedTeamName = data[0].name;
-          this.loadMembers();
-          this.checkCaptain();
-        }
       },
       error: () => this.showError('Erreur chargement équipes')
     });
@@ -107,7 +96,22 @@ export class TeamMemberComponent implements OnInit {
     if (!this.selectedTeamId) return;
     this.loading = true;
     this.memberService.getMembers(this.selectedTeamId).subscribe({
-      next: (data) => { this.members = data; this.loading = false; },
+      next: (data) => {
+        this.members = data;
+        this.loading = false;
+        data.forEach(m => {
+          if (!this.userNames.has(m.userId)) {
+            this.userService.getUserById(m.userId).subscribe({
+              next: (user) => {
+                this.userNames.set(m.userId, user.profile?.displayName || user.email || m.userId);
+              },
+              error: () => {
+                this.userNames.set(m.userId, m.userId);
+              }
+            });
+          }
+        });
+      },
       error: () => { this.showError('Erreur chargement membres'); this.loading = false; }
     });
   }
@@ -121,14 +125,13 @@ export class TeamMemberComponent implements OnInit {
   }
 
   onTeamChange() {
-    const team = this.myTeams.find(t => t.teamId === this.selectedTeamId);
+    const team = this.allTeams.find(t => t.teamId === this.selectedTeamId);
     this.selectedTeamName = team?.name || '';
     this.members = [];
     this.activeTab = 'TOUS';
     this.selectedUser = null;
     this.searchResults = [];
     this.searchQuery = '';
-    this.aiResult = null;
     this.loadMembers();
     this.checkCaptain();
   }
@@ -166,31 +169,28 @@ export class TeamMemberComponent implements OnInit {
     this.searchQuery = '';
     this.searchResults = [];
     this.searchDone = false;
-    this.aiResult = null;
-    this.playerDescription = '';
-    this.showAiPanel = false;
   }
 
-  addMember() {
+  sendInvitation() {
     if (!this.selectedUser || !this.selectedTeamId) return;
     this.loading = true;
-    this.memberService.addMember(
+    this.invitationService.inviterUser(
       this.selectedTeamId,
-      this.selectedUser.userId, // ← userId pas id
+      this.selectedUser.userId,
+      this.currentUserId,
       this.selectedRole
     ).subscribe({
-      next: (member) => {
-        this.members.unshift(member);
+      next: () => {
         this.clearSelection();
-        this.showSuccess('Membre ajouté !');
+        this.showSuccess('Invitation envoyée !');
         this.loading = false;
       },
-      error: () => { this.showError('Erreur ajout membre'); this.loading = false; }
+      error: () => { this.showError('Erreur envoi invitation'); this.loading = false; }
     });
   }
 
   removeMember(userId: string) {
-    this.memberService.removeMember(this.selectedTeamId, userId).subscribe({
+    this.memberService.removeMember(this.selectedTeamId, userId, this.currentUserId).subscribe({
       next: () => {
         this.members = this.members.filter(m => m.userId !== userId);
         this.showSuccess('Membre retiré !');
@@ -199,55 +199,7 @@ export class TeamMemberComponent implements OnInit {
     });
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // IA — Recommandation rôle
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━
-  async analyzeWithAI() {
-    if (!this.playerDescription.trim()) return;
-    this.aiLoading = true;
-    this.aiResult = null;
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 200,
-          messages: [{
-            role: 'user',
-            content: `Tu es un assistant sportif. Analyse ce profil de joueur et recommande UN seul rôle parmi : CAPTAIN, PLAYER, COACH, STAFF.
-Profil : "${this.playerDescription}"
-Réponds UNIQUEMENT en JSON valide sans texte avant ou après :
-{"role": "PLAYER", "reason": "Explication courte en français de max 20 mots"}`
-          }]
-        })
-      });
-      const data = await response.json();
-      const text = data.content[0].text.trim();
-      const parsed = JSON.parse(text);
-      if (['CAPTAIN','PLAYER','COACH','STAFF'].includes(parsed.role)) {
-        this.aiResult = parsed;
-        this.selectedRole = parsed.role;
-      } else {
-        this.showError('Réponse IA invalide');
-      }
-    } catch (e) {
-      this.showError('Erreur analyse IA');
-    } finally {
-      this.aiLoading = false;
-    }
-  }
-
-  applyAiRole() {
-    if (this.aiResult) {
-      this.selectedRole = this.aiResult.role;
-      this.showAiPanel = false;
-    }
-  }
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // Helpers
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  
   get membresFiltres(): TeamMember[] {
     if (this.activeTab === 'TOUS') return this.members;
     return this.members.filter(m => m.roleEquipe === this.activeTab);
@@ -265,11 +217,12 @@ Réponds UNIQUEMENT en JSON valide sans texte avant ou après :
   setTab(tab: RoleEquipe | 'TOUS') { this.activeTab = tab; }
 
   getInitiales(userId: string): string {
-    return userId ? userId.substring(0, 2).toUpperCase() : '??';
+    const name = this.userNames.get(userId);
+    return name ? name.substring(0, 2).toUpperCase() : (userId ? userId.substring(0, 2).toUpperCase() : '??');
   }
 
   getUserName(userId: string): string {
-    return userId;
+    return this.userNames.get(userId) || userId;
   }
 
   getRoleLabel(role: RoleEquipe): string {
@@ -288,48 +241,6 @@ Réponds UNIQUEMENT en JSON valide sans texte avant ou après :
   private showError(msg: string) {
     this.errorMsg = msg;
     setTimeout(() => this.errorMsg = '', 3000);
-  }
-
-  async analyserEquipe() {
-    if (this.members.length === 0) {
-      this.showError('Aucun membre à analyser');
-      return;
-    }
-
-    this.aiAnalyseLoading = true;
-    this.showAnalyse = true;
-    this.aiAnalyse = '';
-
-    const composition = {
-      equipe: this.selectedTeamName,
-      totalMembres: this.members.length,
-      capitaines: this.members.filter(m => m.roleEquipe === 'CAPTAIN').length,
-      joueurs: this.members.filter(m => m.roleEquipe === 'PLAYER').length,
-      coachs: this.members.filter(m => m.roleEquipe === 'COACH').length,
-      staff: this.members.filter(m => m.roleEquipe === 'STAFF').length
-    };
-
-    // ✅ FAKE IA (SANS API → PAS DE CORS)
-    setTimeout(() => {
-      this.aiAnalyse = `
-Score de compatibilité: ${composition.coachs > 0 ? 8 : 5}/10
-
-Points forts:
-- Équipe avec ${composition.joueurs} joueurs actifs
-- Structure globale cohérente
-
-Points faibles:
-- Coachs: ${composition.coachs}
-- Staff: ${composition.staff}
-
-Recommandation:
-${composition.coachs === 0
-        ? '⚠ Ajouter un coach pour améliorer la performance'
-        : '✔ Équipe bien équilibrée, continuez ainsi'}
-    `.trim();
-
-      this.aiAnalyseLoading = false;
-    }, 800);
   }
 
 

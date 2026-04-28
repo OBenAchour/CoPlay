@@ -9,4 +9,6 @@ public interface HistoriqueActionRepository extends MongoRepository<HistoriqueAc
 
     List<HistoriqueAction> findByTeamId(String teamId);
 
+    void deleteByTeamId(String teamId);
+
 }

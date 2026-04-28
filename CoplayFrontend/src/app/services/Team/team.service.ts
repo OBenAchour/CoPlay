@@ -23,7 +23,7 @@ export class TeamService {
     return this.http.get<Team[]>(`${this.apiUrl}/my-teams`, { params });
   }
 
-  createTeam(team: Team, creatorId: string): Observable<Team> {
+  createTeam(team: Partial<Team>, creatorId: string): Observable<Team> {
     const params = new HttpParams().set('creatorId', creatorId);
     return this.http.post<Team>(this.apiUrl, team, { params });
   }

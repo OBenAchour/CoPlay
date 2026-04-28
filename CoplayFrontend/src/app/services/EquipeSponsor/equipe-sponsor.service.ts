@@ -14,15 +14,20 @@ export class EquipeSponsorService {
     return this.http.get<EquipeSponsor[]>(`${this.apiUrl}/team/${teamId}`);
   }
 
-  addSponsor(teamId: string, sponsorName: string, logoUrl: string): Observable<EquipeSponsor> {
+  addSponsor(teamId: string, captainId: string, sponsorName: string, logoUrl: string, link: string): Observable<EquipeSponsor> {
     const params = new HttpParams()
       .set('teamId', teamId)
+      .set('captainId', captainId)
       .set('sponsorName', sponsorName)
-      .set('logoUrl', logoUrl);
+      .set('logoUrl', logoUrl)
+      .set('link', link);
     return this.http.post<EquipeSponsor>(this.apiUrl, null, { params });
   }
 
-  removeSponsor(sponsorId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${sponsorId}`);
+  removeSponsor(sponsorId: string, captainId: string, teamId: string): Observable<void> {
+    const params = new HttpParams()
+      .set('captainId', captainId)
+      .set('teamId', teamId);
+    return this.http.delete<void>(`${this.apiUrl}/${sponsorId}`, { params });
   }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Invitation } from 'src/app/Core/Models/Teams/Invitation';
+import { RoleEquipe } from 'src/app/Core/Models/Teams/RoleEquipe';
 
 @Injectable({ providedIn: 'root' })
 export class InvitationService {
@@ -10,12 +11,13 @@ export class InvitationService {
 
   constructor(private http: HttpClient) {}
 
-  // Capitaine — envoyer invitation
-  inviterUser(teamId: string, invitedUserId: string, captainId: string): Observable<Invitation> {
+  // Capitaine — envoyer invitation avec rôle proposé
+  inviterUser(teamId: string, invitedUserId: string, captainId: string, role: RoleEquipe): Observable<Invitation> {
     const params = new HttpParams()
       .set('teamId', teamId)
       .set('invitedUserId', invitedUserId)
-      .set('captainId', captainId);
+      .set('captainId', captainId)
+      .set('role', role);
     return this.http.post<Invitation>(this.apiUrl, null, { params });
   }
 
@@ -30,13 +32,18 @@ export class InvitationService {
     return this.http.get<Invitation[]>(`${this.apiUrl}/team/${teamId}`);
   }
 
-  // Joueur — accepter
+  // Joueur — inviterUser accepte (rejoint l'équipe)
   accepterInvitation(invitationId: string): Observable<Invitation> {
     return this.http.put<Invitation>(`${this.apiUrl}/accept/${invitationId}`, null);
   }
 
-  // Joueur — refuser
+  // Joueur — inviteUser refuse
   refuserInvitation(invitationId: string): Observable<Invitation> {
     return this.http.put<Invitation>(`${this.apiUrl}/refuse/${invitationId}`, null);
+  }
+
+  // Supprimer invitation (capitaine)
+  deleteInvitation(invitationId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${invitationId}`);
   }
 }

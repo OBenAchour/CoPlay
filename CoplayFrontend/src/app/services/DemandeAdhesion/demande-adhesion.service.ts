@@ -10,10 +10,11 @@ export class DemandeAdhesionService {
 
   constructor(private http: HttpClient) {}
 
-  rejoindreEquipe(teamId: string, userId: string): Observable<DemandeAdhesion> {
+  rejoindreEquipe(teamId: string, userId: string, proposedRole: string): Observable<DemandeAdhesion> {
     const params = new HttpParams()
       .set('teamId', teamId)
-      .set('userId', userId);
+      .set('userId', userId)
+      .set('proposedRole', proposedRole);
     return this.http.post<DemandeAdhesion>(`${this.apiUrl}/join`, null, { params });
   }
 
@@ -22,17 +23,22 @@ export class DemandeAdhesionService {
     return this.http.get<DemandeAdhesion[]>(`${this.apiUrl}/my-demandes`, { params });
   }
 
-  getDemandesByTeam(teamId: string): Observable<DemandeAdhesion[]> {
-    return this.http.get<DemandeAdhesion[]>(`${this.apiUrl}/team/${teamId}`);
+  getDemandesByTeam(teamId: string, captainId: string): Observable<DemandeAdhesion[]> {
+    const params = new HttpParams().set('captainId', captainId);
+    return this.http.get<DemandeAdhesion[]>(`${this.apiUrl}/team/${teamId}`, { params });
   }
 
-  accepterDemande(demandeId: string, adminId: string): Observable<DemandeAdhesion> {
-    const params = new HttpParams().set('adminId', adminId);
+  deleteDemande(demandeId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${demandeId}`);
+  }
+
+  accepterDemande(demandeId: string, captainId: string): Observable<DemandeAdhesion> {
+    const params = new HttpParams().set('captainId', captainId);
     return this.http.put<DemandeAdhesion>(`${this.apiUrl}/accept/${demandeId}`, null, { params });
   }
 
-  refuserDemande(demandeId: string, adminId: string): Observable<DemandeAdhesion> {
-    const params = new HttpParams().set('adminId', adminId);
+  refuserDemande(demandeId: string, captainId: string): Observable<DemandeAdhesion> {
+    const params = new HttpParams().set('captainId', captainId);
     return this.http.put<DemandeAdhesion>(`${this.apiUrl}/refuse/${demandeId}`, null, { params });
   }
 }

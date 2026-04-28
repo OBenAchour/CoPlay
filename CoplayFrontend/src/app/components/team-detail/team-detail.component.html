@@ -1,0 +1,280 @@
+<div class="detail-page" *ngIf="team">
+
+  <!-- Header équipe -->
+  <div class="team-header">
+    <div class="team-avatar-big">{{ team.name.charAt(0).toUpperCase() }}</div>
+    <div class="team-header-info">
+      <div class="team-name-row">
+        <h1 class="team-name">{{ team.name }}</h1>
+        <span class="captain-badge" *ngIf="isCaptain">Capitaine</span>
+        <span class="sport-badge">{{ team.sport }}</span>
+      </div>
+      <div class="team-meta">
+        <span *ngIf="team.city">📍 {{ team.city }}</span>
+        <span *ngIf="team.capacityMax"> · 👥 Max {{ team.capacityMax }} joueurs</span>
+        <span> · {{ members.length }} membres actuels</span>
+      </div>
+      <div class="team-desc" *ngIf="team.description">{{ team.description }}</div>
+    </div>
+    <div class="team-header-actions">
+      <button class="btn-back" routerLink="/team">← Retour</button>
+    </div>
+  </div>
+
+  <!-- Stats rapides -->
+  <div class="stats-row">
+    <div class="stat-chip">
+      <span class="stat-n">{{ countByRole.CAPTAIN }}</span>
+      <span class="stat-l">Capitaine</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-n">{{ countByRole.PLAYER }}</span>
+      <span class="stat-l">Joueurs</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-n">{{ countByRole.COACH }}</span>
+      <span class="stat-l">Coach</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-n">{{ countByRole.STAFF }}</span>
+      <span class="stat-l">Staff</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-n">{{ sponsors.length }}</span>
+      <span class="stat-l">Sponsors</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-n">{{ actions.length }}</span>
+      <span class="stat-l">Actions</span>
+    </div>
+  </div>
+
+  <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+  <div class="alert error"   *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- Onglets -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'membres'" (click)="activeTab = 'membres'">
+      👥 Membres <span class="count">{{ members.length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'sponsors'" (click)="activeTab = 'sponsors'">
+      ⭐ Sponsors <span class="count">{{ sponsors.length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'historique'" (click)="activeTab = 'historique'">
+      📋 Historique <span class="count">{{ actions.length }}</span>
+    </button>
+  </div>
+
+  <!-- ══════════════════════ -->
+  <!-- ONGLET MEMBRES         -->
+  <!-- ══════════════════════ -->
+  <div *ngIf="activeTab === 'membres'">
+
+    <!-- IA Analyse -->
+    <!-- Formulaire invitation — capitaine seulement -->
+    <div class="section-box" *ngIf="isCaptain">
+      <label class="box-label">Inviter un membre</label>
+
+      <div class="search-row">
+        <div class="search-wrap">
+          <input
+            [(ngModel)]="searchQuery"
+            placeholder="Rechercher par nom ou email..."
+            class="inp"
+            (keyup.enter)="searchUsers()"
+            [class.selected]="selectedUser !== null"
+          />
+          <button class="btn-clear" *ngIf="selectedUser" (click)="clearSelection()">✕</button>
+        </div>
+        <button class="btn-search" (click)="searchUsers()" [disabled]="searchLoading">
+          {{ searchLoading ? '...' : 'Rechercher' }}
+        </button>
+      </div>
+
+      <div class="search-results" *ngIf="searchResults.length > 0">
+        <div class="result-item" *ngFor="let u of searchResults" (click)="selectUser(u)">
+          <div class="result-avatar">{{ (u.profile?.displayName || u.email).substring(0,2).toUpperCase() }}</div>
+          <div class="result-info">
+            <div class="result-name">{{ u.profile?.displayName || 'Sans nom' }}</div>
+            <div class="result-email">{{ u.email }}</div>
+          </div>
+          <span class="result-select">Sélectionner</span>
+        </div>
+      </div>
+
+      <div class="no-results" *ngIf="searchDone && searchResults.length === 0">
+        Aucun utilisateur trouvé ou déjà membre
+      </div>
+
+      <div class="selected-user" *ngIf="selectedUser">
+        <div class="selected-avatar">
+          {{ (selectedUser.profile?.displayName || selectedUser.email).substring(0,2).toUpperCase() }}
+        </div>
+        <div class="selected-info">
+          <div class="selected-name">{{ selectedUser.profile?.displayName || 'Sans nom' }}</div>
+          <div class="selected-email">{{ selectedUser.email }}</div>
+        </div>
+        <span class="selected-check">✓</span>
+      </div>
+
+      <div class="role-row" *ngIf="selectedUser">
+        <div class="role-wrap">
+          <label class="box-label" style="margin-bottom:6px;">Rôle proposé</label>
+          <select [(ngModel)]="selectedRole" class="inp">
+            <option *ngFor="let r of roles" [value]="r">{{ getRoleLabel(r) }}</option>
+          </select>
+        </div>
+        <button class="btn-join" (click)="sendInvitation()" [disabled]="loading">
+          {{ loading ? 'Envoi...' : 'Envoyer invitation' }}
+        </button>
+      </div>
+
+      <div class="coach-note" *ngIf="!roles.includes('COACH')">
+        ⚠️ L'équipe a déjà un coach. Le rôle Coach n'est plus disponible.
+      </div>
+    </div>
+
+    <div class="info-box" *ngIf="!isCaptain">
+      Seul le capitaine peut inviter de nouveaux membres.
+    </div>
+
+    <div class="section-title">{{ members.length }} membre(s)</div>
+    <div *ngIf="members.length === 0" class="empty">Aucun membre</div>
+
+    <div class="card" *ngFor="let m of members">
+      <div class="m-avatar" [ngClass]="'avatar-' + m.roleEquipe.toLowerCase()">
+        {{ getInitiales(m.userId) }}
+      </div>
+      <div class="card-info">
+        <div class="name">{{ getUserName(m.userId) }}</div>
+        <div class="meta" *ngIf="m.joinedAt">Rejoint le {{ m.joinedAt | date:'dd/MM/yyyy' }}</div>
+      </div>
+      <span class="badge" [ngClass]="getRoleClass(m.roleEquipe)">{{ getRoleLabel(m.roleEquipe) }}</span>
+      <button class="btn-delete"
+              *ngIf="isCaptain && m.userId !== currentUserId && m.roleEquipe !== 'CAPTAIN'"
+              (click)="removeMember(m.userId)">
+        Retirer
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ -->
+  <!-- ONGLET SPONSORS        -->
+  <!-- ══════════════════════ -->
+  <div *ngIf="activeTab === 'sponsors'">
+
+    <div class="sponsors-header">
+      <div class="section-title" style="margin:0;">{{ sponsors.length }} partenaire(s)</div>
+      <button class="btn-new" *ngIf="isCaptain" (click)="showSponsorForm = !showSponsorForm">
+        {{ showSponsorForm ? 'Annuler' : '+ Ajouter un sponsor' }}
+      </button>
+    </div>
+
+    <!-- Formulaire sponsor -->
+    <div class="sponsor-form" *ngIf="showSponsorForm && isCaptain">
+      <div class="sponsor-form-inner">
+        <div class="preview-card">
+          <div class="preview-logo" [style.background]="logoPreview ? 'white' : getGradient(newSponsorName || 'S')">
+            <img *ngIf="logoPreview" [src]="logoPreview" [alt]="newSponsorName" (error)="logoPreview=''" />
+            <span *ngIf="!logoPreview">{{ getSponsorInitiales(newSponsorName || 'SP') }}</span>
+          </div>
+          <div class="preview-name">{{ newSponsorName || 'Aperçu' }}</div>
+        </div>
+        <div class="sponsor-fields">
+          <label class="box-label">Nom du sponsor *</label>
+          <input [(ngModel)]="newSponsorName" placeholder="Ex: Nike, Adidas..." class="inp" style="margin-bottom:10px;" />
+          <label class="box-label">Lien du sponsor</label>
+          <input [(ngModel)]="newSponsorLink" placeholder="https://www.sponsor.com" class="inp" style="margin-bottom:12px;" />
+          <button class="btn-join" (click)="addSponsor()" [disabled]="loading || !newSponsorName.trim()">
+            {{ loading ? 'Ajout...' : 'Confirmer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box" *ngIf="!isCaptain && sponsors.length === 0">
+      Aucun sponsor pour cette équipe.
+    </div>
+
+    <div *ngIf="!isCaptain && sponsors.length === 0" class="empty">
+      Aucun sponsor pour le moment
+    </div>
+
+    <div class="sponsors-grid">
+      <div class="sponsor-card" *ngFor="let s of sponsors">
+        <div class="delete-overlay" *ngIf="confirmDeleteSponsorId === s.id">
+          <div class="delete-msg">Retirer ce sponsor ?</div>
+          <div class="delete-actions">
+            <button class="btn-confirm-del" (click)="removeSponsor(s.id!)">Oui</button>
+            <button class="btn-cancel-del" (click)="cancelDeleteSponsor()">Non</button>
+          </div>
+        </div>
+        <div class="sponsor-logo" [style.background]="s.logoUrl ? 'white' : getGradient(s.sponsorName)">
+          <img *ngIf="s.logoUrl" [src]="s.logoUrl" [alt]="s.sponsorName" (error)="s.logoUrl = ''" />
+          <span *ngIf="!s.logoUrl">{{ getSponsorInitiales(s.sponsorName) }}</span>
+        </div>
+        <div class="sponsor-name">{{ s.sponsorName }}</div>
+        <div style="font-size:12px;color:blue;word-break:break-all;">{{ s.link || '(pas de lien)' }}</div>
+        <div class="sponsor-tag">Partenaire officiel</div>
+        <button class="btn-remove" *ngIf="isCaptain" (click)="confirmDeleteSponsor(s.id!)">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ -->
+  <!-- ONGLET HISTORIQUE      -->
+  <!-- ══════════════════════ -->
+  <div *ngIf="activeTab === 'historique'">
+
+    <div class="historique-topbar">
+      <input [(ngModel)]="searchAction" placeholder="Rechercher une action..." class="search-inp" />
+    </div>
+
+    <div class="add-box" *ngIf="isCaptain">
+      <div class="add-icon">+</div>
+      <div class="add-right">
+        <div class="suggestions">
+          <span class="chip" *ngFor="let s of actionSuggestions" (click)="useSuggestion(s)">{{ s }}</span>
+        </div>
+        <div class="add-row">
+          <input [(ngModel)]="newAction" placeholder="Décrire l'action..." class="add-inp" (keyup.enter)="addAction()" />
+          <button class="btn-add" (click)="addAction()" [disabled]="loading || !newAction.trim()">
+            {{ loading ? '...' : 'Ajouter' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+     <div *ngIf="actionsFiltrees.length === 0" class="empty">Aucune action enregistrée</div>
+
+     <div class="timeline">
+       <div class="tl-item" *ngFor="let a of actionsFiltrees; let last = last">
+         <div class="tl-left">
+           <div class="tl-icon" [ngClass]="getIconClass(a.action)">{{ getActionIcon(a.action) }}</div>
+           <div class="tl-line" *ngIf="!last"></div>
+         </div>
+         <div class="tl-card">
+           <div class="tl-action">{{ a.action }}</div>
+           <div class="tl-meta">
+             <div class="tl-actor">
+               <div class="mini-avatar">{{ getInitiales(a.actorId) }}</div>
+               <span>{{ getUserName(a.actorId) }}</span>
+             </div>
+             <span class="tl-date">{{ a.performedAt | date:'dd MMM yyyy · HH:mm' }}</span>
+           </div>
+         </div>
+       </div>
+     </div>
+
+     <div class="historique-footer" *ngIf="isCaptain && actions.length > 0">
+       <button class="btn-clear" (click)="clearHistorique()" [disabled]="loading">
+         {{ loading ? 'Suppression...' : 'Vider l\'historique' }}
+       </button>
+     </div>
+   </div>
+
+</div>
+
+<div *ngIf="!team" class="loading-page">
+  Chargement de l'équipe...
+</div>

@@ -19,4 +19,6 @@ public class EquipeSponsor {
     private String sponsorName;
 
     private String logoUrl;
+
+    private String link;
 }

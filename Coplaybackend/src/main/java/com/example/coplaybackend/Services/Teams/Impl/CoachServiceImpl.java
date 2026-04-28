@@ -1,9 +1,11 @@
 package com.example.coplaybackend.Services.Teams.Impl;
 
+import com.example.coplaybackend.Entities.Teams.HistoriqueAction;
 import com.example.coplaybackend.Entities.Teams.PropositionCoach;
 import com.example.coplaybackend.Entities.Teams.RoleEquipe;
 import com.example.coplaybackend.Entities.Teams.StatutDemande;
 import com.example.coplaybackend.Repositories.Teams.PropositionCoachRepository;
+import com.example.coplaybackend.Repositories.Teams.HistoriqueActionRepository;
 import com.example.coplaybackend.Services.Teams.CoachService;
 import com.example.coplaybackend.Services.Teams.TeamMemberService;
 import lombok.RequiredArgsConstructor;
@@ -18,20 +20,29 @@ public class CoachServiceImpl implements CoachService {
 
     private final PropositionCoachRepository repository;
     private final TeamMemberService teamMemberService;
+    private final HistoriqueActionRepository historiqueRepository;
 
     @Override
-    public PropositionCoach proposerCoach(String teamId, String coachId) {
+    public PropositionCoach proposerCoach(String teamId, String coachId, String captainId) {
 
         PropositionCoach p = new PropositionCoach();
 
         p.setTeamId(teamId);
-
-        // 🔥 IMPORTANT
         p.setCoachId(coachId);
-
         p.setStatut(StatutDemande.PENDING);
 
-        return repository.save(p);
+        PropositionCoach saved = repository.save(p);
+
+        historiqueRepository.save(
+                HistoriqueAction.builder()
+                        .teamId(teamId)
+                        .actorId(captainId)
+                        .action("COACH_PROPOSED")
+                        .performedAt(LocalDateTime.now())
+                        .build()
+        );
+
+        return saved;
     }
 
 

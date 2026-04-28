@@ -220,17 +220,25 @@
 
 .btn-remove {
   position: absolute;
-  top: 10px; right: 10px;
-  width: 26px; height: 26px;
+  top: 10px;
+  right: -12px; /* ⬅️ sort le bouton de la card */
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: none;
   background: #f5f5f5;
   color: #bbb;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.15s;
   opacity: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
-.sponsor-card:hover .btn-remove { opacity: 1; }
+
+.sponsor-card {
+  overflow: visible; /* ⬅️ sinon il sera coupé */
+}
 .btn-remove:hover { background: #FCEBEB; color: #A32D2D; }

@@ -37,11 +37,10 @@
   <div class="section-box">
     <label class="box-label">Équipe sélectionnée</label>
     <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()" class="inp">
-      <option *ngFor="let t of myTeams" [value]="t.teamId">{{ t.name }}</option>
+      <option *ngFor="let t of allTeams" [value]="t.teamId">{{ t.name }}</option>
     </select>
-    <div class="no-teams" *ngIf="myTeams.length === 0">
-      Vous n'avez pas encore créé d'équipe.
-      <a routerLink="/teams">Créer une équipe</a>
+    <div class="no-teams" *ngIf="allTeams.length === 0">
+      Aucune équipe disponible.
     </div>
   </div>
 
@@ -96,7 +95,7 @@
       <span class="selected-check">✓</span>
     </div>
 
-    <!-- Rôle + IA -->
+    <!-- Rôle + -->
     <div class="role-row" *ngIf="selectedUser">
       <div class="role-wrap">
         <label class="box-label" style="margin-bottom:6px;">Rôle attribué</label>
@@ -105,80 +104,19 @@
         </select>
       </div>
 
-      <!-- Bouton IA -->
-      <button class="btn-ai" (click)="showAiPanel = !showAiPanel">
-        ✦ Suggérer via IA
-      </button>
-    </div>
-
-    <!-- Panel IA -->
-    <div class="ai-panel" *ngIf="showAiPanel && selectedUser">
-      <div class="ai-header">
-        <span class="ai-badge">IA</span>
-        <span class="ai-title">Recommandation de rôle intelligente</span>
-      </div>
-      <p class="ai-desc">Décris le profil du joueur et l'IA recommandera le meilleur rôle.</p>
-      <textarea
-        [(ngModel)]="playerDescription"
-        placeholder="Ex: Ancien capitaine, 5 ans d'expérience, bon leadership..."
-        class="ai-textarea"
-        rows="3">
-      </textarea>
-      <button class="btn-analyze" (click)="analyzeWithAI()" [disabled]="aiLoading || !playerDescription.trim()">
-        <span *ngIf="!aiLoading">✦ Analyser</span>
-        <span *ngIf="aiLoading">Analyse...</span>
-      </button>
-      <div class="ai-result" *ngIf="aiResult">
-        <div class="ai-result-top">Recommandation</div>
-        <div class="ai-result-body">
-          <span class="badge" [ngClass]="getRoleClass(aiResult.role)">{{ getRoleLabel(aiResult.role) }}</span>
-          <p class="ai-reason">{{ aiResult.reason }}</p>
-        </div>
-        <button class="btn-apply" (click)="applyAiRole()">Appliquer ce rôle</button>
-      </div>
-    </div>
+      
 
     <div style="text-align:right; margin-top:12px;" *ngIf="selectedUser">
-      <button class="btn-join" (click)="addMember()" [disabled]="loading">
-        {{ loading ? 'Ajout...' : 'Confirmer l\'ajout' }}
+      <button class="btn-join" (click)="sendInvitation()" [disabled]="loading">
+        {{ loading ? 'Envoi...' : 'Envoyer l\'invitation' }}
       </button>
     </div>
   </div>
 
-  <!-- 🔥 IA ANALYSE COMPATIBILITÉ ÉQUIPE (AJOUTÉ ICI) -->
-  <div class="analyse-trigger" *ngIf="members.length > 0">
-    <div class="analyse-left">
-      <div class="analyse-icon">✦</div>
-      <div>
-        <div class="analyse-title">Analyse IA de l'équipe</div>
-        <div class="analyse-sub">Obtenez un rapport intelligent sur la composition</div>
-      </div>
-    </div>
-    <button class="btn-analyse" (click)="analyserEquipe()" [disabled]="aiAnalyseLoading">
-      {{ aiAnalyseLoading ? 'Analyse...' : 'Analyser' }}
-    </button>
-  </div>
-
-  <div class="analyse-result" *ngIf="showAnalyse">
-    <div class="analyse-result-header">
-      <span class="ai-badge">IA</span>
-      <span class="analyse-result-title">Rapport de compatibilité — {{ selectedTeamName }}</span>
-      <button class="btn-close-analyse" (click)="showAnalyse = false">✕</button>
-    </div>
-
-    <div class="analyse-loading" *ngIf="aiAnalyseLoading">
-      <div class="pulse-dot"></div>
-      <span>Analyse en cours...</span>
-    </div>
-
-    <div class="analyse-content" *ngIf="!aiAnalyseLoading && aiAnalyse">
-      {{ aiAnalyse }}
-    </div>
-  </div>
-  <!-- FIN IA -->
+  
 
   <!-- Message si pas capitaine -->
-  <div class="info-box" *ngIf="!isCaptain && myTeams.length > 0">
+  <div class="info-box" *ngIf="!isCaptain">
     Seul le capitaine peut ajouter ou retirer des membres.
   </div>
 
@@ -200,7 +138,7 @@
       {{ getInitiales(m.userId) }}
     </div>
     <div class="card-info">
-      <div class="name">{{ m.userId }}</div>
+      <div class="name">{{ getUserName(m.userId) }}</div>
       <div class="meta">
         <span *ngIf="m.joinedAt">Rejoint le {{ m.joinedAt | date:'dd/MM/yyyy' }}</span>
         <span *ngIf="!m.active" class="inactive-tag">Inactif</span>

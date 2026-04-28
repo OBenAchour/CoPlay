@@ -134,6 +134,9 @@
           <div class="selected-name">{{ selectedUser.profile?.displayName || 'Sans nom' }}</div>
           <div class="selected-email">{{ selectedUser.email }}</div>
         </div>
+        <select [(ngModel)]="selectedRole" class="inp" style="margin: 0 8px;">
+          <option *ngFor="let r of roles" [value]="r">{{ getRoleLabel(r) }}</option>
+        </select>
         <button class="btn-join" (click)="envoyerInvitation()" [disabled]="loading">
           {{ loading ? '...' : 'Envoyer' }}
         </button>
@@ -151,10 +154,10 @@
 
     <div class="card" *ngFor="let inv of invitationsEnvoyees">
       <div class="player-avatar">
-        {{ inv.invitedUserId.substring(0,2).toUpperCase() }}
+        {{ getInitiales(inv.invitedUserId) }}
       </div>
       <div class="card-info">
-        <div class="name">{{ inv.invitedUserId }}</div>
+        <div class="name">{{ getUserName(inv.invitedUserId) }}</div>
         <div class="meta" *ngIf="inv.createdAt">
           Envoyée le {{ inv.createdAt | date:'dd/MM/yyyy' }}
         </div>

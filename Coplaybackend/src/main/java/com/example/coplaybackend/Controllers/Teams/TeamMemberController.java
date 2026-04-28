@@ -14,35 +14,45 @@ import java.util.List;
 @RequestMapping("/api/teams/{teamId}/members")
 @RequiredArgsConstructor
 @Tag(name = "Team-member-controller", description = "ajout/suppression/lister les membres d'une équipe ")
+@CrossOrigin(origins = "http://localhost:4200")
 
 public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
 
-    // Ajouter un membre à une équipe
     @PostMapping
     public ResponseEntity<TeamMember> addMember(
             @PathVariable String teamId,
             @RequestParam String userId,
+            @RequestParam String captainId,
             @RequestParam RoleEquipe role
     ) {
+        if (!teamMemberService.isCaptain(teamId, captainId)) {
+            throw new RuntimeException("Only team captain can add members");
+        }
         TeamMember member = teamMemberService.addMember(teamId, userId, role);
         return ResponseEntity.ok(member);
     }
 
-    // Supprimer (désactiver) un membre
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> removeMember(
             @PathVariable String teamId,
-            @PathVariable String userId
+            @PathVariable String userId,
+            @RequestParam String captainId
     ) {
+        if (!teamMemberService.isCaptain(teamId, captainId)) {
+            throw new RuntimeException("Only team captain can remove members");
+        }
         teamMemberService.removeMember(teamId, userId);
         return ResponseEntity.noContent().build();
     }
 
-    // Obtenir la liste des membres d'une équipe
     @GetMapping
-    public ResponseEntity<List<TeamMember>> getMembers(@PathVariable String teamId) {
+    public ResponseEntity<List<TeamMember>> getMembers(@PathVariable String teamId,
+                                             @RequestParam(required = false) String currentUserId) {
+        if (currentUserId != null && !teamMemberService.isMember(teamId, currentUserId)) {
+            throw new RuntimeException("You must be a member of this team to view members");
+        }
         List<TeamMember> members = teamMemberService.getMembers(teamId);
         return ResponseEntity.ok(members);
     }
@@ -54,5 +64,12 @@ public class TeamMemberController {
         return ResponseEntity.ok(teamMemberService.isCaptain(teamId, userId));
     }
 
+    @GetMapping("/my-role")
+    public ResponseEntity<String> getMyRole(
+            @PathVariable String teamId,
+            @RequestParam String userId) {
+        var role = teamMemberService.getUserRole(teamId, userId);
+        return ResponseEntity.ok(role != null ? role.name() : "NONE");
+    }
 
 }

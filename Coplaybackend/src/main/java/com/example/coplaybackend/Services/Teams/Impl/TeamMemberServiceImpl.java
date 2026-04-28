@@ -24,10 +24,21 @@ public class TeamMemberServiceImpl implements TeamMemberService {
 
         Team team = teamRepository.findById(teamId).orElseThrow();
 
-        long count = teamMemberRepository.countByTeamIdAndActiveTrue(teamId);
+        var existing = teamMemberRepository.findByTeamIdAndUserId(teamId, userId);
+        if (existing.isPresent()) {
+            TeamMember member = existing.get();
+            member.setActive(true);
+            member.setRoleEquipe(role);
+            member.setJoinedAt(LocalDate.now());
+            return teamMemberRepository.save(member);
+        }
 
-        if(count >= team.getCapacityMax())
-            throw new RuntimeException("Team is full");
+        if (role == RoleEquipe.PLAYER) {
+            long playerCount = teamMemberRepository.countByTeamIdAndRoleEquipeAndActiveTrue(teamId, RoleEquipe.PLAYER);
+            if (playerCount >= team.getCapacityMax()) {
+                throw new RuntimeException("Nombre maximum de joueurs atteint pour " + team.getSport());
+            }
+        }
 
         TeamMember member = TeamMember.builder()
                 .teamId(teamId)
@@ -54,7 +65,7 @@ public class TeamMemberServiceImpl implements TeamMemberService {
 
     @Override
     public List<TeamMember> getMembers(String teamId) {
-        return teamMemberRepository.findByTeamId(teamId);
+        return teamMemberRepository.findByTeamIdAndActiveTrue(teamId);
     }
 
     @Override
@@ -63,6 +74,21 @@ public class TeamMemberServiceImpl implements TeamMemberService {
                 .findByTeamIdAndUserIdAndActiveTrue(teamId, userId)
                 .map(m -> m.getRoleEquipe() == RoleEquipe.CAPTAIN)
                 .orElse(false);
+    }
+
+    @Override
+    public boolean isMember(String teamId, String userId) {
+        return teamMemberRepository
+                .findByTeamIdAndUserIdAndActiveTrue(teamId, userId)
+                .isPresent();
+    }
+
+    @Override
+    public RoleEquipe getUserRole(String teamId, String userId) {
+        return teamMemberRepository
+                .findByTeamIdAndUserIdAndActiveTrue(teamId, userId)
+                .map(TeamMember::getRoleEquipe)
+                .orElse(null);
     }
 
     @Override

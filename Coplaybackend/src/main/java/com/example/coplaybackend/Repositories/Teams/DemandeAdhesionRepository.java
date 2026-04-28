@@ -10,7 +10,7 @@ public interface DemandeAdhesionRepository extends MongoRepository<DemandeAdhesi
 
     List<DemandeAdhesion> findByUserId(String userId);
 
-
+    List<DemandeAdhesion> findByTeamIdAndUserIdAndStatut(String teamId, String userId, com.example.coplaybackend.Entities.Teams.StatutDemande statut);
 
 
 }

@@ -22,8 +22,9 @@ export class TeamMemberService {
     return this.http.post<TeamMember>(`${this.apiUrl}/${teamId}/members`, null, { params });
   }
 
-  removeMember(teamId: string, userId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${teamId}/members/${userId}`);
+  removeMember(teamId: string, userId: string, captainId: string): Observable<void> {
+    const params = new HttpParams().set('captainId', captainId);
+    return this.http.delete<void>(`${this.apiUrl}/${teamId}/members/${userId}`, { params });
   }
 
   isCaptain(teamId: string, userId: string): Observable<boolean> {

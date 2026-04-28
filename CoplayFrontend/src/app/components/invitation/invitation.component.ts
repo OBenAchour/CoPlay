@@ -5,6 +5,7 @@ import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
 import { UserService } from 'src/app/Core/Services/User/user.service';
 import { Invitation } from 'src/app/Core/Models/Teams/Invitation';
 import { StatutDemande } from 'src/app/Core/Models/Teams/StatutDemande';
+import { RoleEquipe } from 'src/app/Core/Models/Teams/RoleEquipe';
 import { Team } from 'src/app/Core/Models/Teams/Team';
 
 @Component({
@@ -21,14 +22,18 @@ export class InvitationComponent implements OnInit {
   myTeams: Team[] = [];
   mesInvitations: Invitation[] = [];
   invitationsEnvoyees: Invitation[] = [];
+  userNames: Map<string, string> = new Map();
 
   // Formulaire capitaine
   selectedTeamId: string = '';
   searchQuery: string = '';
   searchResults: any[] = [];
   selectedUser: any = null;
+  selectedRole: RoleEquipe = 'PLAYER';
   searchLoading = false;
   searchDone = false;
+
+  roles: RoleEquipe[] = ['PLAYER', 'COACH', 'STAFF'];
 
   // UI
   activeView: 'recues' | 'envoyees' = 'recues';
@@ -80,7 +85,21 @@ export class InvitationComponent implements OnInit {
   loadInvitationsEnvoyees() {
     if (!this.selectedTeamId) return;
     this.invitationService.getInvitationsByTeam(this.selectedTeamId).subscribe({
-      next: (data) => this.invitationsEnvoyees = data,
+      next: (data) => {
+        this.invitationsEnvoyees = data;
+        data.forEach(inv => {
+          if (!this.userNames.has(inv.invitedUserId)) {
+            this.userService.getUserById(inv.invitedUserId).subscribe({
+              next: (user) => {
+                this.userNames.set(inv.invitedUserId, user.profile?.displayName || user.email || inv.invitedUserId);
+              },
+              error: () => {
+                this.userNames.set(inv.invitedUserId, inv.invitedUserId);
+              }
+            });
+          }
+        });
+      },
       error: () => {}
     });
   }
@@ -137,11 +156,13 @@ export class InvitationComponent implements OnInit {
     this.invitationService.inviterUser(
       this.selectedTeamId,
       this.selectedUser.userId,
-      this.currentUserId
+      this.currentUserId,
+      this.selectedRole
     ).subscribe({
       next: (inv) => {
         this.invitationsEnvoyees.unshift(inv);
         this.clearSearch();
+        this.selectedRole = 'PLAYER';
         this.showSuccess('Invitation envoyée !');
         this.loading = false;
       },
@@ -189,6 +210,19 @@ export class InvitationComponent implements OnInit {
       [StatutDemande.ACCEPTED]: 'Acceptée',
       [StatutDemande.REJECTED]: 'Refusée'
     }[statut];
+  }
+
+  getUserName(userId: string): string {
+    return this.userNames.get(userId) || userId;
+  }
+
+  getInitiales(userId: string): string {
+    const name = this.userNames.get(userId);
+    return name ? name.substring(0, 2).toUpperCase() : (userId ? userId.substring(0, 2).toUpperCase() : '??');
+  }
+
+  getRoleLabel(role: RoleEquipe): string {
+    return { CAPTAIN:'Capitaine', PLAYER:'Joueur', COACH:'Coach', STAFF:'Staff' }[role];
   }
 
   private showSuccess(msg: string) {

@@ -29,6 +29,9 @@ import { ClassementComponent } from './Features/Competitions/components/classeme
 import { MatchListComponent } from './Features/Competitions/components/match-list.component';
 import { StatisticsComponent } from './Features/Competitions/components/statistics.component';
 
+// Social
+import { FeedComponent } from './Features/Social/feed/feed.component';
+
 const routes: Routes = [
   // Route principale (Accueil)
   { path: '', component: HomeComponent },
@@ -58,6 +61,9 @@ const routes: Routes = [
   { path: 'classement', component: ClassementComponent, canActivate: [AuthGuard] },
   { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
   { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
+
+  // Social Media
+  { path: 'feed', component: FeedComponent, canActivate: [AuthGuard] },
 
   // Redirection par défaut pour les routes inconnues
   { path: '**', redirectTo: '' }

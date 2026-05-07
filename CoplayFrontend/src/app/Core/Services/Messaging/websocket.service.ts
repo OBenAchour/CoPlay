@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { Client, StompConfig } from '@stomp/stompjs';
 
 @Injectable({
@@ -9,10 +9,11 @@ export class WebSocketService implements OnDestroy {
   private stompClient: Client | null = null;
   private messageSubject = new Subject<any>();
   private typingSubject = new Subject<any>();
-  private connectionSubject = new Subject<boolean>();
+  private connectionSubject = new BehaviorSubject<boolean>(false);
   private callEventSubject = new Subject<any>();
   private serverUrl = 'http://localhost:8080/ws-call';
   private userId: string = '';
+  private subscribedToAvailableCalls = false;
 
   connect(userId: string): void {
     this.userId = userId;
@@ -23,6 +24,7 @@ export class WebSocketService implements OnDestroy {
         console.log('WebSocket connected');
         this.connectionSubject.next(true);
         this.subscribeToUserQueue();
+        this.subscribeToAvailableCalls();
       },
       onStompError: (frame: any) => {
         console.error('STOMP error:', frame);
@@ -30,6 +32,10 @@ export class WebSocketService implements OnDestroy {
       },
       onWebSocketError: (event: any) => {
         console.error('WebSocket error:', event);
+        this.connectionSubject.next(false);
+      },
+      onWebSocketClose: () => {
+        console.log('WebSocket closed');
         this.connectionSubject.next(false);
       }
     };
@@ -39,6 +45,7 @@ export class WebSocketService implements OnDestroy {
   }
 
   disconnect(): void {
+    this.subscribedToAvailableCalls = false;
     if (this.stompClient) {
       this.stompClient.deactivate();
       this.stompClient = null;
@@ -55,6 +62,8 @@ export class WebSocketService implements OnDestroy {
 
   subscribeToAvailableCalls(): void {
     if (!this.stompClient || !this.stompClient.connected) return;
+    if (this.subscribedToAvailableCalls) return;
+    this.subscribedToAvailableCalls = true;
 
     this.stompClient.subscribe('/topic/calls/available', (message: any) => {
       this.callEventSubject.next(JSON.parse(message.body));

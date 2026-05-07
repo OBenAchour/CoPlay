@@ -51,7 +51,6 @@ public class AIClient {
             requestBody.put("messages", messages);
 
             String response = webClient.post()
-                    .uri(aiConfig.getApiUrl())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + aiConfig.getApiKey())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .bodyValue(requestBody)
@@ -59,10 +58,11 @@ public class AIClient {
                     .bodyToMono(String.class)
                     .block();
 
+            log.info("AI API raw response: {}", response != null ? response.substring(0, Math.min(200, response.length())) : "null");
             return extractContentFromResponse(response);
 
         } catch (Exception e) {
-            log.error("Error calling OpenAI API: {}", e.getMessage(), e);
+            log.warn("AI API failed: {}", e.getMessage());
             return null;
         }
     }
@@ -83,7 +83,6 @@ public class AIClient {
             requestBody.put("messages", messages);
 
             String response = webClient.post()
-                    .uri(aiConfig.getApiUrl())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + aiConfig.getApiKey())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .bodyValue(requestBody)
@@ -94,7 +93,7 @@ public class AIClient {
             return extractContentFromResponse(response);
 
         } catch (Exception e) {
-            log.error("Error calling OpenAI API: {}", e.getMessage(), e);
+            log.warn("AI API failed: {}", e.getMessage());
             return null;
         }
     }

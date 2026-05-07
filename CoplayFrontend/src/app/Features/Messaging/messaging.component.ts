@@ -115,8 +115,19 @@ export class MessagingComponent implements OnInit, OnDestroy {
     this.subscriptions.push(callSub);
   }
 
+  onCallStarted(call: { callId: string; roomId: string; type: 'AUDIO' | 'VIDEO' }): void {
+    this.activeCall = {
+      conversationId: this.selectedConversation?.conversationId || '',
+      type: call.type,
+      isIncoming: false,
+      callId: call.callId,
+      roomId: call.roomId
+    };
+  }
+
   handleIncomingCall(event: any): void {
-    console.log('[MESSAGING] handleIncomingCall:', event);
+    console.log('[MESSAGING] handleIncomingCall:', JSON.stringify(event));
+    console.log('[MESSAGING] currentUserEmail:', this.currentUserEmail, 'currentUserId:', this.currentUserId);
     
     if (event.type === 'call-initiated') {
       if (!event.toUserIds || !Array.isArray(event.toUserIds)) {
@@ -124,8 +135,9 @@ export class MessagingComponent implements OnInit, OnDestroy {
         return;
       }
       
-      if (!event.toUserIds.includes(this.currentUserEmail)) {
-        console.log('[MESSAGING] Ignoring - not for this user');
+      if (!event.toUserIds.includes(this.currentUserId)) {
+        console.log('[MESSAGING] Ignoring - not for this user (userId not in toUserIds)');
+        console.log('[MESSAGING] toUserIds:', event.toUserIds, 'currentUserId:', this.currentUserId);
         return;
       }
       

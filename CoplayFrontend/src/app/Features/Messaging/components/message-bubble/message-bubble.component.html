@@ -61,21 +61,27 @@
       </div>
     </div>
 
-    <!-- Reaction Menu Popup -->
-    <div class="reaction-menu" *ngIf="showReactionMenu">
-      <button 
-        *ngFor="let type of reactionTypes" 
-        class="reaction-option"
-        [class.selected]="reactionSummary.userReaction === type.toString()"
-        (click)="addReaction(type)">
-        {{ reactionEmojis[type] }}
-      </button>
-      <button 
-        *ngIf="hasUserReacted()" 
-        class="remove-reaction"
-        (click)="removeReaction()">
-        ✕
-      </button>
+    <!-- Reaction Button + Menu (groupés dans le même container) -->
+    <div class="reaction-container">
+      <button class="reaction-btn" (click)="toggleReactionMenu()">+</button>
+
+      <!-- Menu positionné relativement au bouton -->
+      <div class="reaction-menu" *ngIf="showReactionMenu">
+        <button 
+          *ngFor="let type of reactionTypes" 
+          class="reaction-option"
+          [class.selected]="reactionSummary.userReaction === type.toString()"
+          (click)="addReaction(type)">
+          {{ reactionEmojis[type] }}
+        </button>
+        <button 
+          *ngIf="hasUserReacted()" 
+          class="remove-reaction"
+          (click)="removeReaction()">
+          ✕
+        </button>
+      </div>
     </div>
+
   </ng-container>
 </div>

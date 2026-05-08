@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Message } from 'src/app/Core/Models/Messaging/Message';
-import { MessagingService } from 'src/app/Core/Services/Messaging/messaging.service';
-import { ReactionType, REACTION_EMOJIS } from 'src/app/Core/Models/Messaging/ReactionType';
+import { Message } from '../../../../Core/Models/Messaging/Message';
+import { MessagingService } from '../../../../Core/Services/Messaging/messaging.service';
+import { ReactionType, REACTION_EMOJIS } from '../../../../Core/Models/Messaging/ReactionType';
 
 @Component({
   selector: 'app-message-bubble',

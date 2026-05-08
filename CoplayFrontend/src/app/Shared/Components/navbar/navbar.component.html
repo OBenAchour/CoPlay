@@ -31,6 +31,10 @@
       </ul>
     </li>
     <!-- ⬆️ FIN menu déroulant ⬆️ -->
+    <li><a routerLink="/competitions" routerLinkActive="active">Compétitions</a></li>
+    <li><a routerLink="/classement" routerLinkActive="active">Classement</a></li>
+    <li><a routerLink="/matchs" routerLinkActive="active">Matchs</a></li>
+    <li><a routerLink="/statistics" routerLinkActive="active">Statistiques</a></li>
     
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">

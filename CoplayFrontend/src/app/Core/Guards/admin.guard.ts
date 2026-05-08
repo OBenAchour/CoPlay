@@ -7,9 +7,10 @@ import { AuthService } from '../Services/Auth/auth.service'; // Ajuste le chemin
 })
 export class AdminGuard implements CanActivate {
 
-  // C'est ici qu'on injecte les services pour enlever le rouge !
+  // Injecte le service d'authentification pour vérifier le rôle et le routeur pour la redirection
   constructor(private authService: AuthService, private router: Router) {}
 
+  // Détermine si l'utilisateur a l'autorisation d'accéder à la route demandée (doit posséder le rôle 'ADMIN')
   canActivate(): boolean {
     const role = this.authService.getUserRole();
     

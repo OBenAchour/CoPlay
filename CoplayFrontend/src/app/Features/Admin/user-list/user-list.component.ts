@@ -16,10 +16,12 @@ export class UserListComponent implements OnInit {
 
   constructor(private adminService: AdminService) { }
 
+  // Initialise le composant en lançant la récupération de la liste des utilisateurs
   ngOnInit(): void {
     this.loadUsers();
   }
 
+  // Appelle le service d'administration pour récupérer tous les utilisateurs et gère les erreurs d'affichage
   loadUsers(): void {
     this.adminService.getUsers().subscribe({
       next: (data) => {
@@ -33,6 +35,7 @@ export class UserListComponent implements OnInit {
     });
   }
 
+  // Prépare l'édition d'un utilisateur en créant une copie profonde pour éviter les modifications en direct
   editUser(user: any): void {
     this.selectedUser = JSON.parse(JSON.stringify(user));
     if (!this.selectedUser.profile) {
@@ -40,6 +43,7 @@ export class UserListComponent implements OnInit {
     }
   }
 
+  // Enregistre les modifications apportées à l'utilisateur sélectionné et rafraîchit la liste
   saveChanges(): void {
     if (this.selectedUser) {
       this.adminService.updateUser(this.selectedUser.userId, this.selectedUser).subscribe({
@@ -52,6 +56,7 @@ export class UserListComponent implements OnInit {
     }
   }
 
+  // Supprime un utilisateur après confirmation et actualise la liste des membres
   deleteUser(id: string): void {
     if (confirm('Supprimer cet utilisateur ?')) {
       this.adminService.deleteUser(id).subscribe(() => this.loadUsers());

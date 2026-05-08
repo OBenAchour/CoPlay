@@ -12,8 +12,10 @@ export class NavbarComponent {
     isEventsDropdownOpen = false;
 
   
+  // Injecte AuthService en public pour y accéder directement depuis le template HTML (ex: vérification isLoggedIn)
   constructor(public authService: AuthService, private router: Router) {}
 
+  // Gère la déconnexion de l'utilisateur en nettoyant la session et en redirigeant vers la page de login
   onLogout() {
     this.authService.logout();
     this.router.navigate(['/login']);

@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Conversation } from 'src/app/Core/Models/Messaging/Conversation';
-import { Message } from 'src/app/Core/Models/Messaging/Message';
-import { MessageReaction } from 'src/app/Core/Models/Messaging/MessageReaction';
-import { SearchResult } from 'src/app/Core/Models/Messaging/SearchResult';
-import { ReactionType } from 'src/app/Core/Models/Messaging/ReactionType';
-import { CreateConversationRequest } from 'src/app/Core/Models/Messaging/CreateConversationRequest';
-import { ConversationListItem } from 'src/app/Core/Models/Messaging/ConversationListItem';
+import { Conversation } from '../../Models/Messaging/Conversation';
+import { Message } from '../../Models/Messaging/Message';
+import { MessageReaction } from '../../Models/Messaging/MessageReaction';
+import { SearchResult } from '../../Models/Messaging/SearchResult';
+import { ReactionType } from '../../Models/Messaging/ReactionType';
+import { CreateConversationRequest } from '../../Models/Messaging/CreateConversationRequest';
+import { ConversationListItem } from '../../Models/Messaging/ConversationListItem';
 
 @Injectable({
   providedIn: 'root'

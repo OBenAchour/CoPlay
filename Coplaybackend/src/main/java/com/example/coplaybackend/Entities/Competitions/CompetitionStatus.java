@@ -1,9 +1,16 @@
 package com.example.coplaybackend.Entities.Competitions;
 
+/**
+ * Deprecated: use com.example.coplaybackend.Entities.Competitions.Enums.CompetitionStatus instead.
+ */
+@Deprecated
 public enum CompetitionStatus {
-    DRAFT,
-    OPEN,
+    CREATED,
+    CALENDAR_GENERATED,
     IN_PROGRESS,
-    CLOSED,
-    CANCELLED
+    FINISHED;
+
+    public com.example.coplaybackend.Entities.Competitions.Enums.CompetitionStatus toNew() {
+        return com.example.coplaybackend.Entities.Competitions.Enums.CompetitionStatus.valueOf(this.name());
+    }
 }

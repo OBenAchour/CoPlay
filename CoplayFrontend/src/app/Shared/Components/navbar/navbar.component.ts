@@ -9,10 +9,24 @@ import { Router } from '@angular/router';
 })
 export class NavbarComponent {
 
+    isEventsDropdownOpen = false;
+
+  
   constructor(public authService: AuthService, private router: Router) {}
 
   onLogout() {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  // ⬇️ NOUVEAU : ouvrir/fermer le menu
+  toggleEventsDropdown(): void {
+    this.isEventsDropdownOpen = !this.isEventsDropdownOpen;
+  }
+
+  closeEventsDropdown(): void {
+    this.isEventsDropdownOpen = false;
+  }
+  // ⬆️
+  
 }

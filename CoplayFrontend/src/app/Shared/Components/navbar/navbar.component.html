@@ -8,7 +8,29 @@
   <ul class="nav-links" *ngIf="authService.isLoggedIn()">
     <li><a routerLink="/profile" routerLinkActive="active">Mon Profil</a></li>
     <li><a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a></li>
-    <li><a routerLink="/events" routerLinkActive="active">Événements</a></li>
+       <li class="dropdown" [class.open]="isEventsDropdownOpen">
+      <a class="dropdown-trigger" (click)="toggleEventsDropdown()">
+        Événements & Entraînements <span class="dropdown-arrow">▾</span>
+      </a>
+      <ul class="dropdown-menu">
+        <li>
+          <a routerLink="/events" routerLinkActive="active" (click)="closeEventsDropdown()">
+            📅 Événements
+          </a>
+        </li>
+        <li>
+          <a routerLink="/training-programs" routerLinkActive="active" (click)="closeEventsDropdown()">
+            📋 Programmes d'entraînement
+          </a>
+        </li>
+        <li>
+          <a routerLink="/training-sessions" routerLinkActive="active" (click)="closeEventsDropdown()">
+            🏃 Séances d'entraînement
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!-- ⬆️ FIN menu déroulant ⬆️ -->
     
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">

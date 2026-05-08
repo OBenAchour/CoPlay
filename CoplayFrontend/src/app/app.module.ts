@@ -32,6 +32,17 @@ import { TeamMemberComponent } from './components/team-member/team-member.compon
 import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
 import { EventDetailComponent } from './Features/Event & Training/event-detail/event-detail.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
+import { MapComponent } from './Features/Event & Training/map/map.component';
+
+// Training (existants)
+import { TrainingListComponent } from './Features/Event & Training/training-list/training-list.component';
+import { TrainingSessionFormComponent } from './Features/Event & Training/training-session-form/training-session-form.component';
+import { TrainingSessionDetailComponent } from './Features/Event & Training/training-session-detail/training-session-detail.component';
+
+// Training Programs (nouveaux)
+import { TrainingProgramListComponent } from './Features/Event & Training/training-program-list/training-program-list.component';
+import { TrainingProgramFormComponent } from './Features/Event & Training/training-program-form/training-program-form.component';
+import { TrainingProgramDetailComponent } from './Features/Event & Training/training-program-detail/training-program-detail.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +57,7 @@ import { EventFormComponent } from './Features/Event & Training/event-form/event
     EventDetailComponent,
     EventFormComponent,
     ChatBubbleComponent,
-    
+
     MessageListComponent,
     MessageBubbleComponent,
     ChatWindowComponent,
@@ -59,14 +70,21 @@ import { EventFormComponent } from './Features/Event & Training/event-form/event
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
-    TeamMemberComponent
+    TeamMemberComponent,
+    TrainingListComponent,
+    TrainingSessionFormComponent,
+    TrainingSessionDetailComponent,
+    TrainingProgramListComponent,
+    TrainingProgramFormComponent,
+    TrainingProgramDetailComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule, 
-    FormsModule,   
-    ReactiveFormsModule 
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MapComponent
   ],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }],
   bootstrap: [AppComponent]

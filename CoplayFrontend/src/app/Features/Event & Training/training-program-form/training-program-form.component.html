@@ -1,0 +1,49 @@
+<div class="form-container">
+  <h1>➕ Nouveau programme</h1>
+
+  <p class="info-text">
+    💡 Crée d'abord ton programme. Tu pourras ajouter des exercices ensuite.
+  </p>
+
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <form (ngSubmit)="onSubmit()" #programForm="ngForm">
+
+    <div class="form-group">
+      <label for="teamId">Équipe <span style="color: red;">*</span></label>
+      <select id="teamId" name="teamId" [(ngModel)]="formData.teamId" required>
+        <option value="">-- Sélectionner une équipe --</option>
+        <option *ngFor="let team of teams" [value]="team.teamId">
+          {{ team.name }}<span *ngIf="team.sport"> - {{ team.sport }}</span>
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="title">Titre du programme <span style="color: red;">*</span></label>
+      <input type="text" id="title" name="title" [(ngModel)]="formData.title" required
+             placeholder="Ex: Endurance débutants">
+    </div>
+
+    <div class="form-group">
+      <label for="level">Niveau</label>
+      <select id="level" name="level" [(ngModel)]="formData.level">
+        <option value="">-- Choisir un niveau --</option>
+        <option *ngFor="let l of levels" [value]="l">{{ l }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="duration">Durée (minutes)</label>
+      <input type="number" id="duration" name="duration" [(ngModel)]="formData.duration"
+             min="15" max="300" placeholder="60">
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-cancel" (click)="cancel()">Annuler</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'En cours...' : 'Créer et continuer →' }}
+      </button>
+    </div>
+  </form>
+</div>

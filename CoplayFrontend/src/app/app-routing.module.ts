@@ -14,7 +14,15 @@ import { EventDetailComponent } from './Features/Event & Training/event-detail/e
 import { TeamComponent } from './components/team/team.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
 
+// Training Sessions
+import { TrainingListComponent } from './Features/Event & Training/training-list/training-list.component';
+import { TrainingSessionFormComponent } from './Features/Event & Training/training-session-form/training-session-form.component';
+import { TrainingSessionDetailComponent } from './Features/Event & Training/training-session-detail/training-session-detail.component';
 
+// Training Programs
+import { TrainingProgramListComponent } from './Features/Event & Training/training-program-list/training-program-list.component';
+import { TrainingProgramFormComponent } from './Features/Event & Training/training-program-form/training-program-form.component';
+import { TrainingProgramDetailComponent } from './Features/Event & Training/training-program-detail/training-program-detail.component';
 
 const routes: Routes = [
   { path: 'register', component: RegisterComponent },
@@ -24,13 +32,23 @@ const routes: Routes = [
   { path: 'admin/users', component: UserListComponent, canActivate: [AdminGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
 
-  // ✅ AJOUTE CES ROUTES POUR EVENTS
+  // Events
   { path: 'events', component: EventListComponent, canActivate: [AuthGuard] },
   { path: 'events/create', component: EventFormComponent, canActivate: [AuthGuard] },
   { path: 'events/edit/:id', component: EventFormComponent, canActivate: [AuthGuard] },
   { path: 'events/:id', component: EventDetailComponent, canActivate: [AuthGuard] },
-   { path: 'team', component: TeamComponent },
-  { path: 'teammember', component: TeamMemberComponent }
+
+  // Training Programs
+  { path: 'training-programs', component: TrainingProgramListComponent, canActivate: [AuthGuard] },
+  { path: 'training-programs/new', component: TrainingProgramFormComponent, canActivate: [AuthGuard] },
+  { path: 'training-programs/:id', component: TrainingProgramDetailComponent, canActivate: [AuthGuard] },
+
+  // Training Sessions
+  { path: 'training-sessions', component: TrainingListComponent, canActivate: [AuthGuard] },
+  { path: 'training-sessions/new', component: TrainingSessionFormComponent, canActivate: [AuthGuard] },
+  { path: 'training-sessions/:id/edit', component: TrainingSessionFormComponent, canActivate: [AuthGuard] },
+  { path: 'training-sessions/:id', component: TrainingSessionDetailComponent, canActivate: [AuthGuard] },
+
 
 ];
 

@@ -21,10 +21,25 @@ export class TrainingService {
   /**
    * Crée un nouveau programme d'entraînement.
    * POST /api/training/add
-   * US-049
    */
   createProgram(program: TrainingProgram): Observable<TrainingProgram> {
     return this.http.post<TrainingProgram>(`${this.baseUrl}/add`, program);
+  }
+
+  /**
+   * Retourne TOUS les programmes (toutes équipes confondues).
+   * GET /api/training/all
+   */
+  getAllPrograms(): Observable<TrainingProgram[]> {
+    return this.http.get<TrainingProgram[]>(`${this.baseUrl}/all`);
+  }
+
+  /**
+   * Modifie un programme existant.
+   * PUT /api/training/update/{programId}
+   */
+  updateProgram(programId: string, program: TrainingProgram): Observable<TrainingProgram> {
+    return this.http.put<TrainingProgram>(`${this.baseUrl}/update/${programId}`, program);
   }
 
   /**
@@ -38,7 +53,6 @@ export class TrainingService {
   /**
    * Retourne tous les programmes d'une équipe.
    * GET /api/training/get/team/{teamId}
-   * US-051
    */
   getProgramsByTeam(teamId: string): Observable<TrainingProgram[]> {
     return this.http.get<TrainingProgram[]>(`${this.baseUrl}/get/team/${teamId}`);
@@ -47,7 +61,6 @@ export class TrainingService {
   /**
    * Retourne les programmes filtrés par niveau.
    * GET /api/training/get/level/{level}
-   * US-051
    */
   getProgramsByLevel(level: string): Observable<TrainingProgram[]> {
     return this.http.get<TrainingProgram[]>(`${this.baseUrl}/get/level/${level}`);
@@ -68,7 +81,6 @@ export class TrainingService {
   /**
    * Ajoute un exercice dans un programme.
    * POST /api/training/exercises/add/{programId}
-   * US-050
    */
   addExercise(programId: string, exercise: Exercise): Observable<TrainingProgram> {
     return this.http.post<TrainingProgram>(

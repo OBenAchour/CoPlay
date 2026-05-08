@@ -87,3 +87,97 @@
   border-radius: 6px;
   cursor: pointer;
 }
+/* ═══════════════════════════════════════════════════════
+   MENU DÉROULANT ÉVÉNEMENTS & ENTRAÎNEMENTS (CLICK)
+   ═══════════════════════════════════════════════════════ */
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-trigger {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.dropdown-arrow {
+  font-size: 0.75rem;
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+/* ✅ La flèche tourne quand le menu est OUVERT (classe .open) */
+.dropdown.open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 260px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+
+  /* ✅ Caché par défaut */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.25s ease;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* ✅ Menu ouvert quand .open est ajoutée par le click */
+.dropdown.open .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(4px);
+  pointer-events: auto;
+}
+
+.dropdown-menu li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dropdown-menu li a {
+  display: block;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: #1e293b;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.dropdown-menu li a:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  color: #ffffff;
+  transform: translateX(4px);
+}
+
+.dropdown-menu li a.active {
+  background: #eef2ff;
+  color: #312e81;
+  font-weight: 800;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dropdown-menu {
+    position: static;
+    pointer-events: auto;
+  }
+}

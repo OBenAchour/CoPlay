@@ -1,0 +1,136 @@
+<div class="detail-container" *ngIf="!isLoading && program">
+
+  <button class="btn-back" (click)="goBack()">← Retour à la liste</button>
+
+  <!-- Message succès -->
+  <div *ngIf="successMessage" class="success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <!-- ═════════════════════════════════════════════════ -->
+  <!--    SECTION PROGRAMME (CONSULTATION + MODIFICATION) -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <div class="program-card">
+
+    <!-- MODE CONSULTATION -->
+    <div *ngIf="!isEditingProgram">
+      <div class="card-header">
+        <h1>📘 {{ program.title }}</h1>
+        <button *ngIf="canManage()" class="btn btn-edit" (click)="startEditProgram()">
+          ✏️ Modifier le programme
+        </button>
+      </div>
+
+      <div class="info">
+        <span *ngIf="program.level"><strong>📊 Niveau :</strong> {{ program.level }}</span>
+        <span *ngIf="program.duration"><strong>⏱️ Durée :</strong> {{ program.duration }} min</span>
+      </div>
+    </div>
+
+    <!-- MODE ÉDITION -->
+    <div *ngIf="isEditingProgram" class="edit-form">
+      <h2>✏️ Modifier le programme</h2>
+
+      <div class="form-group">
+        <label>Équipe <span style="color: red;">*</span></label>
+        <select [(ngModel)]="programFormData.teamId" name="programTeamId">
+          <option value="">-- Sélectionner une équipe --</option>
+          <option *ngFor="let team of teams" [value]="team.teamId">
+            {{ team.name }}<span *ngIf="team.sport"> - {{ team.sport }}</span>
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Titre <span style="color: red;">*</span></label>
+        <input type="text" [(ngModel)]="programFormData.title" name="programTitle">
+      </div>
+
+      <div class="form-group">
+        <label>Niveau</label>
+        <select [(ngModel)]="programFormData.level" name="programLevel">
+          <option value="">-- Choisir un niveau --</option>
+          <option *ngFor="let l of levels" [value]="l">{{ l }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Durée (minutes)</label>
+        <input type="number" [(ngModel)]="programFormData.duration" name="programDuration"
+               min="15" max="300">
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-cancel" (click)="cancelEditProgram()">Annuler</button>
+        <button type="button" class="btn btn-primary" (click)="saveProgram()">💾 Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════ -->
+  <!--    SECTION EXERCICES                              -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <div class="exercises-section">
+    <div class="section-header">
+      <h2>🏃 Exercices ({{ program.exercises?.length || 0 }})</h2>
+      <button *ngIf="canManage() && !showExerciseForm" class="btn btn-primary" (click)="openAddExerciseForm()">
+        + Ajouter un exercice
+      </button>
+    </div>
+
+    <!-- Formulaire exercice -->
+    <div *ngIf="showExerciseForm" class="exercise-form">
+      <h3>{{ isEditingExercise ? '✏️ Modifier l\'exercice' : '➕ Nouvel exercice' }}</h3>
+
+      <div class="form-group">
+        <label>Nom <span style="color: red;">*</span></label>
+        <input type="text" [(ngModel)]="exerciseFormData.name" name="exerciseName"
+               placeholder="Ex: Sprints courts">
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="exerciseFormData.description" name="exerciseDescription"
+                  rows="3" placeholder="Détails de l'exercice..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Lien vidéo (optionnel)</label>
+        <input type="text" [(ngModel)]="exerciseFormData.videoUrl" name="exerciseVideoUrl"
+               placeholder="https://youtube.com/...">
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-cancel" (click)="cancelExerciseForm()">Annuler</button>
+        <button type="button" class="btn btn-primary" (click)="saveExercise()">
+          {{ isEditingExercise ? 'Modifier' : 'Ajouter' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Liste vide -->
+    <div *ngIf="program.exercises?.length === 0 && !showExerciseForm" class="empty">
+      Aucun exercice. Cliquez sur "Ajouter un exercice" pour commencer !
+    </div>
+
+    <!-- Liste des exercices -->
+    <div class="exercises-list">
+      <div *ngFor="let exercise of program.exercises; let i = index" class="exercise-card">
+        <div class="exercise-header">
+          <h3>{{ i + 1 }}. {{ exercise.name }}</h3>
+          <div class="exercise-actions" *ngIf="canManage()">
+            <button class="btn-edit-small" (click)="openEditExerciseForm(exercise)" title="Modifier">✏️</button>
+            <button class="btn-delete-small" (click)="deleteExercise(exercise)" title="Supprimer">🗑️</button>
+          </div>
+        </div>
+
+        <p *ngIf="exercise.description" class="description">{{ exercise.description }}</p>
+
+        <a *ngIf="exercise.videoUrl" [href]="exercise.videoUrl" target="_blank" class="video-link">
+          🎥 Voir la vidéo
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isLoading" class="loading">Chargement...</div>

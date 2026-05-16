@@ -8,12 +8,36 @@
   <ul class="nav-links" *ngIf="authService.isLoggedIn()">
     <li><a routerLink="/profile" routerLinkActive="active">Mon Profil</a></li>
     <li><a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a></li>
-    <li><a routerLink="/events" routerLinkActive="active">Événements</a></li>
+<!-- Menu déroulant Événements & Entraînements -->
+    <li class="events-dropdown" [class.events-open]="isEventsDropdownOpen">
+      <a class="events-dropdown-trigger" (click)="toggleEventsDropdown()">
+        Événements & Entraînements <span class="events-dropdown-arrow">▾</span>
+      </a>
+      <ul class="events-dropdown-menu">
+        <li>
+          <a routerLink="/events" routerLinkActive="active" (click)="closeEventsDropdown()">
+            📅 Événements
+          </a>
+        </li>
+        <li>
+          <a routerLink="/training-programs" routerLinkActive="active" (click)="closeEventsDropdown()">
+            📋 Programmes d'entraînement
+          </a>
+        </li>
+        <li>
+          <a routerLink="/training-sessions" routerLinkActive="active" (click)="closeEventsDropdown()">
+            🏃 Séances d'entraînement
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!-- ⬆️ FIN menu déroulant ⬆️ -->
+
     <li><a routerLink="/competitions" routerLinkActive="active">Compétitions</a></li>
     <li><a routerLink="/classement" routerLinkActive="active">Classement</a></li>
     <li><a routerLink="/matchs" routerLinkActive="active">Matchs</a></li>
     <li><a routerLink="/statistics" routerLinkActive="active">Statistiques</a></li>
-    
+
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">
         <span class="admin-icon">⚙️</span> Gestion Utilisateurs
@@ -26,7 +50,7 @@
       <span class="welcome-text">Salut, <strong>{{ authService.getUserName() }}</strong></span>
       <button (click)="onLogout()" class="btn-logout">Déconnexion</button>
     </ng-container>
-    
+
     <ng-template #authButtons>
       <button routerLink="/login" class="btn-login">Connexion</button>
     </ng-template>

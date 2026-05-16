@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { EventStatus } from 'src/app/Core/Models/Events & Training/EventStatus';
 import { CoplayEvent } from 'src/app/Core/Models/Events & Training/CoplayEvent';
 import { EventService } from 'src/app/Core/Services/Events & Training/EventService/event-service.service';
+import { AuthService } from 'src/app/Core/Services/Auth/auth.service';  // ✅ AJOUTÉ
 
 @Component({
   selector: 'app-event-list',
@@ -17,9 +18,7 @@ export class EventListComponent implements OnInit {
   selectedStatus: string = 'ALL';
   isLoading: boolean = false;
   errorMessage: string = '';
-  deletingEventId: string | null = null;  // ✅ NOUVEAU
-
-  teamId: string = 'test-team-001';
+  deletingEventId: string | null = null;
 
   statusOptions = [
     { value: 'ALL',       label: 'Tous' },
@@ -31,18 +30,30 @@ export class EventListComponent implements OnInit {
 
   constructor(
     private eventService: EventService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService  // ✅ AJOUTÉ
   ) {}
 
   ngOnInit(): void {
     this.loadEvents();
   }
 
+  // ✅ NOUVEAU : Vérifier si l'utilisateur est admin
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  // ✅ NOUVEAU : Récupérer le rôle de l'utilisateur
+  get userRole(): string | null {
+    return this.authService.getUserRole();
+  }
+
   loadEvents(): void {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.eventService.getPublicEvents().subscribe({
+    // ✅ MODIFIÉ : Charger TOUS les events (pas seulement les publics)
+    this.eventService.getAllEvents().subscribe({
       next: (data: CoplayEvent[]) => {
         this.events = data;
         this.applyFilter();
@@ -71,8 +82,13 @@ export class EventListComponent implements OnInit {
     }
   }
 
-  // ✅ NOUVEAU : Supprimer un event
   deleteEvent(event: CoplayEvent): void {
+    // ✅ AJOUTÉ : Vérifier si l'utilisateur est admin
+    if (!this.isAdmin) {
+      alert('Seul un administrateur peut supprimer un événement.');
+      return;
+    }
+
     if (!event.eventId) return;
 
     const confirmation = confirm(
@@ -85,7 +101,6 @@ export class EventListComponent implements OnInit {
 
     this.eventService.cancelEvent(event.eventId).subscribe({
       next: () => {
-        // Retirer l'event de la liste locale
         this.events = this.events.filter(e => e.eventId !== event.eventId);
         this.applyFilter();
         this.deletingEventId = null;
@@ -98,8 +113,12 @@ export class EventListComponent implements OnInit {
     });
   }
 
-  // ✅ NOUVEAU : Aller à la page d'édition
   goToEdit(eventId: string): void {
+    // ✅ AJOUTÉ : Vérifier si l'utilisateur est admin
+    if (!this.isAdmin) {
+      alert('Seul un administrateur peut modifier un événement.');
+      return;
+    }
     this.router.navigate(['/events/edit', eventId]);
   }
 
@@ -108,6 +127,11 @@ export class EventListComponent implements OnInit {
   }
 
   goToCreate(): void {
+    // ✅ AJOUTÉ : Vérifier si l'utilisateur est admin
+    if (!this.isAdmin) {
+      alert('Seul un administrateur peut créer un événement.');
+      return;
+    }
     this.router.navigate(['/events/create']);
   }
 

@@ -1,0 +1,55 @@
+<div class="detail-container" *ngIf="!isLoading && session">
+
+  <button class="btn-back" (click)="goBack()">← Retour</button>
+
+  <div class="detail-card">
+
+    <div class="badge" [class.official]="session.isOfficial">
+      {{ session.isOfficial ? '🟢 Séance officielle' : '🔵 Séance libre' }}
+    </div>
+
+    <h1>{{ session.title }}</h1>
+
+    <div class="status" [ngClass]="'status-' + (session.status || '').toLowerCase()">
+      {{ session.status }}
+    </div>
+
+    <div class="info-section">
+      <p *ngIf="session.description">📝 {{ session.description }}</p>
+      <p>📅 <strong>{{ formatDate(session.sessionDate) }}</strong></p>
+      <p *ngIf="session.duration">⏱️ Durée : {{ session.duration }} minutes</p>
+      <p *ngIf="session.locationId">📍 {{ session.locationId.name }}</p>
+<p *ngIf="session.createdBy">👤 Créée par : {{ session.createdBy.email }}</p>
+    </div>
+
+    <!-- Programme associé -->
+    <div *ngIf="session.program" class="program-section">
+      <h2>📋 Programme : {{ session.program.title }}</h2>
+      <p *ngIf="session.program.level">Niveau : {{ session.program.level }}</p>
+      <p *ngIf="session.program.duration">Durée totale : {{ session.program.duration }} min</p>
+
+      <div *ngIf="session.program.exercises && session.program.exercises.length > 0">
+        <h3>Exercices</h3>
+        <ul class="exercises-list">
+          <li *ngFor="let ex of session.program.exercises" class="exercise-item">
+            <strong>{{ ex.name }}</strong>
+            <p *ngIf="ex.description">{{ ex.description }}</p>
+            <a *ngIf="ex.videoUrl" [href]="ex.videoUrl" target="_blank">🎥 Voir la vidéo</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions" *ngIf="session.status === 'SCHEDULED'">
+      <button class="btn btn-edit" (click)="goEdit()">✏️ Modifier</button>
+      <button *ngIf="canManage()" class="btn btn-complete" (click)="completeSession()">
+        ✅ Marquer terminée
+      </button>
+      <button class="btn btn-cancel" (click)="cancelSession()">⛔ Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isLoading" class="loading">Chargement...</div>
+<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>

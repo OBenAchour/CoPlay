@@ -163,11 +163,11 @@
         <span class="section-number">2</span>
         <div>
           <h2 class="section-title">Lieu</h2>
-          <p class="section-hint">Géolocalisez automatiquement l'adresse via Google Maps</p>
+          <p class="section-hint">Recherchez une adresse ou cliquez sur la carte</p>
         </div>
       </div>
 
-      <!-- Recherche -->
+      <!-- Recherche (si pas de lieu sélectionné) -->
       <div *ngIf="!selectedLocation">
         <div class="form-group">
           <label class="form-label">Rechercher par adresse</label>
@@ -177,8 +177,8 @@
               <input
                 type="text"
                 class="form-control"
-                [value]="locationQuery"
-                (input)="locationQuery = $any($event.target).value"
+                [(ngModel)]="locationQuery"
+                [ngModelOptions]="{standalone: true}"
                 placeholder="Ex : Stade Municipal, Tunis…"
                 (keyup.enter)="searchLocation()">
             </div>
@@ -192,11 +192,53 @@
             </button>
           </div>
           <div class="field-error" *ngIf="locationError">⚠️ {{ locationError }}</div>
-          <p class="field-hint">Les coordonnées GPS seront calculées automatiquement.</p>
+          <p class="field-hint">Ou cliquez sur la carte pour sélectionner un lieu.</p>
+        </div>
+
+        <!-- Bouton pour afficher la carte -->
+        <button type="button" class="btn-show-map" (click)="toggleMap()">
+          {{ showMap ? '🗺️ Masquer la carte' : '🗺️ Choisir sur la carte' }}
+        </button>
+
+        <!-- Carte pour sélection -->
+        <div class="map-section" *ngIf="showMap">
+          <div class="map-container">
+            <app-map
+              [readonly]="false"
+              [latitude]="tempLocation?.lat || 36.8065"
+              [longitude]="tempLocation?.lng || 10.1815"
+              [zoom]="12"
+              [mapId]="'form-map'"
+              (locationSelected)="onMapClick($event)">
+            </app-map>
+          </div>
+          <p class="map-hint">👆 Cliquez sur la carte pour choisir un emplacement</p>
+
+          <!-- Aperçu du lieu cliqué (avant confirmation) -->
+          <div class="temp-location-preview" *ngIf="tempLocation">
+            <div class="temp-location-info">
+              <div class="location-map-icon">📍</div>
+              <div class="location-details">
+                <strong class="location-name">{{ tempLocation.name }}</strong>
+                <span class="location-addr" *ngIf="tempLocation.address">{{ tempLocation.address }}</span>
+                <span class="location-coords">
+                  {{ tempLocation.lat | number:'1.4-4' }}, {{ tempLocation.lng | number:'1.4-4' }}
+                </span>
+              </div>
+            </div>
+            <div class="temp-location-actions">
+              <button type="button" class="btn-confirm-location" (click)="confirmLocation()">
+                ✅ Sélectionner ce lieu
+              </button>
+              <button type="button" class="btn-cancel-location" (click)="cancelTempLocation()">
+                ✕ Annuler
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Lieu sélectionné -->
+      <!-- Lieu sélectionné (après confirmation) -->
       <div class="location-selected" *ngIf="selectedLocation">
         <div class="location-map-icon">📍</div>
         <div class="location-details">
@@ -208,8 +250,22 @@
         </div>
         <button type="button" class="btn-change" (click)="clearLocation()">✕ Changer</button>
       </div>
-    </div>
 
+      <!-- Mini carte de prévisualisation si lieu sélectionné -->
+      <ng-container *ngIf="selectedLocation">
+        <div class="map-preview" *ngIf="selectedLocation.latitude && selectedLocation.longitude">
+          <app-map
+            [readonly]="true"
+            [latitude]="selectedLocation.latitude"
+            [longitude]="selectedLocation.longitude"
+            [locationName]="selectedLocation.name || ''"
+            [zoom]="15"
+            [mapId]="'preview-map'">
+          </app-map>
+        </div>
+      </ng-container>
+    </div>
+    
     <!-- ── Section 3 : Paiement ── -->
     <div class="form-section">
       <div class="section-header">

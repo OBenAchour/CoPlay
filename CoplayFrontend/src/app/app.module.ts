@@ -36,6 +36,13 @@ import { EventListComponent } from './Features/Event & Training/event-list-compo
 import { EventDetailComponent } from './Features/Event & Training/event-detail/event-detail.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
 import { TrainingListComponent } from './Features/Event & Training/training-list/training-list.component';
+import { TrainingSessionFormComponent } from '@events/training-session-form/training-session-form.component';
+import { TrainingSessionDetailComponent } from '@events/training-session-detail/training-session-detail.component';
+import { TrainingProgramListComponent } from '@events/training-program-list/training-program-list.component';
+import { TrainingProgramFormComponent } from '@events/training-program-form/training-program-form.component';
+import { TrainingProgramDetailComponent } from '@events/training-program-detail/training-program-detail.component';
+import { MapComponent } from './Features/Event & Training/map/map.component';
+;
 
 @NgModule({
   declarations: [
@@ -53,6 +60,11 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
     EventDetailComponent,
     EventFormComponent,
     TrainingListComponent,
+    TrainingSessionFormComponent,
+    TrainingSessionDetailComponent,
+    TrainingProgramListComponent,
+    TrainingProgramFormComponent,
+    TrainingProgramDetailComponent,
 
     // Teams
     TeamComponent,
@@ -61,7 +73,8 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
-    TeamMemberComponent
+    TeamMemberComponent,
+   
     
     // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés 
     // exclusivement dans MessagingModule, pas ici.
@@ -73,7 +86,8 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
     HttpClientModule, 
     FormsModule,           // Fournit ngModel
     ReactiveFormsModule,   // Fournit formGroup
-    MessagingModule        // Importé ici pour éviter les doublons de déclaration
+    MessagingModule,
+     MapComponent       // Importé ici pour éviter les doublons de déclaration
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

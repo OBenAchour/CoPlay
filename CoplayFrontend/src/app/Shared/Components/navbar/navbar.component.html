@@ -14,7 +14,11 @@
     <li><a routerLink="/classement" routerLinkActive="active">Classement</a></li>
     <li><a routerLink="/matchs" routerLinkActive="active">Matchs</a></li>
     <li><a routerLink="/statistics" routerLinkActive="active">Statistiques</a></li>
-    
+    <li><a routerLink="/my-tickets" class="nav-link">🎟️ Mes Billets</a></li>
+    <li *ngIf="authService.isAdmin()">
+      <a routerLink="/admin/reclamations" routerLinkActive="active">Réclamations</a>
+    </li>
+
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">
         <span class="admin-icon">⚙️</span> Gestion Utilisateurs
@@ -24,12 +28,14 @@
 
   <div class="nav-auth">
     <ng-container *ngIf="authService.isLoggedIn(); else authButtons">
-      <span class="welcome-text">Salut, <strong>{{ authService.getUserName() }}</strong></span>
-      <button (click)="onLogout()" class="btn-logout">Déconnexion</button>
+      <div class="user-info">
+        <span class="welcome-text"> <strong>{{ authService.getUserName() }}</strong></span>
+        <button (click)="onLogout()" class="btn-logout">Déconnexion</button>
+      </div>
     </ng-container>
     
     <ng-template #authButtons>
-      <button routerLink="/login" class="btn-login">Connexion</button>
+      <button *ngIf="router.url !== '/'" routerLink="/login" class="btn-login">Connexion</button>
     </ng-template>
   </div>
 </nav>

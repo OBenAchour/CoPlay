@@ -1,28 +1,29 @@
-<div class="login-container">
+<div class="login-wrapper">
   <div class="login-card">
     <div class="login-header">
       <span class="header-icon">🔑</span>
       <h2>Connexion CoPlay</h2>
-      <p>Ravi de vous revoir ! Connectez-vous pour jouer.</p>
+      <p>Ravi de vous revoir !</p>
     </div>
 
     <div class="error-banner" *ngIf="errorMessage">
-      {{ errorMessage }}
+      <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
       
       <div class="input-group">
-        <label><i class="fas fa-envelope"></i> Email professionnel</label>
-        <input type="email" formControlName="email" placeholder="votre.email@exemple.com">
+        <label class="field-label"><i class="fas fa-envelope"></i> Email professionnel</label>
+        <input type="email" formControlName="email" placeholder="votre.email@exemple.com" class="form-input">
       </div>
       
-      <div class="input-group password-group">
-        <label><i class="fas fa-lock"></i> Mot de passe</label>
+      <div class="input-group">
+        <label class="field-label"><i class="fas fa-lock"></i> Mot de passe</label>
         <div class="password-wrapper">
           <input [type]="passwordVisible ? 'text' : 'password'" 
                  formControlName="password"
-                 placeholder="Entrez votre mot de passe">
+                 placeholder="Entrez votre mot de passe"
+                 class="form-input">
           
           <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()">
             <i [class]="passwordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
@@ -36,54 +37,13 @@
         </button>
       </div>
 
-      <div class="form-actions">
-        <button type="submit" class="btn-primary" [disabled]="loginForm.invalid">
-          Se connecter
-        </button>
-      </div>
+      <button type="submit" class="btn-primary" [disabled]="loginForm.invalid">
+        Se connecter
+      </button>
     </form>
     
     <div class="login-footer">
       <p>Pas encore de compte ? <a routerLink="/register">Inscrivez-vous ici</a></p>
     </div>
   </div>
-<<<<<<< HEAD
-=======
-</div>
-
-
-<p class="error-text" *ngIf="errorMessage" style="color: #e74c3c; font-size: 0.9rem; margin-bottom: 15px;">
-  <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
-</p>
-
-<!-- ====================== MODAL MOT DE PASSE OUBLIÉ ====================== -->
-<div class="modal-overlay" *ngIf="showForgotModal">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3>Mot de passe oublié</h3>
-      <button type="button" class="btn-close" (click)="closeForgotPasswordModal()">×</button>
-    </div>
-    
-    <div class="modal-body">
-      <p>Entrez votre email professionnel pour recevoir un lien de réinitialisation.</p>
-      
-      <div class="input-group">
-        <label><i class="fas fa-envelope"></i> Email professionnel</label>
-        <input type="email" 
-               [(ngModel)]="forgotEmail" 
-               placeholder="votre.email@exemple.com"
-               (keyup.enter)="sendForgotPassword()">
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn-secondary" (click)="closeForgotPasswordModal()">
-        Annuler
-      </button>
-      <button type="button" class="btn-primary" (click)="sendForgotPassword()" [disabled]="!forgotEmail">
-        Envoyer le lien
-      </button>
-    </div>
-  </div>
->>>>>>> origin/main
 </div>

@@ -3,6 +3,7 @@ package com.example.coplaybackend.Config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -49,6 +50,11 @@ public class SecurityConfig {
 
                         // Routes réservées aux Administrateurs
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/reclamations").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reclamations").hasAnyAuthority("ADMIN", "ROLE_ADMIN")   // ✅ était hasRole()
+                        .requestMatchers(HttpMethod.PATCH, "/api/reclamations/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN") // ✅ était hasRole()
+                        .requestMatchers(HttpMethod.DELETE, "/api/reclamations/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN") // ✅ était hasRole()
 
                         // Tout le reste doit être authentifié
                         .anyRequest().authenticated()

@@ -10,7 +10,10 @@ import { Router } from '@angular/router';
 export class NavbarComponent {
 
   // Injecte AuthService en public pour y accéder directement depuis le template HTML (ex: vérification isLoggedIn)
-  constructor(public authService: AuthService, private router: Router) {}
+  constructor(
+  public authService: AuthService,
+  public router: Router // Ajoute ceci ici
+) {}
 
   // Gère la déconnexion de l'utilisateur en nettoyant la session et en redirigeant vers la page de login
   onLogout() {

@@ -59,6 +59,20 @@ const routes: Routes = [
   { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
   { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
 
+  // Marketplace
+  {
+    path: 'marketplace',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./Features/Marketplace/marketplace.module').then(m => m.MarketplaceModule),
+  },
+
+  // Coaching & Suivi Santé
+  {
+    path: 'coaching',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./Features/Coaching/coaching.module').then(m => m.CoachingModule),
+  },
+
   // Redirection par défaut pour les routes inconnues
   { path: '**', redirectTo: '' }
 ];

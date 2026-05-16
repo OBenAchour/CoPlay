@@ -1,34 +1,65 @@
-<nav class="navbar">
-  <div class="navbar-brand">
-    <a [routerLink]="authService.isLoggedIn() ? '/dashboard' : '/'" class="logo-link">
-      <img src="assets/logo-coplay.png.png" alt="CoPlay Logo" class="navbar-logo">
+<header class="hdr" *ngIf="authService.isLoggedIn(); else loggedOut">
+  <a class="hdr-logo" routerLink="/dashboard">
+    <span class="hdr-logo-dot">CP</span>
+    <span>CoPlay</span>
+  </a>
+
+  <nav class="hdr-nav">
+    <a routerLink="/profile" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+      Mon Profil
     </a>
-  </div>
+    <a routerLink="/dashboard" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Tableau de bord
+    </a>
+    <a routerLink="/events" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+      Événements
+    </a>
+    <a routerLink="/competitions" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M5 4H3v2a3 3 0 0 0 3 3M19 4h2v2a3 3 0 0 1-3 3M9 20h6M12 14v6"/></svg>
+      Compétitions
+    </a>
+    <a routerLink="/classement" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20h4v-7H3zM10 20h4V8h-4zM17 20h4V4h-4z"/></svg>
+      Classement
+    </a>
+    <a routerLink="/matchs" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12c4 0 6-9 6-9s2 9 6 9 6-9 6-9"/></svg>
+      Matchs
+    </a>
+    <a routerLink="/statistics" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>
+      Statistiques
+    </a>
+    <a routerLink="/marketplace" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h2l3 12h12l2-9H6"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+      Marketplace
+    </a>
+    <a routerLink="/coaching" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14a6 6 0 0 1 12 0v4H6zM12 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+      Coaching
+    </a>
+    <a *ngIf="authService.isAdmin()" routerLink="/admin/users" routerLinkActive="active">
+      <i class="bi bi-gear" style="font-size:14px"></i>
+      Admin
+    </a>
+  </nav>
 
-  <ul class="nav-links" *ngIf="authService.isLoggedIn()">
-    <li><a routerLink="/profile" routerLinkActive="active">Mon Profil</a></li>
-    <li><a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a></li>
-    <li><a routerLink="/events" routerLinkActive="active">Événements</a></li>
-    <li><a routerLink="/competitions" routerLinkActive="active">Compétitions</a></li>
-    <li><a routerLink="/classement" routerLinkActive="active">Classement</a></li>
-    <li><a routerLink="/matchs" routerLinkActive="active">Matchs</a></li>
-    <li><a routerLink="/statistics" routerLinkActive="active">Statistiques</a></li>
-    
-    <li *ngIf="authService.isAdmin()">
-      <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">
-        <span class="admin-icon">⚙️</span> Gestion Utilisateurs
-      </a>
-    </li>
-  </ul>
-
-  <div class="nav-auth">
-    <ng-container *ngIf="authService.isLoggedIn(); else authButtons">
-      <span class="welcome-text">Salut, <strong>{{ authService.getUserName() }}</strong></span>
-      <button (click)="onLogout()" class="btn-logout">Déconnexion</button>
-    </ng-container>
-    
-    <ng-template #authButtons>
-      <button routerLink="/login" class="btn-login">Connexion</button>
-    </ng-template>
+  <div class="hdr-right">
+    <span class="hdr-greet">Salut, <b>{{ authService.getUserName() }}</b></span>
+    <button (click)="onLogout()" class="btn-logout">Déconnexion</button>
   </div>
-</nav>
+</header>
+
+<ng-template #loggedOut>
+  <header class="hdr" style="grid-template-columns:auto 1fr auto">
+    <a class="hdr-logo" routerLink="/">
+      <span class="hdr-logo-dot">CP</span>
+      <span>CoPlay</span>
+    </a>
+    <div></div>
+    <button class="btn-cp btn-primary-cp" routerLink="/login">Connexion</button>
+  </header>
+</ng-template>

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn -q -DskipTests compile)",
+      "Bash(mkdir -p /tmp/coplay-handoff)",
+      "Read(//tmp/**)",
+      "Bash(unzip -o \"C:/Users/Dev/Downloads/Coplay-handoff \\(1\\).zip\")"
+    ]
+  }
+}

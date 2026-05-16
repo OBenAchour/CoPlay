@@ -18,6 +18,8 @@ import { HomeComponent } from './Features/home/home.component';
 import { DashboardComponent } from './Features/dashboard/dashboard.component';
 import { UserListComponent } from './Features/Admin/user-list/user-list.component';
 import { NavbarComponent } from './Shared/Components/navbar/navbar.component';
+import { NotificationsBellComponent } from './Shared/Components/notifications-bell/notifications-bell.component';
+import { PlanningComponent } from './Features/planning/planning.component';
 
 // Messaging - On importe UNIQUEMENT le module global
 import { MessagingModule } from './Features/Messaging/messaging.module';
@@ -46,6 +48,8 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
     LoginComponent,
     DashboardComponent,
     NavbarComponent,
+    NotificationsBellComponent,
+    PlanningComponent,
     UserListComponent,
     ProfileComponent,
     HomeComponent,

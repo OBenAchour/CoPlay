@@ -152,7 +152,7 @@ import { CoachProfile } from '../../../Core/Models/Coaching/Coaching';
                   <span style="color:var(--muted)">({{ c.reviewCount || 0 }})</span>
                 </div>
               </div>
-              <button class="btn-cp btn-primary-cp btn-sm-cp">Voir profil</button>
+              <button class="btn-cp btn-primary-cp btn-sm-cp" [routerLink]="['/coaching/coaches', c.coachProfileId || c.userId]">Voir profil</button>
             </div>
           </article>
         </div>

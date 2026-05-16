@@ -13,6 +13,7 @@ import { ProgressComponent } from './components/progress.component';
 import { MedicalComponent } from './components/medical.component';
 import { AiCoachComponent } from './components/ai-coach.component';
 import { CoachesComponent } from './components/coaches.component';
+import { CoachDetailComponent } from './components/coach-detail.component';
 import { SharedModule } from '../../Shared/shared.module';
 
 const routes: Routes = [
@@ -26,6 +27,7 @@ const routes: Routes = [
   { path: 'medical', component: MedicalComponent },
   { path: 'ai', component: AiCoachComponent },
   { path: 'coaches', component: CoachesComponent },
+  { path: 'coaches/:id', component: CoachDetailComponent },
 ];
 
 @NgModule({
@@ -40,6 +42,7 @@ const routes: Routes = [
     MedicalComponent,
     AiCoachComponent,
     CoachesComponent,
+    CoachDetailComponent,
   ],
   imports: [CommonModule, FormsModule, RouterModule.forChild(routes), SharedModule],
 })

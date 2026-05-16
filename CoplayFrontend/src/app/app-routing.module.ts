@@ -17,6 +17,9 @@ import { UserListComponent } from './Features/Admin/user-list/user-list.componen
 import { TeamComponent } from './components/team/team.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
 
+// Planning (cross-module calendar)
+import { PlanningComponent } from './Features/planning/planning.component';
+
 // Event & Training Components
 import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
@@ -72,6 +75,9 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () => import('./Features/Coaching/coaching.module').then(m => m.CoachingModule),
   },
+
+  // Planning unifié (cross-module: coaching sessions + marketplace bookings + events + matches)
+  { path: 'planning', component: PlanningComponent, canActivate: [AuthGuard] },
 
   // Redirection par défaut pour les routes inconnues
   { path: '**', redirectTo: '' }

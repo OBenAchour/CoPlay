@@ -102,6 +102,16 @@ export class MarketplaceService {
     return this.http.post(`${BASE}/negotiations`, { targetId, targetType, proposedPrice });
   }
 
+  // Fraud reporting
+  reportFraud(targetId: string, targetType: string, reason: string): Observable<any> {
+    return this.http.post(`${BASE}/fraud`, { targetId, targetType, reason });
+  }
+
+  // Seller's other items
+  sellerEquipment(sellerId: string): Observable<Equipment[]> {
+    return this.http.get<Equipment[]>(`${BASE}/equipment/seller/${sellerId}`);
+  }
+
   // AI
   recommendations(limit = 10): Observable<Equipment[]> {
     return this.http.get<Equipment[]>(`${BASE}/ai/recommendations`, { params: { limit } as any });

@@ -24,25 +24,23 @@ public class LocalStorageProvider implements StorageProvider {
 
     @Override
     public String storeFile(MultipartFile file) throws IOException {
-        // Create upload directory if it doesn't exist
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
             log.info("Created upload directory: {}", uploadDir);
         }
 
-        // Generate unique filename
         String originalFileName = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFileName);
         String uniqueFileName = UUID.randomUUID().toString() + "." + fileExtension;
 
-        // Store file
         Path filePath = uploadPath.resolve(uniqueFileName);
-        Files.write(filePath, file.getBytes());
+        try (java.io.InputStream is = file.getInputStream()) {
+            java.nio.file.Files.copy(is, filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
 
-        // Return reference with metadata
         String reference = uniqueFileName + METADATA_SEPARATOR + originalFileName;
-        log.info("File stored locally: {} -> {}", originalFileName, uniqueFileName);
+        log.info("File stored locally: {} -> {} ({} bytes)", originalFileName, uniqueFileName, file.getSize());
         return reference;
     }
 

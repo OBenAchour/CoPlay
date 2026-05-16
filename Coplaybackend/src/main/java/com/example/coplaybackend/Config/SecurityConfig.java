@@ -44,8 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/competitions/**").permitAll()
                         .requestMatchers("/api/matches/**").permitAll()
                         .requestMatchers("/api/statistiques/**").permitAll()
-
-                        // --- ROUTES PRIVÉES (Nécessitent une authentification) ---
+                        .requestMatchers("/api/posts/**").permitAll()
+                        .requestMatchers("/api/ai/**").permitAll()
                         .requestMatchers("/api/users/me").authenticated()
 
                         // Routes réservées aux Administrateurs
@@ -73,7 +73,7 @@ public class SecurityConfig {
 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

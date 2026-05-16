@@ -1,0 +1,112 @@
+<div class="feed-container">
+  <div class="feed-header">
+    <h2>Feed</h2>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="create-post-card">
+    <div class="create-post-header">
+      <div class="avatar-sm">{{ getInitials('You') }}</div>
+      <span class="create-post-label">Create a post</span>
+    </div>
+    <form [formGroup]="createPostForm" (ngSubmit)="onSubmit()">
+      <textarea
+        formControlName="content"
+        class="post-textarea"
+        rows="3"
+        placeholder="What's on your mind?"
+      ></textarea>
+
+      <div class="create-post-actions">
+        <label class="photo-btn" for="photoUpload">
+          <i class="bi bi-image"></i>
+          <span>Photo</span>
+        </label>
+        <input type="file" id="photoUpload" accept="image/*" (change)="onPhotoSelected($event)" hidden>
+
+        <button type="submit" class="post-btn" [disabled]="createPostForm.invalid || loading">
+          <span *ngIf="loading" class="spinner"></span>
+          <span *ngIf="!loading">Post</span>
+        </button>
+      </div>
+
+      <div *ngIf="photoPreview" class="photo-preview">
+        <img [src]="photoPreview" alt="Preview">
+        <button type="button" class="remove-photo" (click)="clearPhoto()">&times;</button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="loading && posts.length === 0" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!loading && posts.length === 0" class="empty-state">
+    <i class="bi bi-journal-text"></i>
+    <p>No posts yet. Be the first to post!</p>
+  </div>
+
+  <div class="post-card" *ngFor="let post of posts">
+    <div class="post-header">
+      <div class="post-author">
+        <div class="avatar" [style.background]="getAvatarColor(post.author?.userId || '')">
+          {{ getInitials(post.author?.profile?.displayName || 'A') }}
+        </div>
+        <div class="author-info">
+          <span class="author-name">{{ post.author?.profile?.displayName || 'Anonymous' }}</span>
+          <span class="post-time">{{ getRelativeTime(post.createdAt || '') }}</span>
+        </div>
+      </div>
+      <button class="delete-btn" (click)="onDelete(post.postId!)" title="Delete">&times;</button>
+    </div>
+
+    <div class="post-content">
+      <p>{{ post.content }}</p>
+      <img *ngIf="post.photoUrl" [src]="post.photoUrl" (error)="onImageError($event)" class="post-image" alt="Post photo">
+    </div>
+
+    <div class="post-stats">
+      <span>{{ post.likeCount || 0 }} likes</span>
+      <span>{{ post.commentCount || 0 }} comments</span>
+    </div>
+
+    <div class="post-actions">
+      <button class="action-btn" [class.liked]="likedPosts.has(post.postId!)" (click)="onToggleLike(post.postId!)">
+        <i class="bi" [class.bi-heart-fill]="likedPosts.has(post.postId!)" [class.bi-heart]="!likedPosts.has(post.postId!)"></i>
+        Like
+      </button>
+      <button class="action-btn" (click)="toggleComments(post.postId!)">
+        <i class="bi bi-chat"></i>
+        Comment
+      </button>
+    </div>
+
+    <div *ngIf="expandedComments.has(post.postId!)" class="comments-section">
+      <form [formGroup]="getCommentForm(post.postId!)" (ngSubmit)="onSubmitComment(post.postId!)" class="comment-form">
+        <input type="text" formControlName="content" placeholder="Write a comment..." maxlength="1000">
+        <button type="submit" [disabled]="getCommentForm(post.postId!).invalid">
+          <i class="bi bi-send"></i>
+        </button>
+      </form>
+
+      <div *ngIf="postComments.has(post.postId!)" class="comments-list">
+        <div *ngFor="let comment of postComments.get(post.postId!)" class="comment-item">
+          <div class="comment-avatar-sm">{{ getInitials(comment.author?.profile?.displayName || '?') }}</div>
+          <div class="comment-body">
+            <div class="comment-header">
+              <strong>{{ comment.author?.profile?.displayName || 'Anonymous' }}</strong>
+              <small>{{ getRelativeTime(comment.createdAt) }}</small>
+            </div>
+            <p>{{ comment.content }}</p>
+          </div>
+          <button class="comment-delete" (click)="onDeleteComment(post.postId!, comment.commentId)" title="Delete">&times;</button>
+        </div>
+      </div>
+
+      <div *ngIf="!postComments.has(post.postId!)" class="text-center text-muted small py-2">
+        Loading comments...
+      </div>
+    </div>
+  </div>
+</div>

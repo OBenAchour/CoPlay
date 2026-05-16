@@ -35,4 +35,8 @@ public class CallSession {
     private Long durationSeconds;
 
     private String roomId;  // Pour WebRTC room identification
+
+    private String sdpOffer;  // Stored offer for receiver to pick up
+
+    private String sdpAnswer; // Stored answer
 }

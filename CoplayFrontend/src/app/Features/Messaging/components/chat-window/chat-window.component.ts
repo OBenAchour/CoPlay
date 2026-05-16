@@ -27,6 +27,7 @@ export class ChatWindowComponent {
   @Output() acceptCall = new EventEmitter<void>();
   @Output() declineCall = new EventEmitter<void>();
   @Output() endCall = new EventEmitter<void>();
+  @Output() callStarted = new EventEmitter<{ callId: string; roomId: string; type: 'AUDIO' | 'VIDEO' }>();
 
   searchQuery = '';
   messageInput = '';
@@ -49,14 +50,44 @@ export class ChatWindowComponent {
   }
 
   formatTime(dateStr: string): string {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + 'Z');
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     
-    if (hours < 1) return 'Maintenant';
+    if (hours < 1) return 'Now';
     if (hours < 24) return `${hours}h`;
-    return `${Math.floor(hours / 24)}j`;
+    return `${Math.floor(hours / 24)}d`;
+  }
+
+  getRelativeTime(dateStr: string): string {
+    if (!dateStr) return '';
+    const now = new Date();
+    const date = new Date(dateStr + 'Z');
+    const diffMs = now.getTime() - date.getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+  }
+
+  formatLastSeen(dateStr?: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr + 'Z');
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
   }
 
   startCall(type: 'AUDIO' | 'VIDEO'): void {
@@ -64,6 +95,7 @@ export class ChatWindowComponent {
       this.callService.startCall(this.selectedConversation.conversationId, type).subscribe({
         next: (call) => {
           console.log('Call started:', call);
+          this.callStarted.emit({ callId: call.callId, roomId: call.roomId, type });
         },
         error: (err) => {
           console.error('Failed to start call:', err);

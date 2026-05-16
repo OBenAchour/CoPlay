@@ -120,8 +120,8 @@ export class MessageBubbleComponent implements OnInit {
 
   formatTime(dateStr?: string): string {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const date = new Date(dateStr + 'Z');
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   }
 
   hasUserReacted(): boolean {

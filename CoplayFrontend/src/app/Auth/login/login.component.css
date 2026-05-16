@@ -1,152 +1,82 @@
-/* 1. CONTAINER PRINCIPAL */
-.login-container {
+/* Container de la page (Centrage total) */
+.login-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 70px);
-  position: relative;
+  min-height: 100vh;
+  background-color: #aec3d4; /* La couleur bleue de votre capture */
   padding: 20px;
-  overflow: hidden; /* Empêche le flou de l'image de dépasser du cadre */
 }
 
-/* 2. IMAGE D'ARRIÈRE-PLAN (EFFET SANS ZOOM EXCESSIF) */
-.login-container::before {
-  content: "";
-  position: absolute;
-  /* On étend le fond légèrement hors écran pour masquer les bords blancs du flou */
-  top: -15px;
-  left: -15px;
-  right: -15px;
-  bottom: -15px;
-  width: calc(100% + 30px);
-  height: calc(100% + 30px);
-  
-  /* Chemin vers ton image dans le dossier assets */
-  background-image: url('/assets/background-coplay.jpg'); 
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  
-  /* Flou modéré pour garder l'ambiance sans déformer l'image */
-  filter: blur(5px); 
-  
-  /* Zoom minimal (2%) pour compenser le flou sur les bords */
-  transform: scale(1.02); 
-  z-index: 1;
-}
-
-/* 3. VOILE SOMBRE (OVERLAY) */
-.login-container::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* Dégradé semi-transparent pour faire ressortir le formulaire blanc */
-  background: linear-gradient(135deg, rgba(44, 62, 80, 0.7) 0%, rgba(52, 152, 219, 0.4) 100%);
-  z-index: 2;
-}
-
-/* 4. LA CARTE DE CONNEXION */
+/* Carte blanche */
 .login-card {
-  position: relative;
-  z-index: 10; /* Doit être au-dessus du voile sombre */
   background: white;
   width: 100%;
-  max-width: 450px;
+  max-width: 400px;
   padding: 40px;
   border-radius: 15px;
-  /* Ombre portée élégante pour l'effet de profondeur */
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
-/* --- ÉLÉMENTS INTERNES DE LA CARTE --- */
+/* Titres */
+.login-header { text-align: center; margin-bottom: 30px; }
+.header-icon { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+h2 { color: #2c3e50; margin: 0; font-size: 1.5rem; }
 
-.login-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.header-icon {
-  font-size: 3rem;
-  margin-bottom: 10px;
-  display: inline-block;
-}
-
-.error-banner {
-  background-color: #fee2e2;
-  color: #dc2626;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 0.9rem;
-  text-align: center;
-  border: 1px solid #fecaca;
-}
-
+/* Organisation verticale : Label au dessus, Input dessous */
 .input-group {
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column; /* Force l'alignement vertical */
+  align-items: flex-start; /* Aligne le texte à gauche */
 }
 
-label {
+.field-label {
   display: block;
-  margin-bottom: 8px;
+  width: 100%;
+  margin-bottom: 8px; /* Espace entre le texte et la zone de saisie */
   font-weight: 600;
   color: #34495e;
   font-size: 0.9rem;
+  text-align: left;
 }
 
-label i {
-  color: #3498db;
-  margin-right: 8px;
-}
-
-input {
-  width: 100%;
+.form-input {
+  width: 100%; /* Prend toute la largeur de la carte */
   padding: 12px 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.3s;
-  box-sizing: border-box; /* Crucial pour ne pas déborder avec le padding */
+  box-sizing: border-box; /* Empêche le débordement */
 }
 
-input:focus {
-  border-color: #3498db;
-  outline: none;
-  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-}
-
+/* Gestion du mot de passe avec l'oeil */
 .password-wrapper {
   position: relative;
+  width: 100%; /* Important pour que l'oeil soit bien placé */
   display: flex;
   align-items: center;
 }
 
+.password-wrapper .form-input {
+  padding-right: 45px; /* Laisse de la place pour l'icône de l'oeil */
+}
+
 .btn-toggle-password {
   position: absolute;
-  right: 15px;
+  right: 12px;
   background: none;
   border: none;
+  color: #95a5a6;
   cursor: pointer;
-  color: #7f8c8d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.form-options {
-  text-align: right;
-  margin-bottom: 25px;
-}
-
-.forgot-link {
-  font-size: 0.85rem;
-  color: #3498db;
-  text-decoration: none;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
+/* Boutons et liens */
+.form-options { text-align: right; margin-bottom: 25px; }
+.forgot-link { background: none; border: none; color: #3498db; cursor: pointer; font-size: 0.85rem; }
 
 .btn-primary {
   width: 100%;
@@ -156,114 +86,11 @@ input:focus {
   border: none;
   border-radius: 8px;
   font-weight: bold;
-  font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.3s;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: #27ae60;
-  transform: translateY(-1px);
-}
+.btn-primary:hover { background-color: #27ae60; }
+.btn-primary:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
-.btn-primary:disabled {
-  background-color: #bdc3c7;
-  cursor: not-allowed;
-}
-
-.login-footer {
-  text-align: center;
-  margin-top: 25px;
-  font-size: 0.9rem;
-  color: #7f8c8d;
-}
-
-.login-footer a {
-  color: #3498db;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.login-footer a:hover {
-  text-decoration: underline;
-}
-/* ====================== MODAL ====================== */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-card {
-  background: white;
-  width: 100%;
-  max-width: 420px;
-  border-radius: 15px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-}
-
-.modal-header {
-  padding: 20px 25px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #2c3e50;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.8rem;
-  line-height: 1;
-  color: #95a5a6;
-  cursor: pointer;
-}
-
-.btn-close:hover {
-  color: #e74c3c;
-}
-
-.modal-body {
-  padding: 25px;
-}
-
-.modal-body p {
-  margin-bottom: 20px;
-  color: #7f8c8d;
-  font-size: 0.95rem;
-}
-
-.modal-footer {
-  padding: 20px 25px;
-  background: #f8f9fa;
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.btn-secondary {
-  padding: 12px 20px;
-  background-color: #95a5a6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.btn-secondary:hover {
-  background-color: #7f8c8d;
-}
+.login-footer { text-align: center; margin-top: 25px; font-size: 0.9rem; color: #7f8c8d; }

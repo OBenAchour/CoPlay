@@ -1,28 +1,49 @@
-<div class="call-window" [class.video]="callType === 'VIDEO'">
+<div class="call-window">
   <div class="call-header">
-    <span>{{ callType === 'VIDEO' ? '📹' : '📞' }}</span>
-    <span>{{ callType === 'VIDEO' ? 'Appel vidéo' : 'Appel audio' }}</span>
-    <span class="status">{{ getStatusText() }}</span>
+    <div class="call-header-info">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span>{{ callType === 'VIDEO' ? 'Video Call' : 'Voice Call' }}</span>
+    </div>
+    <span class="status-text">{{ getStatusText() }}</span>
   </div>
 
   <div class="call-body">
-    <div class="avatar">👤</div>
-    <div class="status-indicator" [class.ringing]="callStatus === 'ringing'">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
+    <div class="video-container" *ngIf="callType === 'VIDEO'">
+      <video class="remote-video" #remoteVideo [srcObject]="remoteStream" autoplay playsinline *ngIf="remoteStream"></video>
+      <div class="no-video" *ngIf="!remoteStream">
+        <div class="avatar-large">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="status-indicator" [class.ringing]="callStatus === 'ringing'">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="audio-mode" *ngIf="callType === 'AUDIO'">
+      <div class="avatar-large">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="status-indicator" [class.ringing]="callStatus === 'ringing'">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+    <audio #remoteAudio autoplay></audio>
+
+    <div class="local-video-overlay" *ngIf="callType === 'VIDEO'">
+      <video #localVideo autoplay playsinline muted></video>
     </div>
   </div>
 
   <div class="call-controls">
-    <button (click)="toggleMute()" [class.active]="isMuted">
-      {{ isMuted ? '🔇' : '🔊' }}
+    <button (click)="toggleMute()" [class.active]="isMuted" title="Mute">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
     </button>
-    <button *ngIf="callType === 'VIDEO'" (click)="toggleVideo()" [class.active]="isVideoOff">
-      {{ isVideoOff ? '📵' : '📹' }}
+    <button *ngIf="callType === 'VIDEO'" (click)="toggleVideo()" [class.active]="isVideoOff" title="Video">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
     </button>
-    <button class="end-call" (click)="isIncoming ? decline() : endCallEvent()">
-      📞
+    <button class="end-call" (click)="isIncoming ? decline() : endCallEvent()" title="End call">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 20.72v-3a2 2 0 0 0-2.18-2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 4.07 2.18 2 2 0 0 0 2 0H.04a2 2 0 0 0-2 2.06 24 24 0 0 0 3.71 10.86 24 24 0 0 0 8.37 8.37A24 24 0 0 0 20.92 24h.06a2 2 0 0 0 2-1.88v-2.4z"/></svg>
     </button>
   </div>
 </div>

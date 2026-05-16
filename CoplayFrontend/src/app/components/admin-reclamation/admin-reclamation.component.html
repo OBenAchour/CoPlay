@@ -1,0 +1,76 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h2>📋 Gestion des Réclamations</h2>
+    <div class="stats-bar">
+      <span class="stat total">Total : {{ reclamations.length }}</span>
+      <span class="stat attente">⏳ En attente : {{ nbEnAttente }}</span>
+      <span class="stat traitee">✅ Traitées : {{ nbTraitees }}</span>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filtres">
+    <input
+      type="text"
+      [(ngModel)]="recherche"
+      (input)="appliquerFiltres()"
+      placeholder="🔍 Rechercher par nom, email ou objet..."
+      class="input-recherche"
+    />
+    <div class="btn-group-filtre">
+      <button (click)="filtreStatut='toutes'; appliquerFiltres()"
+              [class.active]="filtreStatut==='toutes'">Toutes</button>
+      <button (click)="filtreStatut='en_attente'; appliquerFiltres()"
+              [class.active]="filtreStatut==='en_attente'">En attente</button>
+      <button (click)="filtreStatut='traitee'; appliquerFiltres()"
+              [class.active]="filtreStatut==='traitee'">Traitées</button>
+    </div>
+  </div>
+
+  <!-- États de chargement -->
+  <div *ngIf="chargement" class="loading">Chargement des réclamations...</div>
+  <div *ngIf="erreur" class="alert alert-danger">❌ Impossible de charger les réclamations. Vérifiez que le serveur est démarré.</div>
+  <div *ngIf="!chargement && reclamationsFiltrees.length === 0 && !erreur" class="empty-state">
+    Aucune réclamation trouvée.
+  </div>
+
+  <!-- Tableau -->
+  <table class="table" *ngIf="!chargement && reclamationsFiltrees.length > 0">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Demandeur</th>
+        <th>Objet</th>
+        <th>Message</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of reclamationsFiltrees" [class.row-traitee]="r.traitee">
+        <td>{{ r.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <strong>{{ r.nomComplet }}</strong><br>
+          <small>{{ r.email }}</small>
+        </td>
+        <td><strong>{{ r.objet }}</strong></td>
+        <td class="msg-cell">{{ r.message }}</td>
+        <td>
+          <span class="badge" [class.badge-success]="r.traitee" [class.badge-warning]="!r.traitee">
+            {{ r.traitee ? '✅ Traitée' : '⏳ En attente' }}
+          </span>
+        </td>
+        <td class="actions">
+          <button *ngIf="!r.traitee"
+                  (click)="marquerTraitee(r.id!)"
+                  class="btn-traiter">
+            ✔ Traiter
+          </button>
+          <button (click)="supprimer(r.id!)" class="btn-supprimer">
+            🗑 Supprimer
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

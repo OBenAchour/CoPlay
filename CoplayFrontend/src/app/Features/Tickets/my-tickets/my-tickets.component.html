@@ -1,0 +1,170 @@
+<div class="page-container">
+  <div class="main-background"></div>
+
+  <div class="content-overlay container pt-5">
+
+    <div class="text-center mb-5">
+      <h1 class="fw-bold text-white text-shadow">🎟️ Mes Billets</h1>
+      <p class="text-white-50">Retrouvez et imprimez vos billets achetés</p>
+    </div>
+
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-light"></div>
+    </div>
+
+    <div *ngIf="!loading && tickets.length === 0"
+         class="glass-style p-5 text-center mx-auto"
+         style="max-width: 500px;">
+      <div style="font-size: 4rem;">🎫</div>
+      <h4 class="fw-bold text-dark mt-3">Aucun billet trouvé</h4>
+      <p class="text-muted">Vous n'avez pas encore acheté de billets.</p>
+    </div>
+
+    <div *ngIf="!loading && tickets.length > 0"
+         class="row justify-content-center g-4 pb-5">
+
+      <div class="col-md-6 col-lg-5" *ngFor="let ticket of tickets">
+        <div class="ticket-card glass-style">
+
+          <!-- Header coloré -->
+          <div class="ticket-header"
+               [ngClass]="getHeaderClass(ticket.category)">
+            <span class="ticket-category-icon">
+              {{ getCategoryIcon(ticket.category) }}
+            </span>
+            <span class="ticket-category-label">{{ ticket.category }}</span>
+            <span class="ticket-number-header">{{ ticket.ticketNumber }}</span>
+          </div>
+
+          <!-- Corps -->
+          <div class="ticket-body p-4">
+
+            <!-- ✅ Match -->
+            <div class="match-info-box mb-3" *ngIf="ticket.teamA && ticket.teamB">
+              <span class="team">{{ ticket.teamA }}</span>
+              <span class="vs">VS</span>
+              <span class="team">{{ ticket.teamB }}</span>
+            </div>
+
+            <div class="text-center mb-3">
+              <div class="seat-badge">💺 {{ ticket.seatNumber }}</div>
+            </div>
+
+            <div class="ticket-info-row">
+              <span class="info-label">🎟️ Numéro</span>
+              <span class="info-value">{{ ticket.ticketNumber }}</span>
+            </div>
+
+            <!-- ✅ Nom du détenteur -->
+            <div class="ticket-info-row">
+              <span class="info-label">👤 Détenteur</span>
+              <span class="info-value fw-bold">{{ ticket.buyerName || 'N/A' }}</span>
+            </div>
+
+            <div class="ticket-info-row">
+              <span class="info-label">💰 Prix</span>
+              <span class="info-value fw-bold">{{ ticket.price }} DT</span>
+            </div>
+
+            <div class="ticket-info-row">
+              <span class="info-label">📅 Match</span>
+              <span class="info-value">{{ ticket.matchDate || 'N/A' }}</span>
+            </div>
+
+            <div class="ticket-info-row">
+              <span class="info-label">🕐 Acheté le</span>
+              <span class="info-value">
+                {{ ticket.purchasedAt
+                   ? (ticket.purchasedAt | date:'dd/MM/yyyy HH:mm')
+                   : 'N/A' }}
+              </span>
+            </div>
+
+            <div class="ticket-divider my-3"></div>
+
+            <button class="btn btn-print w-100"
+                    (click)="printTicket(ticket)">
+              🖨️ Imprimer ce billet
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONE D'IMPRESSION -->
+<div id="print-zone" style="display:none;">
+  <div *ngIf="ticketToPrint" class="print-ticket">
+
+    <div class="print-header">
+      <h1>🏆 CoPlay</h1>
+      <h2>BILLET OFFICIEL</h2>
+    </div>
+
+    <div class="print-line"></div>
+
+    <!-- ✅ Match sur le billet imprimé -->
+    <div class="print-match"
+         *ngIf="ticketToPrint.teamA && ticketToPrint.teamB">
+      <span>{{ ticketToPrint.teamA }}</span>
+      <span class="print-vs">VS</span>
+      <span>{{ ticketToPrint.teamB }}</span>
+    </div>
+
+    <div class="print-category">
+      {{ getCategoryIcon(ticketToPrint.category) }}
+      {{ ticketToPrint.category }}
+    </div>
+
+    <table class="print-table">
+      <tr>
+        <td class="print-label">Numéro de billet</td>
+        <td class="print-val">{{ ticketToPrint.ticketNumber }}</td>
+      </tr>
+      <tr>
+        <td class="print-label">Siège</td>
+        <td class="print-val">{{ ticketToPrint.seatNumber }}</td>
+      </tr>
+      <!-- ✅ Nom du détenteur sur le billet -->
+      <tr>
+        <td class="print-label">Détenteur</td>
+        <td class="print-val">{{ ticketToPrint.buyerName || 'N/A' }}</td>
+      </tr>
+      <tr>
+        <td class="print-label">Catégorie</td>
+        <td class="print-val">{{ ticketToPrint.category }}</td>
+      </tr>
+      <tr>
+        <td class="print-label">Prix payé</td>
+        <td class="print-val">{{ ticketToPrint.price }} DT</td>
+      </tr>
+      <tr>
+        <td class="print-label">Date du match</td>
+        <td class="print-val">{{ ticketToPrint.matchDate || 'N/A' }}</td>
+      </tr>
+      <tr>
+        <td class="print-label">Date d'achat</td>
+        <td class="print-val">
+          {{ ticketToPrint.purchasedAt | date:'dd/MM/yyyy à HH:mm' }}
+        </td>
+      </tr>
+    </table>
+
+    <div class="print-dashed"></div>
+
+    <div class="print-qr">
+      <div class="qr-box">
+        <div class="qr-inner">{{ ticketToPrint.ticketNumber }}</div>
+      </div>
+      <p class="qr-label">Présentez ce billet à l'entrée</p>
+    </div>
+
+    <div class="print-footer">
+      <p>Ce billet est personnel et non remboursable.</p>
+      <p>© CoPlay {{ currentYear }}</p>
+    </div>
+
+  </div>
+</div>

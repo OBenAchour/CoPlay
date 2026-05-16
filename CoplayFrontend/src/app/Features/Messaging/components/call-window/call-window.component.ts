@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CallService } from 'src/app/Core/Services/Call/call.service';
 import { WebRTCService } from 'src/app/Core/Services/Call/webrtc.service';
@@ -15,17 +15,20 @@ export class CallWindowComponent implements OnInit, OnDestroy {
   @Input() incomingCallId?: string;
   @Input() incomingRoomId?: string;
   @Output() endCall = new EventEmitter<void>();
+  @ViewChild('localVideo', { static: false }) localVideoRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('remoteAudio', { static: true }) remoteAudioRef!: ElementRef<HTMLAudioElement>;
 
   callStatus: 'connecting' | 'ringing' | 'connected' | 'ended' = 'connecting';
   isMuted = false;
   isVideoOff = false;
-  roomId?: string;
-  callId?: string;
-  isInitiator = false;
-  
+  remoteStream: MediaStream | null = null;
   private offerSent = false;
   private answerReceived = false;
   private unsubscribe: (() => void) | null = null;
+  private remoteSub: Subscription | null = null;
+
+  get callId(): string { return this.incomingCallId || ''; }
+  get roomId(): string { return this.incomingRoomId || ''; }
 
   constructor(
     private callService: CallService,
@@ -33,25 +36,45 @@ export class CallWindowComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    console.log('[CALL-WINDOW] ngOnInit - isIncoming:', this.isIncoming);
-    
+    console.log('[CALL-WINDOW] ngOnInit - isIncoming:', this.isIncoming, 'callId:', this.callId, 'roomId:', this.roomId);
+
     try {
       await this.webrtcService.initialize(this.callType === 'VIDEO');
       this.webrtcService.createPeerConnection();
 
-      if (this.isIncoming && this.incomingCallId && this.incomingRoomId) {
-        console.log('[CALL-WINDOW] Mode INCOMING - callId:', this.incomingCallId, 'roomId:', this.incomingRoomId);
-        this.callId = this.incomingCallId;
-        this.roomId = this.incomingRoomId;
+      const localStream = this.webrtcService.getLocalStream();
+      if (localStream) {
+        setTimeout(() => {
+          if (this.localVideoRef?.nativeElement) {
+            this.localVideoRef.nativeElement.srcObject = localStream;
+          }
+        });
+      }
+
+      this.remoteSub = this.webrtcService.getRemoteStream().subscribe(stream => {
+        this.remoteStream = stream;
+        if (stream) {
+          this.callStatus = 'connected';
+          const audioEl = this.remoteAudioRef?.nativeElement;
+          if (audioEl) {
+            audioEl.srcObject = stream;
+            audioEl.play().catch(e =>
+              console.warn('[CALL-WINDOW] Audio autoplay blocked:', e)
+            );
+          }
+        }
+      });
+
+      if (this.isIncoming && this.callId && this.roomId) {
         this.callStatus = 'ringing';
-        this.isInitiator = false;
         this.subscribeToCallEvents();
-        
-        this.callService.acceptCall(this.incomingCallId).subscribe();
+        this.callService.acceptCall(this.callId).subscribe();
+      } else if (this.callId && this.roomId) {
+        this.callStatus = 'ringing';
+        this.subscribeToCallEvents();
+        await this.initiateWebRTC();
       } else {
-        console.log('[CALL-WINDOW] Mode OUTGOING - conversationId:', this.conversationId);
-        this.isInitiator = true;
-        await this.startOutgoingCall();
+        this.callStatus = 'ended';
       }
     } catch (error) {
       console.error('[CALL-WINDOW] Failed to initialize:', error);
@@ -59,28 +82,8 @@ export class CallWindowComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async startOutgoingCall(): Promise<void> {
-    console.log('[CALL-WINDOW] startOutgoingCall');
-    
-    this.callService.startCall(this.conversationId, this.callType).subscribe({
-      next: async (call) => {
-        console.log('[CALL-WINDOW] startCall SUCCESS - callId:', call.callId, 'roomId:', call.roomId);
-        this.callId = call.callId;
-        this.roomId = call.roomId;
-        this.callStatus = 'ringing';
-        this.subscribeToCallEvents();
-        await this.initiateWebRTC();
-      },
-      error: (err) => {
-        console.error('[CALL-WINDOW] startCall ERROR:', err);
-        this.callStatus = 'ended';
-      }
-    });
-  }
-
   private async initiateWebRTC(): Promise<void> {
     if (this.offerSent || !this.roomId) return;
-    
     console.log('[CALL-WINDOW] Creating offer...');
     this.offerSent = true;
 
@@ -89,134 +92,82 @@ export class CallWindowComponent implements OnInit, OnDestroy {
       console.log('[CALL-WINDOW] Offer created, sending to backend');
       this.callService.sendOffer(this.callId, JSON.stringify(offer)).subscribe({
         next: () => console.log('[CALL-WINDOW] Offer sent successfully'),
-        error: (err) => {
-          console.error('[CALL-WINDOW] Failed to send offer:', err);
-          this.offerSent = false;
-        }
+        error: (err) => { console.error('[CALL-WINDOW] Failed to send offer:', err); this.offerSent = false; }
       });
     }
   }
 
   private subscribeToCallEvents(): void {
-    if (!this.roomId) {
-      console.warn('[CALL-WINDOW] No roomId, cannot subscribe');
-      return;
-    }
-
+    if (!this.roomId) { console.warn('[CALL-WINDOW] No roomId'); return; }
     console.log('[CALL-WINDOW] Subscribing to room:', this.roomId);
 
     this.unsubscribe = this.callService.subscribeToCallRoom(this.roomId, {
-      onCallInitiated: (data) => {
-        console.log('[CALL-WINDOW] Call initiated received:', data);
-      },
-      
+      onCallInitiated: () => {},
       onOffer: async (data) => {
-        console.log('[CALL-WINDOW] RECEIVED OFFER');
         if (this.callStatus === 'ended') return;
-
+        // Only receiver handles offers; caller created theirs already
+        if (!this.isIncoming) return;
         try {
           const offer = JSON.parse(data.sdp);
           const answer = await this.webrtcService.createAnswer(offer);
           if (answer && this.callId) {
             this.callService.sendAnswer(this.callId, JSON.stringify(answer)).subscribe();
           }
-        } catch (error) {
-          console.error('[CALL-WINDOW] Error creating answer:', error);
-        }
+        } catch (error) { console.error('[CALL-WINDOW] Error creating answer:', error); }
       },
-      
       onAnswer: async (data) => {
-        console.log('[CALL-WINDOW] RECEIVED ANSWER');
-        if (this.callStatus === 'ended' || this.answerReceived || !this.offerSent) return;
-
+        if (this.callStatus === 'ended' || this.answerReceived) return;
+        // Only the caller handles the answer; receiver created it locally
+        if (this.isIncoming) return;
         this.answerReceived = true;
-
         try {
           const answer = JSON.parse(data.sdp);
           await this.webrtcService.handleAnswer(answer);
           this.callStatus = 'connected';
           console.log('[CALL-WINDOW] Call connected!');
-        } catch (error) {
-          console.error('[CALL-WINDOW] Error handling answer:', error);
-        }
+        } catch (error) { console.error('[CALL-WINDOW] Error handling answer:', error); }
       },
-      
       onIceCandidate: async (data) => {
         if (this.callStatus === 'ended' || !data.candidate) return;
-        const candidate = JSON.parse(data.candidate);
-        await this.webrtcService.addIceCandidate(candidate);
+        await this.webrtcService.addIceCandidate(JSON.parse(data.candidate));
       },
-      
       onCallAccepted: () => {
-        console.log('[CALL-WINDOW] CALL ACCEPTED');
-        if (this.callStatus !== 'ended') {
-          this.callStatus = 'connected';
-        }
+        if (this.callStatus !== 'ended') this.callStatus = 'connected';
       },
-      
-      onCallDeclined: () => {
-        console.log('[CALL-WINDOW] CALL DECLINED');
-        this.callStatus = 'ended';
-        this.endCallEvent();
-      },
-      
-      onCallEnded: () => {
-        console.log('[CALL-WINDOW] CALL ENDED');
-        this.callStatus = 'ended';
-        this.endCallEvent();
-      }
+      onCallDeclined: () => { this.callStatus = 'ended'; this.endCallEvent(); },
+      onCallEnded: () => { this.callStatus = 'ended'; this.endCallEvent(); }
     });
   }
 
-  toggleMute(): void {
-    this.webrtcService.toggleAudio();
-    this.isMuted = !this.isMuted;
-  }
-
-  toggleVideo(): void {
-    this.webrtcService.toggleVideo();
-    this.isVideoOff = !this.isVideoOff;
-  }
+  toggleMute(): void { this.webrtcService.toggleAudio(); this.isMuted = !this.isMuted; }
+  toggleVideo(): void { this.webrtcService.toggleVideo(); this.isVideoOff = !this.isVideoOff; }
 
   endCallEvent(): void {
     console.log('[CALL-WINDOW] Ending call');
     this.webrtcService.endCall();
-    if (this.callId) {
-      this.callService.endCall(this.callId).subscribe();
-    }
+    if (this.callId) this.callService.endCall(this.callId).subscribe();
     this.endCall.emit();
   }
 
   decline(): void {
-    console.log('[CALL-WINDOW] Declining call');
-    if (this.callId) {
-      this.callService.declineCall(this.callId).subscribe();
-    }
+    if (this.callId) this.callService.declineCall(this.callId).subscribe();
     this.webrtcService.endCall();
     this.endCall.emit();
   }
 
   getStatusText(): string {
     switch (this.callStatus) {
-      case 'connecting': return 'Connexion...';
-      case 'ringing': return this.isInitiator ? 'Appel en cours...' : 'Sonnerie...';
-      case 'connected': return 'En cours';
-      case 'ended': return 'Terminé';
+      case 'connecting': return 'Connecting...';
+      case 'ringing': return this.isIncoming ? 'Ringing...' : 'Calling...';
+      case 'connected': return 'Connected';
+      case 'ended': return 'Ended';
       default: return '';
     }
   }
 
-  getRemoteStream() {
-    return this.webrtcService.getRemoteStream().asObservable();
-  }
-
-  getLocalStream() {
-    return this.webrtcService.getLocalStream();
-  }
-
   ngOnDestroy(): void {
-    console.log('[CALL-WINDOW] ngOnDestroy');
     this.unsubscribe?.();
+    this.remoteSub?.unsubscribe();
     this.webrtcService.endCall();
   }
 }

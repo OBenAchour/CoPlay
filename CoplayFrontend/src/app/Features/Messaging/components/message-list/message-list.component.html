@@ -2,10 +2,24 @@
   <div 
     *ngFor="let message of messages" 
     class="message-wrapper"
-    [class.my-message]="isMyMessage(message.sender?.userId || '')">
+    [class.my-message]="isMyMessage(message.sender.userId || '')">
     <app-message-bubble 
       [message]="message" 
-      [isOwn]="isMyMessage(message.sender?.userId || '')">
+      [isOwn]="isMyMessage(message.sender.userId || '')">
     </app-message-bubble>
   </div>
+  <ng-container *ngFor="let group of messageGroups">
+    <div class="date-separator">
+      <span>{{ group.label }}</span>
+    </div>
+    <div 
+      *ngFor="let message of group.messages" 
+      class="message-wrapper"
+      [class.my-message]="isMyMessage(message.sender?.userId || '')">
+      <app-message-bubble 
+        [message]="message" 
+        [isOwn]="isMyMessage(message.sender?.userId || '')">
+      </app-message-bubble>
+    </div>
+  </ng-container>
 </div>

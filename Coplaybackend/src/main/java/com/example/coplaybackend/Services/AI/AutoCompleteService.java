@@ -35,14 +35,19 @@ public class AutoCompleteService {
             String prompt = buildPromptMultiple(messagePrefix, context, count);
             String suggestions = aiClient.complete(prompt);
 
-            if (suggestions != null) {
-                return parseMultipleSuggestions(suggestions, count);
+            if (suggestions != null && !suggestions.isBlank()) {
+                List<String> parsed = parseMultipleSuggestions(suggestions, count);
+                if (!parsed.isEmpty()) {
+                    return parsed;
+                }
             }
         } catch (Exception e) {
-            log.warn("OpenAI API failed, using fallback: {}", e.getMessage());
+            log.warn("AI API failed, using fallback: {}", e.getMessage());
         }
 
-        return getFallbackSuggestions(messagePrefix);
+        List<String> fallback = getFallbackSuggestions(messagePrefix);
+        log.info("Returning {} fallback suggestions for '{}'", fallback.size(), messagePrefix);
+        return fallback;
     }
 
     private String buildPrompt(String prefix, String context) {

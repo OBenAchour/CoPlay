@@ -22,3 +22,80 @@
     <p>Gérez vos statistiques et progressez avec nos coachs certifiés.</p>
   </div>
 </section>
+<section class="about-us">
+  <div class="about-content">
+    <h2>À propos de <span class="logo-text">CoPlay</span></h2>
+    <p>CoPlay est née d'une passion commune pour le sport et d'une volonté de faciliter les rencontres sportives. Notre mission est de briser les barrières, de motiver chacun à bouger et de créer une communauté engagée. Que vous cherchiez un partenaire de tennis, une équipe de foot ou un coach pour vous dépasser, CoPlay est votre terrain de jeu.</p>
+  </div>
+</section>
+
+<!-- ... votre section hero et features existantes ... -->
+
+<section class="contact-section">
+  <div class="contact-content">
+    <h2>Contact & Réclamations</h2>
+    <p>Une question, une suggestion ou un problème ? Notre équipe est à votre écoute.</p>
+
+    <!-- Message de succès -->
+    <div *ngIf="envoiReussi" class="alert alert-success">
+      ✅ Votre message a bien été envoyé ! Nous vous répondrons rapidement.
+    </div>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="envoiErreur" class="alert alert-danger">
+      ❌ Une erreur est survenue. Veuillez réessayer.
+    </div>
+
+    <!-- Formulaire masqué après envoi réussi -->
+    <form *ngIf="!envoiReussi" class="contact-form" (ngSubmit)="envoyerReclamation()">
+      <div class="form-group">
+        <input
+          type="text"
+          placeholder="Votre nom complet"
+          [(ngModel)]="reclamation.nomComplet"
+          name="nomComplet"
+          required
+        />
+        <input
+          type="email"
+          placeholder="Votre adresse email"
+          [(ngModel)]="reclamation.email"
+          name="email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <select
+          [(ngModel)]="reclamation.objet"
+          name="objet"
+          required
+        >
+          <option value="" disabled selected>Objet de votre message</option>
+          <option value="Demande d'information">Demande d'information</option>
+          <option value="Proposition de partenariat">Proposition de partenariat / Coaching</option>
+          <option value="Problème technique">Problème technique</option>
+          <option value="Réclamation">Réclamation / Signaler un utilisateur</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <textarea
+          placeholder="Expliquez-nous votre situation en détail..."
+          [(ngModel)]="reclamation.message"
+          name="message"
+          rows="6"
+          required
+        ></textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="btn-start btn-submit"
+        [disabled]="envoiEnCours || !reclamation.nomComplet || !reclamation.email || !reclamation.objet || !reclamation.message"
+      >
+        {{ envoiEnCours ? 'Envoi en cours...' : 'Envoyer le message' }}
+      </button>
+    </form>
+  </div>
+</section>

@@ -8,6 +8,7 @@ import { Team } from 'src/app/Core/Models/Teams/Team';
 import { EventService } from 'src/app/Core/Services/Events & Training/EventService/event-service.service';
 import { LocationService } from 'src/app/Core/Services/Events & Training/LocationService/location-service.service';
 import { TeamService } from 'src/app/services/Team/team.service';
+import { MapLocation } from 'src/app/Features/Event & Training/map/map.component';
 
 @Component({
   selector: 'app-event-form',
@@ -29,7 +30,11 @@ export class EventFormComponent implements OnInit {
   locationError = '';
   selectedLocation: EventLocation | null = null;
 
-  // ✅ AJOUTE : Teams
+  // ✅ Carte
+  showMap = false;
+  tempLocation: MapLocation | null = null;  // ✅ NOUVEAU : Lieu temporaire avant confirmation
+
+  // Teams
   teams: Team[] = [];
   selectedTeamId: string = '';
 
@@ -39,12 +44,12 @@ export class EventFormComponent implements OnInit {
     private router: Router,
     private eventService: EventService,
     private locationService: LocationService,
-    private teamService: TeamService  // ✅ AJOUTE
+    private teamService: TeamService
   ) {}
 
   ngOnInit(): void {
     this.buildForm();
-    this.loadTeams();  // ✅ AJOUTE
+    this.loadTeams();
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -68,7 +73,6 @@ export class EventFormComponent implements OnInit {
     });
   }
 
-  // ✅ AJOUTE : Charger les teams
   private loadTeams(): void {
     this.teamService.getAllTeams().subscribe({
       next: (teams) => {
@@ -127,109 +131,199 @@ export class EventFormComponent implements OnInit {
     });
   }
 
-  private patchForm(event: CoplayEvent): void {
-    this.form.patchValue({
-      title: event.title,
-      startDate: event.startDate?.slice(0, 16) ?? '',
-      endDate: event.endDate?.slice(0, 16) ?? '',
-      maxParticipants: event.maxParticipants ?? null,
-      isPublic: event.isPublic ?? false,
-      isPaid: event.isPaid ?? false,
-      registrationFee: event.registrationFee ?? null,
-      paymentDeadlineHours: event.paymentDeadlineHours ?? null
-    });
+ private patchForm(event: CoplayEvent): void {
+  console.log('=== patchForm appelé ===');
+  console.log('Event complet:', event);
 
-    // ✅ Récupérer le teamId
-    if (event.teamId && event.teamId.teamId) {
-      this.selectedTeamId = event.teamId.teamId;
-    }
+  this.form.patchValue({
+    title: event.title,
+    startDate: event.startDate?.slice(0, 16) ?? '',
+    endDate: event.endDate?.slice(0, 16) ?? '',
+    maxParticipants: event.maxParticipants ?? null,
+    isPublic: event.isPublic ?? false,
+    isPaid: event.isPaid ?? false,
+    registrationFee: event.registrationFee ?? null,
+    paymentDeadlineHours: event.paymentDeadlineHours ?? null
+  });
 
-    if (event.location) {
-      this.selectedLocation = event.location;
-      this.locationQuery = event.location.address
-        ? `${event.location.name} — ${event.location.address}`
-        : event.location.name;
-    }
+  // Récupérer le teamId
+  if (event.teamId && typeof event.teamId === 'object' && event.teamId.teamId) {
+    this.selectedTeamId = event.teamId.teamId;
+  } else if (typeof event.teamId === 'string') {
+    this.selectedTeamId = event.teamId;
   }
 
+  // ====================== FIX LOCALISATION ======================
+  // Le backend renvoie la location sous la clé "locationId" (et parfois "location")
+  const locationData = (event as any).locationId || (event as any).location;
+
+  if (locationData) {
+    console.log('✅ Location trouvée dans la réponse API:', locationData);
+
+    this.selectedLocation = {
+      locationId: locationData.locationId || locationData.id,
+      name: locationData.name,
+      address: locationData.address,
+      latitude: locationData.latitude,
+      longitude: locationData.longitude
+    };
+
+    this.locationQuery = locationData.name 
+      ? locationData.name + (locationData.address ? ' — ' + locationData.address : '')
+      : '';
+
+    this.showMap = false;
+  } else {
+    console.log('❌ Aucune location dans l\'event');
+    this.selectedLocation = null;
+    this.locationQuery = '';
+  }
+  // ============================================================
+}
+
+  // ✅ Recherche avec Nominatim (gratuit)
   searchLocation(): void {
     if (!this.locationQuery.trim()) return;
     this.isSearchingLocation = true;
     this.locationError = '';
     this.selectedLocation = null;
+    this.tempLocation = null;
 
-    this.locationService.createFromAddress(this.locationQuery).subscribe({
-      next: (loc: any) => {
-        this.selectedLocation = loc as EventLocation;
-        this.isSearchingLocation = false;
+    this.locationService.geocodeAddress(this.locationQuery).subscribe({
+      next: (location) => {
+        if (location) {
+          // Afficher comme lieu temporaire pour confirmation
+          this.tempLocation = {
+            lat: location.latitude!,
+            lng: location.longitude!,
+            name: location.name,
+            address: location.address
+          };
+          this.isSearchingLocation = false;
+          this.showMap = true;
+        } else {
+          this.locationError = 'Adresse introuvable. Essayez une autre recherche ou cliquez sur la carte.';
+          this.isSearchingLocation = false;
+          this.showMap = true;
+        }
       },
       error: () => {
-        this.locationError = 'Adresse introuvable. Vérifiez et réessayez.';
+        this.locationError = 'Erreur lors de la recherche. Essayez de cliquer sur la carte.';
         this.isSearchingLocation = false;
+        this.showMap = true;
       }
     });
   }
 
-  clearLocation(): void {
-    this.selectedLocation = null;
-    this.locationQuery = '';
+  // ✅ Quand l'utilisateur clique sur la carte
+  onMapClick(mapLocation: MapLocation): void {
+    this.tempLocation = mapLocation;
     this.locationError = '';
   }
 
+  // ✅ Confirmer le lieu sélectionné
+  confirmLocation(): void {
+    if (!this.tempLocation) return;
+
+    // Créer la location
+    const location: EventLocation = {
+      name: this.tempLocation.name || 'Lieu sélectionné',
+      address: this.tempLocation.address || '',
+      latitude: this.tempLocation.lat,
+      longitude: this.tempLocation.lng
+    };
+
+    // Sauvegarder dans le backend
+    this.locationService.createLocation(location).subscribe({
+      next: (saved) => {
+        this.selectedLocation = saved;
+        this.locationQuery = saved.name + (saved.address ? ' — ' + saved.address : '');
+        this.tempLocation = null;
+        this.showMap = false;
+      },
+      error: () => {
+        // Utiliser sans ID si la sauvegarde échoue
+        this.selectedLocation = location;
+        this.locationQuery = location.name + (location.address ? ' — ' + location.address : '');
+        this.tempLocation = null;
+        this.showMap = false;
+      }
+    });
+  }
+
+  // ✅ Annuler le choix temporaire
+  cancelTempLocation(): void {
+    this.tempLocation = null;
+  }
+
+  // ✅ Afficher/masquer la carte
+  toggleMap(): void {
+    this.showMap = !this.showMap;
+  }
+
+  // ✅ Effacer la location sélectionnée
+  clearLocation(): void {
+    this.selectedLocation = null;
+    this.tempLocation = null;
+    this.locationQuery = '';
+    this.locationError = '';
+    this.showMap = false;
+  }
+
   onSubmit(): void {
-  console.log('=== onSubmit appelé ===');
+    console.log('=== onSubmit appelé ===');
 
-  if (this.form.invalid) {
-    this.form.markAllAsTouched();
-    console.log('Formulaire invalide');
-    return;
-  }
-
-  if (!this.selectedTeamId) {
-    this.errorMessage = 'Veuillez sélectionner une équipe.';
-    return;
-  }
-
-  const v = this.form.value;
-
-  const payload = {
-    teamId: this.selectedTeamId,
-    title: v.title,
-    startDate: v.startDate,
-    endDate: v.endDate || null,
-    locationId: this.selectedLocation?.locationId || null,
-    maxParticipants: v.maxParticipants || null,
-    isPublic: v.isPublic,
-    isPaid: v.isPaid,
-    registrationFee: v.isPaid ? v.registrationFee : null,
-    paymentDeadlineHours: v.isPaid ? v.paymentDeadlineHours : null
-  };
-
-  console.log('Mode édition:', this.isEditMode);
-  console.log('Event ID:', this.eventId);
-  console.log('Payload envoyé:', JSON.stringify(payload, null, 2));  // ✅ Voir le payload
-
-  this.isSubmitting = true;
-  this.errorMessage = '';
-
-  const req$ = this.isEditMode
-    ? this.eventService.updateEvent(this.eventId, payload)
-    : this.eventService.createEvent(payload);
-
-  req$.subscribe({
-    next: (response) => {
-      console.log('Succès:', response);  // ✅ Voir la réponse
-      this.isSubmitting = false;
-      this.router.navigate(['/events']);
-    },
-    error: (err) => {
-      console.log('Erreur:', err);  // ✅ Voir l'erreur complète
-      console.log('Erreur body:', err.error);  // ✅ Voir le message du backend
-      this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
-      this.isSubmitting = false;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      console.log('Formulaire invalide');
+      return;
     }
-  });
-}
+
+    if (!this.selectedTeamId) {
+      this.errorMessage = 'Veuillez sélectionner une équipe.';
+      return;
+    }
+
+    const v = this.form.value;
+
+    const payload = {
+      teamId: this.selectedTeamId,
+      title: v.title,
+      startDate: v.startDate,
+      endDate: v.endDate || null,
+      locationId: this.selectedLocation?.locationId || null,
+      maxParticipants: v.maxParticipants || null,
+      isPublic: v.isPublic,
+      isPaid: v.isPaid,
+      registrationFee: v.isPaid ? v.registrationFee : null,
+      paymentDeadlineHours: v.isPaid ? v.paymentDeadlineHours : null
+    };
+
+    console.log('Mode édition:', this.isEditMode);
+    console.log('Event ID:', this.eventId);
+    console.log('Payload envoyé:', JSON.stringify(payload, null, 2));
+
+    this.isSubmitting = true;
+    this.errorMessage = '';
+
+    const req$ = this.isEditMode
+      ? this.eventService.updateEvent(this.eventId, payload)
+      : this.eventService.createEvent(payload);
+
+    req$.subscribe({
+      next: (response) => {
+        console.log('Succès:', response);
+        this.isSubmitting = false;
+        this.router.navigate(['/events']);
+      },
+      error: (err) => {
+        console.log('Erreur:', err);
+        console.log('Erreur body:', err.error);
+        this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+        this.isSubmitting = false;
+      }
+    });
+  }
 
   cancel(): void {
     this.router.navigate(['/events']);

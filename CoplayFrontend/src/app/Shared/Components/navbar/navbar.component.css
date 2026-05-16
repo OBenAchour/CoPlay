@@ -1,78 +1,103 @@
+
+/* --- BARRE PRINCIPALE --- */
+main
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   background-color: #2c3e50;
   color: white;
-  height: 75px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  height: 75px; /* Hauteur intermédiaire idéale */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  flex-wrap: nowrap;
 }
 
-/* src/app/Shared/Components/navbar/navbar.component.css */
+/* --- LOGO (CAPSULE GAUCHE) --- */
+.navbar-brand {
+  flex-shrink: 0;
+  background-color: white;
+  padding: 6px 15px; /* Ajusté pour l'équilibre */
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+}
 
 .navbar-logo {
-    height: 100px; /* Conserve ta hauteur ajustée */
-    width: auto;
-    display: block;
-    
-    /* --- LA MAGIE CSS POUR LA TRANSPARENCE --- */
-    /* Cette propriété va fusionner le blanc du logo avec le fond sombre */
-    mix-blend-mode: multiply; 
-    
-    /* Optionnel : ajoute une transition douce pour le survol */
-    transition: transform 0.2s ease-in-out;
+  height: 38px; /* Taille intermédiaire */
+  width: auto;
 }
 
-.navbar-logo:hover {
-  transform: scale(1.08);
-}
-
+/* --- MENU CENTRAL --- */
 .nav-links {
   display: flex;
   list-style: none;
-  gap: 25px;
-  margin: 0;
+  gap: 12px; /* Espacement équilibré */
+  margin: 0 10px;
   padding: 0;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-links li {
+  display: flex;
+  align-items: center;
 }
 
 .nav-links a {
-  color: #ecf0f1;
+  color: #bdc3c7;
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.85rem; /* Taille standard lisible */
   font-weight: 500;
-  padding: 5px 0;
-  transition: color 0.3s;
+  padding: 8px 4px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
-.nav-links a:hover {
-  color: #3498db;
-}
-
+.nav-links a:hover, 
 .nav-links a.active {
-  border-bottom: 3px solid #3498db;
-  color: #3498db;
+  color: #ffffff;
 }
 
-.admin-link {
-  color: #f1c40f !important; /* Jaune pour se démarquer */
-  font-weight: bold !important;
+/* --- ZONE UTILISATEUR (CAPSULE DROITE) --- */
+.nav-auth {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: white;
+  padding: 5px 14px;
+  border-radius: 50px;
 }
 
 .welcome-text {
-  font-size: 0.9rem;
-  margin-right: 15px;
+  font-size: 0.85rem;
+  color: #2c3e50;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
+/* --- BOUTON DÉCONNEXION --- */
 .btn-logout {
   background-color: #e74c3c;
   color: white;
   border: none;
-  padding: 8px 18px;
-  border-radius: 6px;
+  padding: 6px 14px;
+  border-radius: 50px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.3s;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  transition: background 0.2s;
 }
 
 .btn-logout:hover {
@@ -86,4 +111,116 @@
   padding: 8px 18px;
   border-radius: 6px;
   cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MENU DÉROULANT ÉVÉNEMENTS & ENTRAÎNEMENTS (CLICK)
+   Classes uniques pour éviter conflit avec Bootstrap
+   ═══════════════════════════════════════════════════════ */
+
+.events-dropdown {
+  position: relative;
+}
+
+.events-dropdown-trigger {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  color: #ecf0f1;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 5px 0;
+}
+
+.events-dropdown-trigger:hover {
+  color: #3498db;
+}
+
+.events-dropdown-arrow {
+  font-size: 0.75rem;
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.events-dropdown.events-open .events-dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.events-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 260px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.25s ease;
+  z-index: 10000;
+  pointer-events: none;
+  display: block !important;
+}
+
+.events-dropdown.events-open .events-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(4px);
+  pointer-events: auto;
+}
+
+.events-dropdown-menu li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.events-dropdown-menu li a {
+  display: block !important;
+  padding: 12px 16px !important;
+  border-radius: 10px;
+  color: #1e293b !important;
+  font-weight: 700;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-bottom: none !important;
+}
+
+.events-dropdown-menu li a:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  color: #ffffff !important;
+  transform: translateX(4px);
+}
+
+.events-dropdown-menu li a.active {
+  background: #eef2ff;
+  color: #312e81 !important;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .events-dropdown-menu {
+    position: static;
+    pointer-events: auto;
+  }
+/* --- RESPONSIVE OPTIMISÉ --- */
+@media (max-width: 1350px) {
+  .nav-links { gap: 8px; }
+  .nav-links a { font-size: 0.8rem; }
+  .navbar { padding: 0 1rem; }
+}
+
+@media (max-width: 1150px) {
+  .nav-links { gap: 5px; }
+  .nav-links a { font-size: 0.75rem; }
+  .welcome-text { font-size: 0.75rem; }
 }

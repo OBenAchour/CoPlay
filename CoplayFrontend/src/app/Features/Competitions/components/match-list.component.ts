@@ -2,12 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
+// --- Branche "competition" (ton travail) ---
 import {
   StatistiqueService,
   JobStatusResponse,
   JobResultResponse
 } from '../services/statistique.service';
 
+// --- Branche "main" (travail de l'équipe) ---
+import { CompetitionService } from '../services/competition.service';
+import { MatchService } from '../services/match.service';
+import { TicketService } from '../../../services/ticket.service';
+import { AuthService } from '../../../Core/Services/Auth/auth.service';
+import { CreateTicketsRequest } from '../../../Core/Models/Competitions/Ticket';
+
+// --- Interface branche "competition" ---
 interface MatchEntry {
   jobId: string;
   team1: string;
@@ -32,16 +42,46 @@ interface MatchEntry {
 })
 export class MatchListComponent implements OnInit {
 
+  // --- State branche "competition" ---
   matches: MatchEntry[] = [];
 
+  // --- State branche "main" ---
+  competitions: any[] = [];
+  allMatches: any[] = [];
+  filteredMatches: any[] = [];
+  selectedCompetitionId = '';
+  loading = false;
+  isAdmin = false;
+
+  showGenerateForm = false;
+  selectedMatchForTickets = '';
+  generateRequest: CreateTicketsRequest = {
+    vipCount: 10,    vipPrice: 50,
+    tribuneCount: 20, tribunePrice: 25,
+    pelouseCount: 30, pelousePrice: 10
+  };
+  generateSuccess = '';
+  generateError = '';
+  generating = false;
+
   constructor(
-    private statistiqueService: StatistiqueService,
+    private statistiqueService: StatistiqueService,  // ton travail
+    private competitionService: CompetitionService,  // équipe
+    private matchService: MatchService,              // équipe
+    private ticketService: TicketService,            // équipe
+    private authService: AuthService,                // équipe
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadFromStorage();
+    this.loadFromStorage();                    // ton travail
+    this.isAdmin = this.authService.isAdmin(); // équipe
+    this.loadCompetitions();                   // équipe
   }
+
+  // ════════════════════════════════
+  // TON TRAVAIL — branche competition
+  // ════════════════════════════════
 
   addMatch(entry: MatchEntry): void {
     this.matches.unshift(entry);
@@ -59,20 +99,6 @@ export class MatchListComponent implements OnInit {
         queryParams: { jobId: match.jobId, team1: match.team1, team2: match.team2 }
       });
     }
-  }
-
-  getStatusLabel(status: string): string {
-    switch (status) {
-      case 'uploading': return 'Uploading…';
-      case 'processing': return 'Processing…';
-      case 'completed': return 'Completed';
-      case 'failed': return 'Failed';
-      default: return status;
-    }
-  }
-
-  getStatusClass(status: string): string {
-    return `status-${status}`;
   }
 
   downloadVideo(match: MatchEntry): void {
@@ -115,6 +141,10 @@ export class MatchListComponent implements OnInit {
     });
   }
 
+  trackByJob(_: number, match: MatchEntry): string {
+    return match.jobId;
+  }
+
   private saveToStorage(): void {
     try {
       localStorage.setItem('match_history', JSON.stringify(this.matches));
@@ -135,7 +165,102 @@ export class MatchListComponent implements OnInit {
     }
   }
 
-  trackByJob(_: number, match: MatchEntry): string {
-    return match.jobId;
+  // ════════════════════════════════
+  // TRAVAIL ÉQUIPE — branche main
+  // ════════════════════════════════
+
+  loadCompetitions(): void {
+    this.competitionService.getAllCompetitions().subscribe({
+      next: (data: any[]) => { this.competitions = data; }
+    });
+  }
+
+  loadMatches(): void {
+    if (!this.selectedCompetitionId) return;
+    this.loading = true;
+    this.matchService.getCompetitionMatches(this.selectedCompetitionId).subscribe({
+      next: (data: any[]) => {
+        this.allMatches = data;
+        this.filteredMatches = data;
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
+  isMatchFinished(status: string): boolean {
+    return status === 'FINISHED' || status === 'CANCELLED';
+  }
+
+  getTeamName(team: any): string {
+    if (!team) return '?';
+    return team.name || team.teamName || team;
+  }
+
+  goToTickets(matchId: string): void {
+    this.router.navigate(['/tickets', matchId]);
+  }
+
+  openGenerateForm(matchId: string): void {
+    this.selectedMatchForTickets = matchId;
+    this.showGenerateForm = true;
+    this.generateSuccess = '';
+    this.generateError = '';
+  }
+
+  closeGenerateForm(): void {
+    this.showGenerateForm = false;
+    this.selectedMatchForTickets = '';
+  }
+
+  generateTickets(): void {
+    if (!this.selectedMatchForTickets) return;
+    this.generating = true;
+    this.generateSuccess = '';
+    this.generateError = '';
+
+    this.ticketService.generateTickets(
+      this.selectedMatchForTickets,
+      this.generateRequest
+    ).subscribe({
+      next: (tickets: any[]) => {
+        this.generateSuccess = `✅ ${tickets.length} tickets générés !`;
+        this.generating = false;
+      },
+      error: (err: unknown) => {
+        console.error(err);
+        this.generateError = '❌ Erreur lors de la génération.';
+        this.generating = false;
+      }
+    });
+  }
+
+  // Fusion des deux getStatusClass / getStatusLabel
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'PLAYED':     return 'bg-success';
+      case 'SCHEDULED':  return 'bg-primary';
+      case 'CANCELLED':  return 'bg-danger';
+      case 'VALIDATED':  return 'bg-warning text-dark';
+      case 'uploading':  return 'status-uploading';
+      case 'processing': return 'status-processing';
+      case 'completed':  return 'status-completed';
+      case 'failed':     return 'status-failed';
+      default:           return 'bg-secondary';
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'PLAYED':     return 'Joué';
+      case 'SCHEDULED':  return 'Programmé';
+      case 'CANCELLED':  return 'Annulé';
+      case 'VALIDATED':  return 'Validé';
+      case 'uploading':  return 'Uploading…';
+      case 'processing': return 'Processing…';
+      case 'completed':  return 'Completed';
+      case 'failed':     return 'Failed';
+      default:           return status;
+    }
   }
 }

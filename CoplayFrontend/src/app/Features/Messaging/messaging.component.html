@@ -19,7 +19,8 @@
     (newMessage)="openNewMessage()"
     (acceptCall)="acceptIncomingCall()"
     (declineCall)="declineIncomingCall()"
-    (endCall)="onEndCall()">
+    (endCall)="onEndCall()"
+    (callStarted)="onCallStarted($event)">
   </app-chat-window>
 </div>
 
@@ -38,7 +39,7 @@
     </div>
     <div class="user-list">
       <div *ngFor="let user of searchedUsers" class="user-item" (click)="startConversation(user)">
-        <div class="avatar">{{ user.profile.displayName?.charAt(0) || '?' }}</div>
+        <div class="avatar">{{ user.profile.displayName.charAt(0) || '?' }}</div>
         <span>{{ user.profile.displayName }}</span>
       </div>
       <div *ngIf="searchedUsers.length === 0 && searchQuery" class="no-results">

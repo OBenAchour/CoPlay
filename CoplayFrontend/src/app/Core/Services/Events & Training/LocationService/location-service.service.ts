@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, from, map } from 'rxjs';
 import { EventLocation as Location } from 'src/app/Core/Models/Events & Training/EventLocation';
 
 @Injectable({
@@ -17,25 +17,90 @@ export class LocationService {
    * POST /api/locations/add
    */
   createLocation(location: Location): Observable<Location> {
-    return this.http.post<Location>(`${this.apiUrl
-  
-  
-    }/add`, location);
+    return this.http.post<Location>(`${this.apiUrl}/add`, location);
   }
 
   /**
-   * Crée une location automatiquement depuis une adresse.
-   * Google Maps trouve les coordonnées automatiquement.
-   * POST /api/locations/geocode?address=...
+   * ✅ NOUVEAU : Géocodage avec Nominatim (GRATUIT - OpenStreetMap)
+   * Recherche une adresse et retourne les coordonnées
+   */
+  geocodeAddress(address: string): Observable<Location | null> {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&addressdetails=1`;
+    
+    return from(
+      fetch(url, {
+        headers: {
+          'Accept-Language': 'fr'
+        }
+      }).then(response => response.json())
+    ).pipe(
+      map((results: any[]) => {
+        if (results && results.length > 0) {
+          const result = results[0];
+          return {
+            name: result.name || result.display_name.split(',')[0],
+            address: result.display_name,
+            latitude: parseFloat(result.lat),
+            longitude: parseFloat(result.lon)
+          } as Location;
+        }
+        return null;
+      })
+    );
+  }
+
+  /**
+   * ✅ NOUVEAU : Reverse geocoding avec Nominatim (GRATUIT)
+   * Convertit des coordonnées en adresse
+   */
+  reverseGeocode(lat: number, lng: number): Observable<Location | null> {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
+    
+    return from(
+      fetch(url, {
+        headers: {
+          'Accept-Language': 'fr'
+        }
+      }).then(response => response.json())
+    ).pipe(
+      map((result: any) => {
+        if (result && result.display_name) {
+          return {
+            name: result.name || result.display_name.split(',')[0],
+            address: result.display_name,
+            latitude: lat,
+            longitude: lng
+          } as Location;
+        }
+        return null;
+      })
+    );
+  }
+
+  /**
+   * ✅ NOUVEAU : Crée et sauvegarde une location depuis une adresse
+   * Utilise Nominatim puis sauvegarde dans le backend
    */
   createFromAddress(address: string): Observable<Location> {
-    return this.http.post<Location>(
-      `${this.apiUrl
-    
-    
-      }/geocode?address=${encodeURIComponent(address)}`,
-      {}
-    );
+    return new Observable(observer => {
+      this.geocodeAddress(address).subscribe({
+        next: (location) => {
+          if (location) {
+            // Sauvegarder dans le backend
+            this.createLocation(location).subscribe({
+              next: (saved) => {
+                observer.next(saved);
+                observer.complete();
+              },
+              error: (err) => observer.error(err)
+            });
+          } else {
+            observer.error(new Error('Adresse introuvable'));
+          }
+        },
+        error: (err) => observer.error(err)
+      });
+    });
   }
 
   /**
@@ -43,10 +108,7 @@ export class LocationService {
    * GET /api/locations/all
    */
   getAllLocations(): Observable<Location[]> {
-    return this.http.get<Location[]>(`${this.apiUrl
-  
-  
-    }/all`);
+    return this.http.get<Location[]>(`${this.apiUrl}/all`);
   }
 
   /**
@@ -54,10 +116,7 @@ export class LocationService {
    * GET /api/locations/get/{locationId}
    */
   getLocationById(locationId: string): Observable<Location> {
-    return this.http.get<Location>(`${this.apiUrl
-  
-  
-    }/get/${locationId}`);
+    return this.http.get<Location>(`${this.apiUrl}/get/${locationId}`);
   }
 
   /**
@@ -65,20 +124,27 @@ export class LocationService {
    * GET /api/locations/search?name=...
    */
   searchByName(name: string): Observable<Location[]> {
-    return this.http.get<Location[]>(`${this.apiUrl
-  
-  
-    }/search?name=${name}`);
+    return this.http.get<Location[]>(`${this.apiUrl}/search?name=${name}`);
   }
 
   /**
-   * Retourne le lien Google Maps pour une location.
-   * GET /api/locations/maps/{locationId}
+   * ✅ NOUVEAU : Génère un lien Google Maps depuis les coordonnées
    */
-  getGoogleMapsLink(locationId: string): Observable<string> {
-    return this.http.get<string>(`${this.apiUrl
-  
-  
-    }/maps/${locationId}`);
+  getGoogleMapsLink(lat: number, lng: number): string {
+    return `https://www.google.com/maps?q=${lat},${lng}`;
+  }
+
+  /**
+   * ✅ NOUVEAU : Génère un lien Google Maps depuis un locationId
+   */
+  getGoogleMapsLinkById(locationId: string): Observable<string> {
+    return this.getLocationById(locationId).pipe(
+      map(location => {
+        if (location.latitude && location.longitude) {
+          return `https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
+        }
+        return '';
+      })
+    );
   }
 }

@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-
-import { TrainingProgram } from 'src/app/Core/Models/Events & Training/TrainingProgram';
-import { Exercise }        from 'src/app/Core/Models/Events & Training/Exercise';
-import { TrainingService } from 'src/app/Core/Services/Events & Training/TrainingService/training-service.service';
+import { Router } from '@angular/router';
+import { TrainingSession } from 'src/app/Core/Models/Events & Training/TrainingSession';
+import { TrainingSessionService } from 'src/app/Core/Services/Events & Training/TrainingSessionService/training-session.service';
+import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
 
 @Component({
   selector: 'app-training-list',
@@ -11,226 +11,147 @@ import { TrainingService } from 'src/app/Core/Services/Events & Training/Trainin
 })
 export class TrainingListComponent implements OnInit {
 
-  programs: TrainingProgram[]         = [];
-  filteredPrograms: TrainingProgram[] = [];
-  selectedLevel  = 'ALL';
-  isLoading      = false;
-  errorMessage   = '';
+  sessions: TrainingSession[] = [];
+  filteredSessions: TrainingSession[] = [];
+  filter: 'ALL' | 'UPCOMING' | 'OFFICIAL' | 'FREE' = 'ALL';
+  isLoading = false;
+  errorMessage = '';
 
-  // Accordion : ensemble des IDs de programmes ouverts
-  expandedPrograms = new Set<string>();
-
-  // Formulaire nouveau programme
-  showNewProgramForm = false;
-  newProgram: Partial<TrainingProgram> = { title: '', level: '', duration: undefined };
-  isCreatingProgram = false;
-  programFormError  = '';
-
-  // Formulaires nouveaux exercices : un par programme
-  showExerciseForm: { [programId: string]: boolean }            = {};
-  newExercise:      { [programId: string]: Partial<Exercise> }  = {};
-  isAddingExercise: { [programId: string]: boolean }            = {};
-  exerciseFormError: { [programId: string]: string }            = {};
-
-  readonly teamId = 'test-team-001';
-
-  readonly levelOptions = [
-    { value: 'ALL',          label: 'Tous' },
-    { value: 'BEGINNER',     label: 'Débutant' },
-    { value: 'INTERMEDIATE', label: 'Intermédiaire' },
-    { value: 'ADVANCED',     label: 'Avancé' },
-    { value: 'PROFESSIONAL', label: 'Professionnel' }
-  ];
-
-  constructor(private trainingService: TrainingService) {}
+  constructor(
+    private sessionService: TrainingSessionService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.loadPrograms();
+    this.loadSessions();
   }
 
-  // ─── Chargement ─────────────────────────────────────────────────────────────
-
-  loadPrograms(): void {
-    this.isLoading    = true;
+  loadSessions(): void {
+    this.isLoading = true;
     this.errorMessage = '';
 
-    this.trainingService.getProgramsByTeam(this.teamId).subscribe({
-      next: data => {
-        this.programs = data;
+    // ✅ CHANGEMENT : on charge TOUTES les sessions (pas par équipe)
+    this.sessionService.getAllSessions().subscribe({
+      next: (data) => {
+        this.sessions = data.sort((a, b) =>
+          new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime()
+        );
         this.applyFilter();
         this.isLoading = false;
       },
-      error: () => {
-        this.errorMessage = 'Erreur lors du chargement des programmes.';
-        this.isLoading    = false;
+      error: (err) => {
+        console.error('❌ Erreur chargement sessions :', err);
+        this.errorMessage = 'Impossible de charger les séances.';
+        this.isLoading = false;
       }
     });
   }
 
-  // ─── Filtre par niveau ───────────────────────────────────────────────────────
+  applyFilter(): void {
+    const now = new Date();
 
-  filterByLevel(level: string): void {
-    this.selectedLevel = level;
+    switch (this.filter) {
+      case 'UPCOMING':
+        this.filteredSessions = this.sessions.filter(s => new Date(s.sessionDate) > now);
+        break;
+      case 'OFFICIAL':
+        this.filteredSessions = this.sessions.filter(s => s.isOfficial === true);
+        break;
+      case 'FREE':
+        this.filteredSessions = this.sessions.filter(s => s.isOfficial !== true);
+        break;
+      default:
+        this.filteredSessions = [...this.sessions];
+    }
+  }
+
+  setFilter(f: 'ALL' | 'UPCOMING' | 'OFFICIAL' | 'FREE'): void {
+    this.filter = f;
     this.applyFilter();
   }
 
-  private applyFilter(): void {
-    this.filteredPrograms = this.selectedLevel === 'ALL'
-      ? [...this.programs]
-      : this.programs.filter(p => p.level === this.selectedLevel);
+  goToCreate(): void {
+    this.router.navigate(['/training-sessions/new']);
   }
 
-  // ─── Accordion ───────────────────────────────────────────────────────────────
-
-  toggleAccordion(programId: string): void {
-    if (this.expandedPrograms.has(programId)) {
-      this.expandedPrograms.delete(programId);
-    } else {
-      this.expandedPrograms.add(programId);
-    }
+  goToDetail(sessionId: string): void {
+    this.router.navigate(['/training-sessions', sessionId]);
   }
 
-  isExpanded(programId: string): boolean {
-    return this.expandedPrograms.has(programId);
+  goToEdit(sessionId: string, event: Event): void {
+    event.stopPropagation();
+    this.router.navigate(['/training-sessions', sessionId, 'edit']);
   }
 
-  // ─── Créer un programme ─────────────────────────────────────────────────────
+  cancelSession(session: TrainingSession, event: Event): void {
+    event.stopPropagation();
+    if (!session.sessionId) return;
+    if (!confirm(`Annuler la séance "${session.title}" ?`)) return;
 
-  openNewProgramForm(): void {
-    this.showNewProgramForm = true;
-    this.newProgram         = { title: '', level: '', duration: undefined };
-    this.programFormError   = '';
-  }
-
-  cancelNewProgram(): void {
-    this.showNewProgramForm = false;
-    this.programFormError   = '';
-  }
-
-  createProgram(): void {
-    if (!this.newProgram.title?.trim()) {
-      this.programFormError = 'Le titre est obligatoire.';
-      return;
-    }
-
-    const payload: TrainingProgram = {
-      teamId:    this.teamId,
-      title:     this.newProgram.title.trim(),
-      level:     this.newProgram.level  || undefined,
-      duration:  this.newProgram.duration || undefined,
-      exercises: []
-    };
-
-    this.isCreatingProgram = true;
-    this.programFormError  = '';
-
-    this.trainingService.createProgram(payload).subscribe({
-      next: created => {
-        this.programs.push(created);
-        this.applyFilter();
-        this.showNewProgramForm = false;
-        this.isCreatingProgram  = false;
-        // Ouvrir automatiquement le programme créé
-        if (created.programId) this.expandedPrograms.add(created.programId);
-      },
-      error: () => {
-        this.programFormError  = 'Erreur lors de la création du programme.';
-        this.isCreatingProgram = false;
-      }
+    this.sessionService.cancelSession(session.sessionId).subscribe({
+      next: () => this.loadSessions(),
+      error: () => alert('Erreur lors de l\'annulation.')
     });
   }
 
-  // ─── Supprimer un programme ─────────────────────────────────────────────────
+  completeSession(session: TrainingSession, event: Event): void {
+    event.stopPropagation();
+    if (!session.sessionId) return;
+    if (!confirm(`Marquer "${session.title}" comme terminée ?`)) return;
 
-  deleteProgram(program: TrainingProgram): void {
-    if (!program.programId) return;
-    if (!confirm(`Supprimer le programme "${program.title}" et tous ses exercices ?`)) return;
-
-    this.trainingService.deleteProgram(program.programId).subscribe({
-      next: () => {
-        this.programs = this.programs.filter(p => p.programId !== program.programId);
-        this.applyFilter();
-        this.expandedPrograms.delete(program.programId!);
-      },
-      error: () => {}
+    this.sessionService.completeSession(session.sessionId).subscribe({
+      next: () => this.loadSessions(),
+      error: () => alert('Erreur lors de la complétion.')
     });
   }
 
-  // ─── Ajouter un exercice ─────────────────────────────────────────────────────
+  deleteSession(session: TrainingSession, event: Event): void {
+    event.stopPropagation();
+    if (!session.sessionId) return;
+    if (!confirm(`Supprimer définitivement "${session.title}" ?`)) return;
 
-  openExerciseForm(programId: string): void {
-    this.showExerciseForm[programId]  = true;
-    this.newExercise[programId]       = { name: '', description: '', videoUrl: '' };
-    this.exerciseFormError[programId] = '';
-    // S'assurer que le programme est ouvert
-    this.expandedPrograms.add(programId);
-  }
-
-  cancelExerciseForm(programId: string): void {
-    this.showExerciseForm[programId] = false;
-    this.exerciseFormError[programId] = '';
-  }
-
-  addExercise(programId: string): void {
-    const ex = this.newExercise[programId];
-    if (!ex?.name?.trim()) {
-      this.exerciseFormError[programId] = 'Le nom de l\'exercice est obligatoire.';
-      return;
-    }
-
-    const payload: Exercise = {
-      name:        ex.name.trim(),
-      description: ex.description?.trim() || undefined,
-      videoUrl:    ex.videoUrl?.trim()    || undefined
-    };
-
-    this.isAddingExercise[programId]  = true;
-    this.exerciseFormError[programId] = '';
-
-    this.trainingService.addExercise(programId, payload).subscribe({
-      next: updatedProgram => {
-        const idx = this.programs.findIndex(p => p.programId === programId);
-        if (idx !== -1) this.programs[idx] = updatedProgram;
-        this.applyFilter();
-        this.showExerciseForm[programId]  = false;
-        this.isAddingExercise[programId]  = false;
-      },
-      error: () => {
-        this.exerciseFormError[programId] = 'Erreur lors de l\'ajout de l\'exercice.';
-        this.isAddingExercise[programId]  = false;
-      }
+    this.sessionService.deleteSession(session.sessionId).subscribe({
+      next: () => this.loadSessions(),
+      error: () => alert('Erreur lors de la suppression.')
     });
   }
 
-  // ─── Supprimer un exercice ───────────────────────────────────────────────────
-
-  removeExercise(programId: string, exerciseId: string, exerciseName: string): void {
-    if (!confirm(`Supprimer l'exercice "${exerciseName}" ?`)) return;
-
-    this.trainingService.removeExercise(programId, exerciseId).subscribe({
-      next: updatedProgram => {
-        const idx = this.programs.findIndex(p => p.programId === programId);
-        if (idx !== -1) this.programs[idx] = updatedProgram;
-        this.applyFilter();
-      },
-      error: () => {}
-    });
-  }
-
-  // ─── Helpers template ────────────────────────────────────────────────────────
-
-  getLevelLabel(level?: string): string {
-    const opt = this.levelOptions.find(o => o.value === level);
-    return opt ? opt.label : level || '—';
-  }
-
-  getLevelClass(level?: string): string {
-    switch (level) {
-      case 'BEGINNER':     return 'level-beginner';
-      case 'INTERMEDIATE': return 'level-intermediate';
-      case 'ADVANCED':     return 'level-advanced';
-      case 'PROFESSIONAL': return 'level-professional';
+  getStatusClass(status?: string): string {
+    switch (status) {
+      case 'SCHEDULED': return 'status-scheduled';
+      case 'COMPLETED': return 'status-completed';
+      case 'CANCELLED': return 'status-cancelled';
       default: return '';
     }
+  }
+
+  getStatusLabel(status?: string): string {
+    switch (status) {
+      case 'SCHEDULED': return 'Planifiée';
+      case 'COMPLETED': return 'Terminée';
+      case 'CANCELLED': return 'Annulée';
+      default: return '—';
+    }
+  }
+
+  formatDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('fr-FR', {
+      weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  isPast(dateStr: string): boolean {
+    return new Date(dateStr) < new Date();
+  }
+
+  canManage(): boolean {
+    return this.authService.isAdmin() || this.authService.getUserRole() === 'COACH';
+  }
+
+  canCreateFreeSession(): boolean {
+    return this.authService.isLoggedIn();
   }
 }

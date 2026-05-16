@@ -1,0 +1,104 @@
+<div class="form-container">
+  <h1>{{ isEditMode ? '✏️ Modifier la séance' : '➕ Nouvelle séance' }}</h1>
+
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <form (ngSubmit)="onSubmit()" #sessionForm="ngForm">
+
+    <!-- ⬇️⬇️⬇️ NOUVEAU : Sélection de l'équipe ⬇️⬇️⬇️ -->
+    <div class="form-group">
+      <label for="teamId">Équipe <span style="color: red;">*</span></label>
+      <select 
+        id="teamId" 
+        name="teamId"
+        [(ngModel)]="formData.teamId" 
+        (change)="onTeamChange()"
+        required>
+        <option value="">-- Sélectionner une équipe --</option>
+        <option *ngFor="let team of teams" [value]="team.teamId">
+        {{ team.name }}<span *ngIf="team.sport"> - {{ team.sport }}</span><span *ngIf="team.city"> ({{ team.city }})</span>        </option>
+      </select>
+      <small *ngIf="teams.length === 0" class="hint">
+        Aucune équipe disponible. Créez-en une d'abord.
+      </small>
+    </div>
+    <!-- ⬆️⬆️⬆️ FIN dropdown équipes ⬆️⬆️⬆️ -->
+
+    <!-- Type de séance -->
+    <div class="form-group">
+      <label>Type de séance</label>
+      <div class="type-selector">
+        <label class="type-option">
+          <input type="radio" name="sessionType" [(ngModel)]="sessionType" value="FREE"
+                 (change)="onSessionTypeChange()">
+          <span class="type-card free">
+            <strong>🔵 Séance libre</strong>
+            <small>Sans programme structuré</small>
+          </span>
+        </label>
+        <label class="type-option" *ngIf="canCreateOfficial()">
+          <input type="radio" name="sessionType" [(ngModel)]="sessionType" value="OFFICIAL"
+                 (change)="onSessionTypeChange()">
+          <span class="type-card official">
+            <strong>🟢 Séance officielle</strong>
+            <small>Avec programme d'entraînement</small>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Titre -->
+    <div class="form-group">
+      <label for="title">Titre *</label>
+      <input type="text" id="title" name="title" [(ngModel)]="formData.title" required
+             placeholder="Ex: Entraînement du mardi">
+    </div>
+
+    <!-- Description -->
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" [(ngModel)]="formData.description"
+                rows="3" placeholder="Détails de la séance..."></textarea>
+    </div>
+
+    <!-- Date -->
+    <div class="form-group">
+      <label for="sessionDate">Date et heure *</label>
+      <input type="datetime-local" id="sessionDate" name="sessionDate"
+             [(ngModel)]="formData.sessionDate" required>
+    </div>
+
+    <!-- Durée -->
+    <div class="form-group">
+      <label for="duration">Durée (minutes)</label>
+      <input type="number" id="duration" name="duration" [(ngModel)]="formData.duration"
+             min="15" max="300" placeholder="60">
+    </div>
+
+    <!-- Programme (si officielle) -->
+    <div class="form-group" *ngIf="sessionType === 'OFFICIAL'">
+      <label for="programId">Programme d'entraînement *</label>
+      <select id="programId" name="programId" [(ngModel)]="formData.programId" required>
+        <option value="">-- Sélectionner un programme --</option>
+        <option *ngFor="let p of programs" [value]="p.programId">
+          {{ p.title }} ({{ p.level || 'Niveau libre' }})
+        </option>
+      </select>
+      <small *ngIf="programs.length === 0 && formData.teamId" class="hint">
+        Aucun programme disponible pour cette équipe. Créez-en un d'abord.
+      </small>
+      <small *ngIf="!formData.teamId" class="hint">
+        Sélectionnez d'abord une équipe pour voir ses programmes.
+      </small>
+    </div>
+
+    <!-- Boutons -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-cancel" (click)="cancel()">Annuler</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'En cours...' : (isEditMode ? 'Modifier' : 'Créer') }}
+      </button>
+    </div>
+
+  </form>
+</div>

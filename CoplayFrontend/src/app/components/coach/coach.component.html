@@ -1,1 +1,92 @@
-<p>coach works!</p>
+<div class="coach-container">
+
+  <header class="coach-header">
+    <h1>🏋️ Tableau de bord Coach</h1>
+    <div class="rating-badge" *ngIf="coachId">
+      ⭐ {{ averageRating | number:'1.1-1' }} / 5
+    </div>
+  </header>
+
+  <div *ngIf="!coachId" class="warning">
+    Connectez-vous pour accéder à votre tableau de bord coach.
+  </div>
+
+  <div *ngIf="coachId" class="grid">
+
+    <section class="card">
+      <h2>Proposer un coach à une équipe</h2>
+      <input [(ngModel)]="proposeTeamId" placeholder="Team ID">
+      <input [(ngModel)]="proposeCoachId" placeholder="Coach ID">
+      <button (click)="propose()">Envoyer proposition</button>
+    </section>
+
+    <section class="card">
+      <h2>Planifier une session</h2>
+      <input [(ngModel)]="newScheduleAthleteId" placeholder="Athlete ID">
+      <input [(ngModel)]="newScheduleAt" type="datetime-local">
+      <input [(ngModel)]="newScheduleDuration" type="number" placeholder="Durée (min)">
+      <button (click)="scheduleSession()">Planifier</button>
+      <p class="error" *ngIf="scheduleError">{{ scheduleError }}</p>
+    </section>
+
+    <section class="card">
+      <h2>Vérifier blessures d'un athlète</h2>
+      <input [(ngModel)]="athleteIdQuery" placeholder="Athlete ID">
+      <button (click)="loadAthleteInjuries()">Vérifier</button>
+      <div *ngIf="athleteInjuries.length === 0 && athleteIdQuery" class="ok">
+        ✅ Aucune blessure active
+      </div>
+      <ul class="injury-list">
+        <li *ngFor="let inj of athleteInjuries" class="severity-{{ inj.severity }}">
+          <strong>{{ inj.bodyPart }}</strong> — {{ inj.severity }}
+          <span *ngIf="inj.expectedRecovery"> (rétabli: {{ inj.expectedRecovery }})</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card wide">
+      <h2>Mes sessions ({{ sessions.length }})</h2>
+      <table *ngIf="sessions.length > 0">
+        <thead>
+          <tr><th>Athlète</th><th>Date</th><th>Durée</th><th>Statut</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of sessions">
+            <td>{{ s.athleteId }}</td>
+            <td>{{ s.scheduledAt | date:'short' }}</td>
+            <td>{{ s.duration }} min</td>
+            <td><span class="status status-{{ s.status }}">{{ s.status }}</span></td>
+            <td>
+              <button *ngIf="s.status === 'SCHEDULED'" (click)="completeSession(s.sessionId!)">Terminer</button>
+              <button *ngIf="s.status === 'SCHEDULED'" (click)="cancelSession(s.sessionId!)" class="danger">Annuler</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="sessions.length === 0">Aucune session.</p>
+    </section>
+
+    <section class="card wide">
+      <h2>Mes offres Marketplace ({{ offers.length }})</h2>
+      <table *ngIf="offers.length > 0">
+        <thead>
+          <tr><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Statut</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let o of offers">
+            <td>{{ o.name }}</td>
+            <td>{{ o.category }}</td>
+            <td>{{ o.price }} €</td>
+            <td><span class="status status-{{ o.status }}">{{ o.status }}</span></td>
+            <td>
+              <button *ngIf="o.status !== 'PUBLISHED'" (click)="publishOffer(o.serviceId!)">Publier</button>
+              <button *ngIf="o.status !== 'ARCHIVED'" (click)="archiveOffer(o.serviceId!)" class="danger">Archiver</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="offers.length === 0">Aucune offre.</p>
+    </section>
+
+  </div>
+</div>

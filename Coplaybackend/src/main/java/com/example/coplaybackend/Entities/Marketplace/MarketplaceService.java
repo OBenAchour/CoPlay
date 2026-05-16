@@ -15,11 +15,15 @@ public class MarketplaceService {
     @Id
     private String serviceId;
 
-    private String providerId;       // ref → User
+    private String providerId;       // ref → User (sémantiquement le coachId quand category=COACHING_SESSION)
 
     private String name;
 
     private BigDecimal price;
 
     private String description;
+
+    private String category;         // "COACHING_SESSION", "PHYSIO", "NUTRITION", etc.
+
+    private String status;           // "DRAFT", "PUBLISHED", "ARCHIVED"
 }

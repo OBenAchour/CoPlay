@@ -1,0 +1,77 @@
+<div class="svc-container">
+
+  <header><h1>🎯 Marketplace · Prestations</h1></header>
+
+  <section class="card">
+    <h2>Filtrer</h2>
+    <div class="row">
+      <select [(ngModel)]="filterCategory">
+        <option value="">Toutes catégories</option>
+        <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+      </select>
+      <button (click)="load()">Filtrer</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Créer une prestation</h2>
+    <div class="form-grid">
+      <input [(ngModel)]="newSvc.name" placeholder="Nom de la prestation">
+      <select [(ngModel)]="newSvc.category">
+        <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+      </select>
+      <input [(ngModel)]="newSvc.price" type="number" placeholder="Prix (€)" step="0.01">
+      <textarea [(ngModel)]="newSvc.description" placeholder="Description" class="full"></textarea>
+    </div>
+    <button (click)="createService()">Créer (publié)</button>
+  </section>
+
+  <div *ngIf="loading">Chargement...</div>
+
+  <div class="grid" *ngIf="!loading">
+    <article class="svc-card" *ngFor="let s of services">
+      <div class="category-badge">{{ s.category }}</div>
+      <h3>{{ s.name }}</h3>
+      <p class="desc">{{ s.description }}</p>
+      <p class="price">{{ s.price }} €</p>
+      <p class="provider">Prestataire: {{ s.providerId }}</p>
+      <span class="status status-{{ s.status }}">{{ s.status }}</span>
+      <div class="actions">
+        <button (click)="open(s)" class="secondary">Détails</button>
+        <button *ngIf="s.status === 'PUBLISHED'" (click)="buy(s)">Acheter</button>
+        <button *ngIf="s.providerId === userId && s.status !== 'PUBLISHED'" (click)="publish(s.serviceId!)" class="success">Publier</button>
+        <button *ngIf="s.providerId === userId && s.status !== 'ARCHIVED'" (click)="archive(s.serviceId!)" class="danger">Archiver</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="modal" *ngIf="selected" (click)="close()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="close" (click)="close()">×</button>
+      <h2>{{ selected.name }}</h2>
+      <div class="category-badge">{{ selected.category }}</div>
+      <p class="modal-price">{{ selected.price }} €</p>
+      <p>{{ selected.description }}</p>
+      <p><b>Prestataire:</b> {{ selected.providerId }}</p>
+      <p><b>Note moyenne:</b> ⭐ {{ selectedRating | number:'1.1-1' }} ({{ selectedReviews.length }} avis)</p>
+
+      <h3>Avis</h3>
+      <ul class="reviews">
+        <li *ngFor="let r of selectedReviews">
+          <strong>{{ r.rating }}/5</strong> — {{ r.comment }}
+        </li>
+        <li *ngIf="selectedReviews.length === 0">Aucun avis.</li>
+      </ul>
+
+      <h3>Laisser un avis</h3>
+      <div class="review-form">
+        <select [(ngModel)]="newReview.rating">
+          <option *ngFor="let n of [1,2,3,4,5]" [value]="n">{{ n }} ★</option>
+        </select>
+        <input [(ngModel)]="newReview.comment" placeholder="Commentaire">
+        <button (click)="postReview()">Publier</button>
+      </div>
+    </div>
+  </div>
+
+</div>

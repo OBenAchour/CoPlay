@@ -21,6 +21,8 @@ public class TrainingProgram {
     @DBRef
     private Team teamId;           // ref → Team
 
+    private String coachId;        // ref → User (auteur du programme)
+
     private String title;
 
     private String level;
@@ -30,4 +32,6 @@ public class TrainingProgram {
     // Composition → Exercise est embedded directement
     @DBRef
     private List<Exercise> exercises;
+
+    private List<String> recommendedEquipmentIds;   // ref → Marketplace.Equipment
 }

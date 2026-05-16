@@ -17,9 +17,9 @@ public class Review {
 
     private String authorId;         // ref → User
 
-    private String targetId;         // ref → Equipment ou MarketplaceService
+    private String targetId;         // ref → Equipment, MarketplaceService, or User (coach)
 
-    private String targetType;       // "EQUIPMENT" ou "SERVICE"
+    private String targetType;       // "EQUIPMENT", "SERVICE", "COACH"
 
     private Integer rating;          // 1 à 5
 

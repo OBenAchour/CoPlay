@@ -1,0 +1,26 @@
+.session-container { max-width: 1200px; margin: 0 auto; padding: 24px; font-family: system-ui, sans-serif; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+header h1 { color: #1e293b; margin: 0; }
+.role-switch { display: flex; gap: 16px; }
+.role-switch label { cursor: pointer; padding: 6px 12px; border-radius: 6px; background: #f1f5f9; }
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.card h2 { margin-top: 0; color: #334155; font-size: 18px; }
+input, select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+button { background: #2563eb; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 4px; }
+button:hover { background: #1d4ed8; }
+button.danger { background: #dc2626; }
+button.secondary { background: #64748b; }
+.error { color: #dc2626; margin-top: 8px; }
+.sessions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.session-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; }
+.session-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.session-head .date { color: #64748b; font-size: 13px; }
+.session-body div { padding: 2px 0; font-size: 14px; }
+.session-body .linked { color: #7c3aed; margin-top: 6px; font-weight: 500; }
+.session-actions { margin-top: 12px; display: flex; gap: 4px; flex-wrap: wrap; }
+.session-actions input { flex: 1; min-width: 120px; }
+.status { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.status-SCHEDULED { background: #dbeafe; color: #1e40af; }
+.status-COMPLETED { background: #dcfce7; color: #166534; }
+.status-CANCELLED { background: #fee2e2; color: #991b1b; }

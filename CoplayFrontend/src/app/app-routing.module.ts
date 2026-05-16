@@ -16,6 +16,15 @@ import { UserListComponent } from './Features/Admin/user-list/user-list.componen
 // Team Components
 import { TeamComponent } from './components/team/team.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
+import { CoachComponent } from './components/coach/coach.component';
+
+// Coaching & Marketplace
+import { InjuryComponent } from './components/injury/injury.component';
+import { ProgressComponent } from './components/progress/progress.component';
+import { CoachingSessionComponent } from './components/coaching-session/coaching-session.component';
+import { MarketplaceEquipmentComponent } from './components/marketplace-equipment/marketplace-equipment.component';
+import { MarketplaceServicesComponent } from './components/marketplace-services/marketplace-services.component';
+import { MarketplaceOrdersComponent } from './components/marketplace-orders/marketplace-orders.component';
 
 // Event & Training Components
 import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
@@ -58,6 +67,17 @@ const routes: Routes = [
   { path: 'classement', component: ClassementComponent, canActivate: [AuthGuard] },
   { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
   { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
+
+  // Coaching
+  { path: 'coach', component: CoachComponent, canActivate: [AuthGuard] },
+  { path: 'injuries', component: InjuryComponent, canActivate: [AuthGuard] },
+  { path: 'progress', component: ProgressComponent, canActivate: [AuthGuard] },
+  { path: 'sessions', component: CoachingSessionComponent, canActivate: [AuthGuard] },
+
+  // Marketplace
+  { path: 'marketplace/equipments', component: MarketplaceEquipmentComponent, canActivate: [AuthGuard] },
+  { path: 'marketplace/services', component: MarketplaceServicesComponent, canActivate: [AuthGuard] },
+  { path: 'marketplace/orders', component: MarketplaceOrdersComponent, canActivate: [AuthGuard] },
 
   // Redirection par défaut pour les routes inconnues
   { path: '**', redirectTo: '' }

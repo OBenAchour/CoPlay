@@ -37,6 +37,14 @@ import { EventDetailComponent } from './Features/Event & Training/event-detail/e
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
 import { TrainingListComponent } from './Features/Event & Training/training-list/training-list.component';
 
+// Coaching & Marketplace
+import { InjuryComponent } from './components/injury/injury.component';
+import { ProgressComponent } from './components/progress/progress.component';
+import { CoachingSessionComponent } from './components/coaching-session/coaching-session.component';
+import { MarketplaceEquipmentComponent } from './components/marketplace-equipment/marketplace-equipment.component';
+import { MarketplaceServicesComponent } from './components/marketplace-services/marketplace-services.component';
+import { MarketplaceOrdersComponent } from './components/marketplace-orders/marketplace-orders.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -61,9 +69,17 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
-    TeamMemberComponent
-    
-    // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés 
+    TeamMemberComponent,
+
+    // Coaching & Marketplace
+    InjuryComponent,
+    ProgressComponent,
+    CoachingSessionComponent,
+    MarketplaceEquipmentComponent,
+    MarketplaceServicesComponent,
+    MarketplaceOrdersComponent
+
+    // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés
     // exclusivement dans MessagingModule, pas ici.
   ],
   imports: [

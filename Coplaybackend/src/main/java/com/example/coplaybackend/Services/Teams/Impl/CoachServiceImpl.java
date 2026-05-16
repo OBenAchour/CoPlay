@@ -4,6 +4,7 @@ import com.example.coplaybackend.Entities.Teams.PropositionCoach;
 import com.example.coplaybackend.Entities.Teams.RoleEquipe;
 import com.example.coplaybackend.Entities.Teams.StatutDemande;
 import com.example.coplaybackend.Repositories.Teams.PropositionCoachRepository;
+import com.example.coplaybackend.Services.Marketplace.MarketplaceProductService;
 import com.example.coplaybackend.Services.Teams.CoachService;
 import com.example.coplaybackend.Services.Teams.TeamMemberService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class CoachServiceImpl implements CoachService {
 
     private final PropositionCoachRepository repository;
     private final TeamMemberService teamMemberService;
+    private final MarketplaceProductService marketplaceProductService;
 
     @Override
     public PropositionCoach proposerCoach(String teamId, String coachId) {
@@ -43,6 +45,11 @@ public class CoachServiceImpl implements CoachService {
                 proposition.getCoachId(),
                 RoleEquipe.COACH
         );
+
+        // Bootstrap a Marketplace draft offer so the coach can monetise sessions.
+        if (marketplaceProductService.listByProvider(proposition.getCoachId()).isEmpty()) {
+            marketplaceProductService.createDraftForCoach(proposition.getCoachId());
+        }
 
         return repository.save(proposition);
     }

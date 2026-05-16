@@ -1,0 +1,57 @@
+<div class="progress-container">
+
+  <header><h1>📈 Suivi de progression</h1></header>
+
+  <section class="card">
+    <h2>Sélection</h2>
+    <div class="row">
+      <input [(ngModel)]="athleteId" placeholder="Athlete ID">
+      <input [(ngModel)]="programId" placeholder="Training Program ID">
+      <button (click)="loadProgram()">Charger programme</button>
+      <button (click)="loadHistory()" class="secondary">Tout l'historique</button>
+    </div>
+  </section>
+
+  <section class="card" *ngIf="programId">
+    <h2>Moyennes du programme</h2>
+    <div class="metrics" *ngIf="metricEntries().length > 0; else noAvg">
+      <div *ngFor="let m of metricEntries()" class="metric-tile">
+        <div class="metric-name">{{ m[0] }}</div>
+        <div class="metric-value">{{ m[1] | number:'1.1-2' }}</div>
+      </div>
+    </div>
+    <ng-template #noAvg><p>Aucune donnée pour ce programme.</p></ng-template>
+  </section>
+
+  <section class="card">
+    <h2>Enregistrer une performance</h2>
+    <div class="form-grid">
+      <input [(ngModel)]="newRecord.exerciseId" placeholder="Exercise ID">
+      <select [(ngModel)]="newRecord.metric">
+        <option *ngFor="let m of metrics" [value]="m">{{ m }}</option>
+      </select>
+      <input [(ngModel)]="newRecord.value" type="number" placeholder="Valeur" step="0.1">
+    </div>
+    <button (click)="record()">Enregistrer</button>
+  </section>
+
+  <section class="card">
+    <h2>Historique ({{ history.length }})</h2>
+    <table *ngIf="history.length > 0">
+      <thead>
+        <tr><th>Date</th><th>Programme</th><th>Exercice</th><th>Métrique</th><th>Valeur</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let h of history">
+          <td>{{ h.recordedAt | date:'short' }}</td>
+          <td>{{ h.programId }}</td>
+          <td>{{ h.exerciseId }}</td>
+          <td><span class="metric-badge">{{ h.metric }}</span></td>
+          <td><strong>{{ h.value }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="history.length === 0">Aucun enregistrement.</p>
+  </section>
+
+</div>

@@ -13,7 +13,26 @@
     <li><a routerLink="/classement" routerLinkActive="active">Classement</a></li>
     <li><a routerLink="/matchs" routerLinkActive="active">Matchs</a></li>
     <li><a routerLink="/statistics" routerLinkActive="active">Statistiques</a></li>
-    
+
+    <li class="dropdown">
+      <a class="dropdown-toggle">🏋️ Coaching ▾</a>
+      <ul class="dropdown-menu">
+        <li><a routerLink="/coach" routerLinkActive="active">Tableau coach</a></li>
+        <li><a routerLink="/sessions" routerLinkActive="active">Sessions</a></li>
+        <li><a routerLink="/progress" routerLinkActive="active">Progrès</a></li>
+        <li><a routerLink="/injuries" routerLinkActive="active">Blessures</a></li>
+      </ul>
+    </li>
+
+    <li class="dropdown">
+      <a class="dropdown-toggle">🛒 Marketplace ▾</a>
+      <ul class="dropdown-menu">
+        <li><a routerLink="/marketplace/equipments" routerLinkActive="active">Équipements</a></li>
+        <li><a routerLink="/marketplace/services" routerLinkActive="active">Prestations</a></li>
+        <li><a routerLink="/marketplace/orders" routerLinkActive="active">Mes commandes</a></li>
+      </ul>
+    </li>
+
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">
         <span class="admin-icon">⚙️</span> Gestion Utilisateurs

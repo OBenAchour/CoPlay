@@ -4,16 +4,12 @@ import com.example.coplaybackend.Entities.Teams.PropositionCoach;
 import com.example.coplaybackend.Services.Teams.CoachService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/coaches")
 @RequiredArgsConstructor
-@Tag(name = "Coach-controller", description = "proposer un coach à une équipe")
-
+@Tag(name = "Coach-controller", description = "proposer un coach à une équipe, accepter ou refuser")
 public class CoachController {
 
     private final CoachService coachService;
@@ -26,4 +22,13 @@ public class CoachController {
         return coachService.proposerCoach(teamId,coachId);
     }
 
+    @PatchMapping("/{propositionId}/accept")
+    public PropositionCoach accept(@PathVariable String propositionId) {
+        return coachService.accepterProposition(propositionId);
+    }
+
+    @PatchMapping("/{propositionId}/refuse")
+    public PropositionCoach refuse(@PathVariable String propositionId) {
+        return coachService.refuserProposition(propositionId);
+    }
 }

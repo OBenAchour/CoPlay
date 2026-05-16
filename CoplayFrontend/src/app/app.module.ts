@@ -22,6 +22,9 @@ import { NavbarComponent } from './Shared/Components/navbar/navbar.component';
 // Messaging - On importe UNIQUEMENT le module global
 import { MessagingModule } from './Features/Messaging/messaging.module';
 
+// Social
+import { SocialModule } from './Features/Social/social.module';
+
 // Team Components
 import { TeamComponent } from './components/team/team.component';
 import { CoachComponent } from './components/coach/coach.component';
@@ -62,6 +65,8 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
     HistoriqueActionComponent,
     InvitationComponent,
     TeamMemberComponent
+
+    // Note : FeedComponent est déclaré dans SocialModule
     
     // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés 
     // exclusivement dans MessagingModule, pas ici.
@@ -73,7 +78,8 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
     HttpClientModule, 
     FormsModule,           // Fournit ngModel
     ReactiveFormsModule,   // Fournit formGroup
-    MessagingModule        // Importé ici pour éviter les doublons de déclaration
+    MessagingModule,         // Importé ici pour éviter les doublons de déclaration
+    SocialModule             // Social media module
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

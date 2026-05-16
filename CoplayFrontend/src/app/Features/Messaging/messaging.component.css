@@ -3,7 +3,14 @@
   bottom: 0;
   right: 0;
   z-index: 998;
+  animation: slideUp 0.3s ease;
 }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .new-msg-modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -12,26 +19,53 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .new-msg-modal {
   background: white;
   width: 350px;
   max-height: 400px;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  animation: scaleIn 0.2s ease;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .modal-header {
-  background: #2c3e50;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
   padding: 15px;
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
+  font-weight: 500;
 }
+
+.modal-header button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.modal-header button:hover { opacity: 1; }
 
 .modal-search {
   padding: 12px;
@@ -40,10 +74,17 @@
 
 .modal-search input {
   width: 100%;
-  padding: 10px;
+  padding: 10px 14px;
   border: 1px solid #ddd;
-  border-radius: 20px;
+  border-radius: 12px;
   outline: none;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.modal-search input:focus {
+  border-color: #667eea;
 }
 
 .user-list {
@@ -58,6 +99,7 @@
   padding: 12px 15px;
   cursor: pointer;
   gap: 12px;
+  transition: background 0.2s;
 }
 
 .user-item:hover {

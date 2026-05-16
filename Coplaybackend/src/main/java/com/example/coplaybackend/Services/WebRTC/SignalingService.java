@@ -59,12 +59,17 @@ public class SignalingService {
         List<Participant> participants = participantRepository
                 .findByConversation_ConversationIdAndIsActiveTrue(conversationId);
 
+        List<String> otherParticipantIds = new ArrayList<>();
         List<String> otherParticipantEmails = new ArrayList<>();
         for (Participant p : participants) {
-            if (!p.getUser().getEmail().equals(initiatorId)) {
+            if (!p.getUser().getUserId().equals(initiator.getUserId())) {
+                otherParticipantIds.add(p.getUser().getUserId());
                 otherParticipantEmails.add(p.getUser().getEmail());
             }
         }
+
+        log.info("[SIGNALING] Participants found: {}, initiatorId: {}, toUserIds: {}, toEmails: {}",
+                participants.size(), initiator.getUserId(), otherParticipantIds, otherParticipantEmails);
 
         CallNotificationMessage notification = new CallNotificationMessage(
                 "call-initiated",
@@ -72,7 +77,7 @@ public class SignalingService {
                 roomId,
                 callSession.getCallType().name(),
                 initiator.getEmail(),
-                otherParticipantEmails,
+                otherParticipantIds,
                 initiator.getProfile().getDisplayName()
         );
 
@@ -87,7 +92,10 @@ public class SignalingService {
                 .orElseThrow(() -> new RuntimeException("Call not found"));
 
         call.setStatus(CallStatus.RINGING);
+        call.setSdpOffer(sdpOffer);
         callSessionRepository.save(call);
+
+        log.info("[SIGNALING] Offer stored for callId: {}", callId);
 
         messagingTemplate.convertAndSend(
                 "/topic/call/" + call.getRoomId(),
@@ -98,6 +106,11 @@ public class SignalingService {
     public void sendAnswer(String callId, String fromUserId, String sdpAnswer) {
         CallSession call = callSessionRepository.findById(callId)
                 .orElseThrow(() -> new RuntimeException("Call not found"));
+
+        call.setSdpAnswer(sdpAnswer);
+        callSessionRepository.save(call);
+
+        log.info("[SIGNALING] Answer stored for callId: {}", callId);
 
         messagingTemplate.convertAndSend(
                 "/topic/call/" + call.getRoomId(),
@@ -121,6 +134,17 @@ public class SignalingService {
 
         call.setStatus(CallStatus.ACTIVE);
         callSessionRepository.save(call);
+
+        log.info("[SIGNALING] Call accepted: callId: {}, by userId: {}", callId, userId);
+
+        // Re-send the stored offer so the receiver (now subscribed) can process it
+        if (call.getSdpOffer() != null) {
+            messagingTemplate.convertAndSend(
+                    "/topic/call/" + call.getRoomId(),
+                    new SignalingMessage("offer", call.getInitiator().getEmail(), call.getSdpOffer(), null)
+            );
+            log.info("[SIGNALING] Re-sent stored offer to room: {}", call.getRoomId());
+        }
 
         messagingTemplate.convertAndSend(
                 "/topic/call/" + call.getRoomId(),

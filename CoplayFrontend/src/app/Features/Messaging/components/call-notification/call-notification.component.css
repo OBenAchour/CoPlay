@@ -4,10 +4,16 @@
   right: 20px;
   width: 300px;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
   overflow: hidden;
   z-index: 2000;
+  animation: notifSlide 0.3s ease;
+}
+
+@keyframes notifSlide {
+  from { opacity: 0; transform: translateX(100px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .notification-content {
@@ -15,7 +21,7 @@
   align-items: center;
   padding: 16px;
   gap: 12px;
-  background: #42b72a;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
 }
 
@@ -46,25 +52,39 @@
 
 .notification-actions {
   display: flex;
-  padding: 12px;
+  padding: 12px 16px;
   gap: 12px;
   background: #fff;
 }
 
 .action-btn {
   flex: 1;
-  height: 48px;
+  height: 44px;
   border: none;
-  border-radius: 8px;
-  font-size: 24px;
+  border-radius: 10px;
+  font-size: 22px;
   cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
 }
 
 .action-btn.decline {
-  background: #e4e6eb;
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.action-btn.decline:hover {
+  background: #fecaca;
 }
 
 .action-btn.accept {
-  background: #42b72a;
-  color: white;
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.action-btn.accept:hover {
+  background: #bbf7d0;
 }

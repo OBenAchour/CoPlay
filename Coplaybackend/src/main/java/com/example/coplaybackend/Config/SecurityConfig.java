@@ -39,6 +39,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/sponsors/**").permitAll()
                         .requestMatchers("/ws-call/**").permitAll()
 
+                        // Stripe webhook (signature verified inside controller)
+                        .requestMatchers("/api/marketplace/payments/webhook").permitAll()
+                        // Public marketplace listings browsing
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/marketplace/equipment/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/marketplace/services/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/marketplace/reviews/**").permitAll()
+
                         // Nouvelles routes pour la Ligue Master Coplay
                         .requestMatchers("/api/competitions/**").permitAll()
                         .requestMatchers("/api/matches/**").permitAll()

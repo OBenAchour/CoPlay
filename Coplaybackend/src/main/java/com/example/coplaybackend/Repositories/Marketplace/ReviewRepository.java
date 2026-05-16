@@ -1,13 +1,21 @@
 package com.example.coplaybackend.Repositories.Marketplace;
 
 import com.example.coplaybackend.Entities.Marketplace.Review;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface ReviewRepository extends MongoRepository<Review, String> {
+
+    Page<Review> findByTargetIdAndTargetType(String targetId, String targetType, Pageable pageable);
 
     List<Review> findByTargetIdAndTargetType(String targetId, String targetType);
 
     List<Review> findByAuthorId(String authorId);
+
+    boolean existsByAuthorIdAndTargetIdAndTargetType(String authorId, String targetId, String targetType);
 }

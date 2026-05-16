@@ -1,51 +1,50 @@
 package com.example.coplaybackend.Controllers.Marketplace;
 
+import com.example.coplaybackend.DTOs.Marketplace.OrderRequest;
 import com.example.coplaybackend.Entities.Marketplace.Order;
 import com.example.coplaybackend.Services.Marketplace.OrderService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/marketplace/orders")
 @RequiredArgsConstructor
-@Tag(name = "Order-controller",
-     description = "Commandes marketplace — markPaid déclenche la création d'une CoachingSession pour les services COACHING_SESSION")
 public class OrderController {
 
-    private final OrderService service;
+    private final OrderService orderService;
 
     @PostMapping
-    public Order create(@RequestParam String buyerId,
-                        @RequestParam String targetId,
-                        @RequestParam String targetType) {
-        return service.create(buyerId, targetId, targetType);
+    public ResponseEntity<Order> create(@RequestBody OrderRequest req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createFromCart(req));
     }
 
-    @PatchMapping("/{orderId}/pay")
-    public Order pay(@PathVariable String orderId) {
-        return service.markPaid(orderId);
+    @GetMapping("/{id}")
+    public ResponseEntity<Order> get(@PathVariable String id) {
+        return ResponseEntity.ok(orderService.getById(id));
     }
 
-    @PatchMapping("/{orderId}/cancel")
-    public Order cancel(@PathVariable String orderId) {
-        return service.cancel(orderId);
+    @GetMapping("/me")
+    public ResponseEntity<Page<Order>> mine(@RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(orderService.listMine(page, size));
     }
 
-    @PatchMapping("/{orderId}/complete")
-    public Order complete(@PathVariable String orderId) {
-        return service.complete(orderId);
+    @GetMapping("/sales")
+    public ResponseEntity<Page<Order>> sales(@RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(orderService.listMySales(page, size));
     }
 
-    @GetMapping("/{orderId}")
-    public Order get(@PathVariable String orderId) {
-        return service.getById(orderId);
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Order> updateStatus(@PathVariable String id, @RequestParam String status) {
+        return ResponseEntity.ok(orderService.updateStatus(id, status));
     }
 
-    @GetMapping("/buyer/{buyerId}")
-    public List<Order> byBuyer(@PathVariable String buyerId) {
-        return service.listByBuyer(buyerId);
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Order> cancel(@PathVariable String id) {
+        return ResponseEntity.ok(orderService.cancel(id));
     }
 }

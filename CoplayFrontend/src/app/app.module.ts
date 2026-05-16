@@ -37,13 +37,7 @@ import { EventDetailComponent } from './Features/Event & Training/event-detail/e
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
 import { TrainingListComponent } from './Features/Event & Training/training-list/training-list.component';
 
-// Coaching & Marketplace
-import { InjuryComponent } from './components/injury/injury.component';
-import { ProgressComponent } from './components/progress/progress.component';
-import { CoachingSessionComponent } from './components/coaching-session/coaching-session.component';
-import { MarketplaceEquipmentComponent } from './components/marketplace-equipment/marketplace-equipment.component';
-import { MarketplaceServicesComponent } from './components/marketplace-services/marketplace-services.component';
-import { MarketplaceOrdersComponent } from './components/marketplace-orders/marketplace-orders.component';
+// Coaching & Marketplace are lazy-loaded feature modules (see app-routing.module.ts)
 
 @NgModule({
   declarations: [
@@ -69,18 +63,12 @@ import { MarketplaceOrdersComponent } from './components/marketplace-orders/mark
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
-    TeamMemberComponent,
-
-    // Coaching & Marketplace
-    InjuryComponent,
-    ProgressComponent,
-    CoachingSessionComponent,
-    MarketplaceEquipmentComponent,
-    MarketplaceServicesComponent,
-    MarketplaceOrdersComponent
+    TeamMemberComponent
 
     // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés
     // exclusivement dans MessagingModule, pas ici.
+    // Note : Les composants Coaching et Marketplace sont dans leurs propres
+    // feature modules lazy-loaded.
   ],
   imports: [
     BrowserModule,

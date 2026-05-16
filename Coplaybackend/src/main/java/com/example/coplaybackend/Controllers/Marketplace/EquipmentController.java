@@ -1,53 +1,83 @@
 package com.example.coplaybackend.Controllers.Marketplace;
 
+import com.example.coplaybackend.DTOs.Marketplace.EquipmentRequest;
+import com.example.coplaybackend.DTOs.Marketplace.SearchFilter;
 import com.example.coplaybackend.Entities.Marketplace.Equipment;
 import com.example.coplaybackend.Services.Marketplace.EquipmentService;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.example.coplaybackend.Services.Marketplace.MarketplaceSearchService;
+import com.example.coplaybackend.Utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/equipments")
+@RequestMapping("/api/marketplace/equipment")
 @RequiredArgsConstructor
-@Tag(name = "Equipment-controller", description = "Gestion des équipements vendus sur la marketplace")
 public class EquipmentController {
 
-    private final EquipmentService service;
+    private final EquipmentService equipmentService;
+    private final MarketplaceSearchService searchService;
 
     @PostMapping
-    public Equipment create(@RequestParam String sellerId,
-                            @RequestParam String name,
-                            @RequestParam(required = false) String description,
-                            @RequestParam BigDecimal price,
-                            @RequestParam String category,
-                            @RequestParam(required = false) Integer stock,
-                            @RequestBody(required = false) List<String> images) {
-        return service.create(sellerId, name, description, price, category, stock, images);
+    public ResponseEntity<Equipment> create(@RequestBody EquipmentRequest req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(equipmentService.create(req));
     }
 
-    @PutMapping("/{equipmentId}")
-    public Equipment update(@PathVariable String equipmentId, @RequestBody Equipment patch) {
-        return service.update(equipmentId, patch);
+    @PutMapping("/{id}")
+    public ResponseEntity<Equipment> update(@PathVariable String id, @RequestBody EquipmentRequest req) {
+        return ResponseEntity.ok(equipmentService.update(id, req));
     }
 
-    @PatchMapping("/{equipmentId}/status")
-    public Equipment changeStatus(@PathVariable String equipmentId, @RequestParam String status) {
-        return service.changeStatus(equipmentId, status);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        equipmentService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{equipmentId}")
-    public Equipment get(@PathVariable String equipmentId) {
-        return service.getById(equipmentId);
+    @GetMapping("/{id}")
+    public ResponseEntity<Equipment> get(@PathVariable String id) {
+        return ResponseEntity.ok(equipmentService.getAndIncrementViews(id));
     }
 
     @GetMapping
-    public List<Equipment> list(@RequestParam(required = false) String sellerId,
-                                @RequestParam(required = false) String category) {
-        if (sellerId != null) return service.listBySeller(sellerId);
-        if (category != null) return service.listByCategory(category);
-        return service.listAll();
+    public ResponseEntity<?> list(@RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(equipmentService.list(page, size));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<Equipment>> mine() {
+        return ResponseEntity.ok(equipmentService.listBySeller(SecurityUtils.getCurrentUserId()));
+    }
+
+    @GetMapping("/seller/{sellerId}")
+    public ResponseEntity<List<Equipment>> bySeller(@PathVariable String sellerId) {
+        return ResponseEntity.ok(equipmentService.listBySeller(sellerId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Equipment>> search(SearchFilter filter) {
+        return ResponseEntity.ok(searchService.searchEquipments(filter));
+    }
+
+    @PostMapping("/{id}/images")
+    public ResponseEntity<Equipment> uploadImage(@PathVariable String id,
+                                                 @RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(equipmentService.uploadImage(id, file));
+    }
+
+    @DeleteMapping("/{id}/images")
+    public ResponseEntity<Equipment> removeImage(@PathVariable String id, @RequestParam String ref) {
+        return ResponseEntity.ok(equipmentService.removeImage(id, ref));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Equipment> updateStatus(@PathVariable String id, @RequestParam String status) {
+        return ResponseEntity.ok(equipmentService.updateStatus(id, status));
     }
 }

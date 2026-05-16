@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw.cmd -q -DskipTests compile)",
+      "Bash(./mvnw.cmd -DskipTests compile)",
+      "Bash(node_modules/.bin/ng build *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat\\(coaching+marketplace\\): add Progress/Injury/CoachingSession + Marketplace CRUD with cross-module integrations *)",
+      "Bash(git merge *)",
+      "Bash(git checkout *)",
+      "Read(//tmp/**)",
+      "Bash(git commit -m 'merge: align with pedantic-jackson-be01e6 \\(richer coaching+marketplace UI\\) *)"
+    ]
+  }
+}

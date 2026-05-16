@@ -2,10 +2,10 @@
   <div 
     *ngFor="let message of messages" 
     class="message-wrapper"
-    [class.my-message]="isMyMessage(message.sender?.userId || '')">
+    [class.my-message]="isMyMessage(message.sender.userId || '')">
     <app-message-bubble 
       [message]="message" 
-      [isOwn]="isMyMessage(message.sender?.userId || '')">
+      [isOwn]="isMyMessage(message.sender.userId || '')">
     </app-message-bubble>
   </div>
 </div>

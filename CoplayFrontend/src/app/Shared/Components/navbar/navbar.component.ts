@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../../Core/Services/Auth/auth.service';
 import { Router } from '@angular/router';
+import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -9,15 +9,32 @@ import { Router } from '@angular/router';
 })
 export class NavbarComponent {
 
+  // ⬇️ NOUVEAU
+  isEventsDropdownOpen = false;
+  // ⬆️
   // Injecte AuthService en public pour y accéder directement depuis le template HTML (ex: vérification isLoggedIn)
   constructor(
   public authService: AuthService,
   public router: Router // Ajoute ceci ici
 ) {}
 
-  // Gère la déconnexion de l'utilisateur en nettoyant la session et en redirigeant vers la page de login
-  onLogout() {
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {}
+
+  onLogout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+
+  // ⬇️ NOUVEAU : ouvrir/fermer le menu
+  toggleEventsDropdown(): void {
+    this.isEventsDropdownOpen = !this.isEventsDropdownOpen;
+  }
+
+  closeEventsDropdown(): void {
+    this.isEventsDropdownOpen = false;
+  }
+  // ⬆️
 }

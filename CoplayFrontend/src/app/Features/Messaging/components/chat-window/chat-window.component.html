@@ -50,7 +50,7 @@
         [class.selected]="isSelected(conv)"
         [class.unread]="conv.unreadCount && conv.unreadCount > 0"
         (click)="selectConversation.emit(conv)">
-        <div class="avatar">{{ conv.otherUserAvatar || conv.name?.charAt(0) || '?' }}</div>
+        <div class="avatar">{{ conv.otherUserAvatar || conv.name.charAt(0) || '?' }}</div>
         <div class="conv-info">
           <div class="conv-header">
             <span class="conv-name">{{ conv.name || 'Sans nom' }}</span>

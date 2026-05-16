@@ -7,7 +7,8 @@
       <p class="page-subtitle">Gérez les entraînements et matchs de votre équipe</p>
     </div>
 
-    <button class="btn-create" (click)="goToCreate()">
+    <!-- ✅ MODIFIÉ : Bouton visible seulement pour les admins -->
+    <button class="btn-create" (click)="goToCreate()" *ngIf="isAdmin">
       <span class="btn-icon">＋</span> Créer un événement
     </button>
   </div>
@@ -72,8 +73,8 @@
   <div class="empty-state" *ngIf="!isLoading && filteredEvents.length === 0 && !errorMessage">
     <div class="empty-icon">🏃</div>
     <h3>Aucun événement trouvé</h3>
-    <p>Créez votre premier événement pour démarrer la saison !</p>
-    <button class="btn-create" (click)="goToCreate()">＋ Créer un événement</button>
+    <p>{{ isAdmin ? 'Créez votre premier événement pour démarrer la saison !' : 'Aucun événement disponible pour le moment.' }}</p>
+    <button class="btn-create" (click)="goToCreate()" *ngIf="isAdmin">＋ Créer un événement</button>
   </div>
 
   <!-- ══ GRILLE ══ -->
@@ -117,7 +118,8 @@
       </div>
 
       <div class="card-footer">
-        <div class="card-actions">
+        <!-- ✅ MODIFIÉ : Actions visibles seulement pour les admins -->
+        <div class="card-actions" *ngIf="isAdmin">
           <button
             class="btn-action btn-edit-small"
             (click)="goToEdit(event.eventId!); $event.stopPropagation()"

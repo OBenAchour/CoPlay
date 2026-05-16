@@ -1,0 +1,41 @@
+<div class="programs-container">
+
+  <div class="header">
+    <h1>📋 Programmes d'entraînement</h1>
+    <button *ngIf="canManage()" class="btn btn-primary" (click)="goToCreate()">
+      + Nouveau programme
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">Chargement...</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <div *ngIf="!isLoading && programs.length === 0" class="empty">
+    Aucun programme disponible. Créez-en un !
+  </div>
+
+  <div class="programs-grid">
+    <div *ngFor="let program of programs" class="program-card">
+
+      <h3>{{ program.title }}</h3>
+
+      <div class="info">
+        <span *ngIf="program.level" class="level">📊 {{ program.level }}</span>
+        <span *ngIf="program.duration" class="duration">⏱️ {{ program.duration }} min</span>
+      </div>
+
+      <div class="exercises-count">
+        🏃 {{ program.exercises?.length || 0 }} exercice(s)
+      </div>
+
+      <div class="actions">
+        <button class="btn-detail" (click)="goToDetail(program.programId!)">
+          👁️ Voir / Modifier
+        </button>
+        <button *ngIf="canManage()" class="btn-delete" (click)="deleteProgram(program)">
+          🗑️ Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

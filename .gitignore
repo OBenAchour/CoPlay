@@ -1,13 +1,28 @@
-venv
-.vscode
-.idea
-.angular
-__pycache__
-Coplaybackend/target
-CoplayFrontend/node_modules
-output
-outputs
-data
-uploads
+# Claude Code
+.claude/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build
+dist/
+tmp/
+out-tsc/
+
+# Misc
+*.log
 .env
-bin
+.env.*

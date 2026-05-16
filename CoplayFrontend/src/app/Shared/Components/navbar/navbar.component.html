@@ -1,9 +1,8 @@
-<nav class="navbar">
-  <div class="navbar-brand">
-    <a [routerLink]="authService.isLoggedIn() ? '/dashboard' : '/'" class="logo-link">
-      <img src="assets/logo-coplay.png.png" alt="CoPlay Logo" class="navbar-logo">
-    </a>
-  </div>
+<header class="hdr" *ngIf="authService.isLoggedIn(); else loggedOut">
+  <a class="hdr-logo" routerLink="/dashboard">
+    <span class="hdr-logo-dot">CP</span>
+    <span>CoPlay</span>
+  </a>
 
   <ul class="nav-links" *ngIf="authService.isLoggedIn()">
     <li><a routerLink="/profile" routerLinkActive="active">Mon Profil</a></li>
@@ -45,6 +44,18 @@
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/reclamations" routerLinkActive="active">Réclamations</a>
     </li>
+     <li><a routerLink="/marketplace" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h2l3 12h12l2-9H6"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+      Marketplace
+    </a></li>
+    <li><a routerLink="/coaching" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14a6 6 0 0 1 12 0v4H6zM12 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+      Coaching
+    </a></li>
+    <li><a routerLink="/planning" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+      Planning
+    </a></li>
 
 
     <li *ngIf="authService.isAdmin()">
@@ -53,6 +64,18 @@
       </a>
     </li>
   </ul>
+        <li><a routerLink="/marketplace" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h2l3 12h12l2-9H6"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+      Marketplace
+    </a></li>
+    <li><a routerLink="/coaching" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 14a6 6 0 0 1 12 0v4H6zM12 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+      Coaching
+    </a></li>
+    <li><a routerLink="/planning" routerLinkActive="active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+      Planning
+    </a></li>
 
   <div class="nav-auth">
     <ng-container *ngIf="authService.isLoggedIn(); else authButtons">
@@ -66,4 +89,15 @@
       <button *ngIf="router.url !== '/'" routerLink="/login" class="btn-login">Connexion</button>
     </ng-template>
   </div>
-</nav>
+</header>
+
+<ng-template #loggedOut>
+  <header class="hdr" style="grid-template-columns:auto 1fr auto">
+    <a class="hdr-logo" routerLink="/">
+      <span class="hdr-logo-dot">CP</span>
+      <span>CoPlay</span>
+    </a>
+    <div></div>
+    <button class="btn-cp btn-primary-cp" routerLink="/login">Connexion</button>
+  </header>
+</ng-template>

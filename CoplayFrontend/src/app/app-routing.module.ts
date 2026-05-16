@@ -17,6 +17,9 @@ import { UserListComponent } from './Features/Admin/user-list/user-list.componen
 import { TeamComponent } from './components/team/team.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
 
+// Planning (cross-module calendar)
+import { PlanningComponent } from './Features/planning/planning.component';
+
 // Event & Training Components
 import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
@@ -84,6 +87,22 @@ const routes: Routes = [
   { path: 'matchs/:id', component: MatchDetailComponent, canActivate: [AuthGuard] },
 
 
+  // Marketplace (lazy-loaded feature module)
+  {
+    path: 'marketplace',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./Features/Marketplace/marketplace.module').then(m => m.MarketplaceModule),
+  },
+
+  // Coaching & Suivi Santé (lazy-loaded feature module)
+  {
+    path: 'coaching',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./Features/Coaching/coaching.module').then(m => m.CoachingModule),
+  },
+
+  // Planning unifié (cross-module: coaching sessions + marketplace bookings + events + matches)
+  { path: 'planning', component: PlanningComponent, canActivate: [AuthGuard] },
   // Réclamations admin
   { path: 'admin/reclamations', component: AdminReclamationComponent, canActivate: [AdminGuard] },
 

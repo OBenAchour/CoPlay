@@ -36,12 +36,17 @@ public class TrainingProgram {
 
     private Team teamId;             // ref → Team (objet complet)
 
-    private String title;            // ex: "Cardio débutant"
+    private String coachId;        // ref → User (auteur du programme)
+
+    private String title;
 
     private String level;            // BEGINNER | INTERMEDIATE | ADVANCED | PROFESSIONAL
 
     private Integer duration;        // durée totale en minutes
 
-    @Builder.Default
-    private List<Exercise> exercises = new ArrayList<>();   // EMBEDDED
+    // Composition → Exercise est embedded directement
+    @DBRef
+    private List<Exercise> exercises;
+
+    private List<String> recommendedEquipmentIds;   // ref → Marketplace.Equipment
 }

@@ -1,6 +1,10 @@
 package com.example.coplaybackend.Entities.Events;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
+
+import java.util.List;
+
 
 /**
  * Exercise — entité EMBEDDED dans TrainingProgram.
@@ -25,4 +29,7 @@ public class Exercise {
     private String description;
 
     private String videoUrl;
+
+    private List<String> targetMuscles;
+    private List<String> requiredEquipmentIds;   // ref → Marketplace.Equipment
 }

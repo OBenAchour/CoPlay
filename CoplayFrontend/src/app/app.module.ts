@@ -18,6 +18,8 @@ import { HomeComponent } from './Features/home/home.component';
 import { DashboardComponent } from './Features/dashboard/dashboard.component';
 import { UserListComponent } from './Features/Admin/user-list/user-list.component';
 import { NavbarComponent } from './Shared/Components/navbar/navbar.component';
+import { NotificationsBellComponent } from './Shared/Components/notifications-bell/notifications-bell.component';
+import { PlanningComponent } from './Features/planning/planning.component';
 
 // Messaging
 import { MessagingModule } from './Features/Messaging/messaging.module';
@@ -47,6 +49,7 @@ import { TrainingProgramDetailComponent } from '@events/training-program-detail/
 import { MapComponent } from './Features/Event & Training/map/map.component';
 ;
 
+
 // Reclamations
 import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
 
@@ -57,6 +60,8 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     LoginComponent,
     DashboardComponent,
     NavbarComponent,
+    NotificationsBellComponent,
+    PlanningComponent,
     UserListComponent,
     ProfileComponent,
     HomeComponent,
@@ -78,6 +83,7 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
+
     TeamMemberComponent,
    
     
@@ -86,7 +92,10 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     AdminReclamationComponent,
     // Note: FeedComponent est déclaré dans SocialModule
     // Note: Les composants de messagerie (ChatBubble, etc.) sont déclarés
+
     // exclusivement dans MessagingModule, pas ici.
+    // Note : Les composants Coaching et Marketplace sont dans leurs propres
+    // feature modules lazy-loaded.
   ],
   imports: [
     BrowserModule,

@@ -12,6 +12,11 @@ export class NavbarComponent {
   // ⬇️ NOUVEAU
   isEventsDropdownOpen = false;
   // ⬆️
+  // Injecte AuthService en public pour y accéder directement depuis le template HTML (ex: vérification isLoggedIn)
+  constructor(
+  public authService: AuthService,
+  public router: Router // Ajoute ceci ici
+) {}
 
   constructor(
     public authService: AuthService,

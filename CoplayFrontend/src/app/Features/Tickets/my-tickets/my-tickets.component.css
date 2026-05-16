@@ -1,0 +1,256 @@
+/* ========== PAGE ========== */
+.page-container {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.main-background {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url('/assets/Champion_Coupe.png');
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+}
+
+.content-overlay {
+  position: relative;
+  z-index: 2;
+  padding-bottom: 60px;
+}
+
+.text-shadow {
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+}
+
+.glass-style {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+}
+
+/* ========== CARTE TICKET ========== */
+.ticket-card {
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ticket-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25) !important;
+}
+
+/* Header coloré */
+.ticket-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-radius: 20px 20px 0 0;
+  color: white;
+  font-weight: 700;
+}
+
+.header-vip {
+  background: linear-gradient(135deg, #f6d365, #fda085);
+}
+
+.header-tribune {
+  background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+}
+
+.header-pelouse {
+  background: linear-gradient(135deg, #56ab2f, #a8e063);
+}
+
+.ticket-category-icon { font-size: 1.5rem; }
+.ticket-category-label { font-size: 1.1rem; letter-spacing: 2px; }
+.ticket-number-header  { font-size: 0.75rem; opacity: 0.85; }
+
+/* Siège */
+.seat-badge {
+  display: inline-block;
+  background: rgba(0,0,0,0.08);
+  border-radius: 50px;
+  padding: 8px 24px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+/* Infos */
+.ticket-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.info-label {
+  color: #666;
+  font-size: 0.88rem;
+}
+
+.info-value {
+  font-weight: 600;
+  color: #1a1a2e;
+  font-size: 0.9rem;
+}
+
+/* Séparateur pointillé */
+.ticket-divider {
+  border-top: 2px dashed rgba(0,0,0,0.15);
+}
+
+/* Bouton imprimer */
+.btn-print {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.btn-print:hover {
+  opacity: 0.85;
+  color: white;
+}
+
+/* ========== STYLES IMPRESSION ========== */
+@media print {
+
+  /* Cacher toute la page */
+  body > app-root { display: none !important; }
+
+  /* Afficher seulement la zone d'impression */
+  #print-zone {
+    display: block !important;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    z-index: 9999;
+    background: white;
+  }
+
+  .print-ticket {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    padding: 30px;
+    background: white;
+  }
+
+  .print-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .print-header h1 {
+    font-size: 2rem;
+    margin: 0;
+    color: #1a1a2e;
+  }
+
+  .print-header h2 {
+    font-size: 1.2rem;
+    color: #666;
+    margin: 5px 0 0;
+    letter-spacing: 4px;
+  }
+
+  .print-line {
+    height: 4px;
+    background: linear-gradient(135deg, #f6d365, #fda085, #00d2ff);
+    border-radius: 4px;
+    margin: 15px 0;
+  }
+
+  .print-category {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #1a1a2e;
+    letter-spacing: 3px;
+    margin: 20px 0;
+    padding: 15px;
+    border: 3px solid #1a1a2e;
+    border-radius: 12px;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+
+  .print-table tr {
+    border-bottom: 1px solid #eee;
+  }
+
+  .print-label {
+    padding: 10px;
+    color: #666;
+    font-size: 0.9rem;
+    width: 45%;
+  }
+
+  .print-val {
+    padding: 10px;
+    font-weight: 700;
+    color: #1a1a2e;
+    font-size: 1rem;
+  }
+
+  .print-dashed {
+    border-top: 2px dashed #ccc;
+    margin: 20px 0;
+  }
+
+  .print-qr {
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  .qr-box {
+    width: 120px;
+    height: 120px;
+    border: 3px solid #1a1a2e;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+
+  .qr-inner {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    text-align: center;
+    word-break: break-all;
+    padding: 5px;
+  }
+
+  .qr-label {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .print-footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #999;
+    font-size: 0.8rem;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+  }
+}

@@ -2,8 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common'; 
-
+import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
@@ -13,14 +12,17 @@ import { LoginComponent } from './Auth/login/login.component';
 import { AuthInterceptor } from './Core/Interceptors/auth.interceptor';
 import { ProfileComponent } from './Features/User/profile/profile.component';
 
-// Features (Home, Admin & Shared)
+// Features
 import { HomeComponent } from './Features/home/home.component';
 import { DashboardComponent } from './Features/dashboard/dashboard.component';
 import { UserListComponent } from './Features/Admin/user-list/user-list.component';
 import { NavbarComponent } from './Shared/Components/navbar/navbar.component';
 
-// Messaging - On importe UNIQUEMENT le module global
+// Messaging
 import { MessagingModule } from './Features/Messaging/messaging.module';
+
+// Social
+import { SocialModule } from './Features/Social/social.module';
 
 // Team Components
 import { TeamComponent } from './components/team/team.component';
@@ -31,7 +33,7 @@ import { HistoriqueActionComponent } from './components/historique-action/histor
 import { InvitationComponent } from './components/invitation/invitation.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
 
-// Event & Training Components (Conservation du dossier avec "&")
+// Events
 import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
 import { EventDetailComponent } from './Features/Event & Training/event-detail/event-detail.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
@@ -44,6 +46,9 @@ import { TrainingProgramDetailComponent } from '@events/training-program-detail/
 import { MapComponent } from './Features/Event & Training/map/map.component';
 ;
 
+// Reclamations
+import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -54,8 +59,7 @@ import { MapComponent } from './Features/Event & Training/map/map.component';
     UserListComponent,
     ProfileComponent,
     HomeComponent,
-    
-    // Events & Training
+    // Events
     EventListComponent,
     EventDetailComponent,
     EventFormComponent,
@@ -77,17 +81,23 @@ import { MapComponent } from './Features/Event & Training/map/map.component';
    
     
     // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés 
+    // Reclamations
+    AdminReclamationComponent,
+    // Note: FeedComponent est déclaré dans SocialModule
+    // Note: Les composants de messagerie (ChatBubble, etc.) sont déclarés
     // exclusivement dans MessagingModule, pas ici.
   ],
   imports: [
     BrowserModule,
-    CommonModule,        // Fournit ngClass, ngIf, ngFor
+    CommonModule,
     AppRoutingModule,
     HttpClientModule, 
     FormsModule,           // Fournit ngModel
     ReactiveFormsModule,   // Fournit formGroup
     MessagingModule,
-     MapComponent       // Importé ici pour éviter les doublons de déclaration
+     MapComponent,
+        SocialModule,           // Social media module
+
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

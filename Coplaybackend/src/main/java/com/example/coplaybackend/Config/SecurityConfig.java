@@ -3,6 +3,7 @@ package com.example.coplaybackend.Config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,12 +44,17 @@ public class SecurityConfig {
                         .requestMatchers("/api/competitions/**").permitAll()
                         .requestMatchers("/api/matches/**").permitAll()
                         .requestMatchers("/api/statistiques/**").permitAll()
-
-                        // --- ROUTES PRIVÉES (Nécessitent une authentification) ---
+                        .requestMatchers("/api/posts/**").permitAll()
+                        .requestMatchers("/api/ai/**").permitAll()
                         .requestMatchers("/api/users/me").authenticated()
 
                         // Routes réservées aux Administrateurs
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/reclamations").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reclamations").hasAnyAuthority("ADMIN", "ROLE_ADMIN")   // ✅ était hasRole()
+                        .requestMatchers(HttpMethod.PATCH, "/api/reclamations/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN") // ✅ était hasRole()
+                        .requestMatchers(HttpMethod.DELETE, "/api/reclamations/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN") // ✅ était hasRole()
 
                         // Tout le reste doit être authentifié
                         .anyRequest().authenticated()
@@ -67,7 +73,7 @@ public class SecurityConfig {
 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

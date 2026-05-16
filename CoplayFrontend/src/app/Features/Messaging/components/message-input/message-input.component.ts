@@ -24,10 +24,9 @@ export class MessageInputComponent implements OnInit, OnDestroy {
   private inputSubject = new Subject<string>();
   private subscriptions: Subscription[] = [];
   
-  // Rate limiting
   private lastApiCall = 0;
-  private readonly API_COOLDOWN_MS = 5000; 
-private readonly API_DEBOUNCE_MS = 1000;  
+  private readonly API_COOLDOWN_MS = 2000;
+  private readonly API_DEBOUNCE_MS = 400;
   constructor(private aiService: AIService) {}
 
   ngOnInit(): void {
@@ -35,7 +34,7 @@ private readonly API_DEBOUNCE_MS = 1000;
       debounceTime(this.API_DEBOUNCE_MS),
       distinctUntilChanged(),
       switchMap(text => {
-        if (text.length >= 3) {
+        if (text.length >= 2) {
           // Rate limiting: vérifier si assez de temps s'est écoulé
           const now = Date.now();
           if (now - this.lastApiCall < this.API_COOLDOWN_MS) {
@@ -100,7 +99,7 @@ private readonly API_DEBOUNCE_MS = 1000;
 
     this.inputSubject.next(this.message);
 
-    if (this.message.length < 3) {
+    if (this.message.length < 2) {
       this.showSuggestions = false;
       this.suggestions = [];
     }

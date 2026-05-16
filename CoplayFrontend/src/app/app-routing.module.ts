@@ -34,6 +34,12 @@ import { TrainingProgramDetailComponent } from '@events/training-program-detail/
 import { TrainingListComponent } from '@events/training-list/training-list.component';
 import { TrainingSessionFormComponent } from '@events/training-session-form/training-session-form.component';
 import { TrainingSessionDetailComponent } from '@events/training-session-detail/training-session-detail.component';
+import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
+import { TicketShopComponent } from './Features/Tickets/ticket-shop/ticket-shop.component';
+import { MyTicketsComponent } from './Features/Tickets/my-tickets/my-tickets.component';
+
+// Social
+import { FeedComponent } from './Features/Social/feed/feed.component';
 
 const routes: Routes = [
   // Route principale (Accueil)
@@ -42,7 +48,7 @@ const routes: Routes = [
   // Auth
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
-  
+
   // Dashboard & Admin
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'admin/users', component: UserListComponent, canActivate: [AdminGuard] },
@@ -76,8 +82,18 @@ const routes: Routes = [
   { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
   { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
 
+  // Réclamations admin
+  { path: 'admin/reclamations', component: AdminReclamationComponent, canActivate: [AdminGuard] },
+
+  // Social Media
+  { path: 'feed', component: FeedComponent, canActivate: [AuthGuard] },
+
+  // Tickets
+  { path: 'tickets/:matchId', component: TicketShopComponent, canActivate: [AuthGuard] },
+  { path: 'my-tickets', component: MyTicketsComponent, canActivate: [AuthGuard] },
+
   // Redirection par défaut pour les routes inconnues
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({

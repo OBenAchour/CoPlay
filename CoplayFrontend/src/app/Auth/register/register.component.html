@@ -44,12 +44,13 @@
                 <small>Minimum 6 caractères.</small>
               </div>
             </div>
-          </div>
+          </div>  <!-- ✅ Ferme form-row connexion -->
         </fieldset>
 
         <fieldset>
           <legend>Informations Profil</legend>
-          <div class="form-row">
+
+          <div class="form-row">  <!-- ✅ form-row pour nom + ville -->
             <div class="input-group">
               <label><i class="fas fa-id-card"></i> Nom d'affichage</label>
               <input type="text" formControlName="displayName" placeholder="Pseudo de joueur">
@@ -57,15 +58,34 @@
                 <small>Ce champ est requis.</small>
               </div>
             </div>
+
             <div class="input-group">
               <label><i class="fas fa-map-marker-alt"></i> Ville</label>
-              <input type="text" formControlName="city" placeholder="Ex: Tunis, Ariana...">
+              <div class="autocomplete-wrapper">
+                <input
+                  type="text"
+                  formControlName="city"
+                  placeholder="Ex: Tunis, Sfax..."
+                  autocomplete="off"
+                  (input)="filtrerVilles($event)"
+                  (blur)="cacherSuggestions()"
+                />
+                <i class="fas fa-map-marker-alt input-icon"></i>
+                <ul class="suggestions-list" *ngIf="afficherSuggestions && villesFiltrees.length > 0">
+                  <li *ngFor="let ville of villesFiltrees" (mousedown)="selectionnerVille(ville)">
+                    <i class="fas fa-map-pin"></i> {{ ville }}
+                  </li>
+                </ul>
+                <div class="no-result" *ngIf="afficherSuggestions && villesFiltrees.length === 0">
+                  Aucune ville trouvée
+                </div>
+              </div>
               <div class="error-msg" *ngIf="registerForm.get('city')?.invalid && registerForm.get('city')?.touched">
                 <small>Ce champ est requis.</small>
               </div>
             </div>
-          </div>
-          
+          </div>  <!-- ✅ Ferme form-row nom+ville -->
+
           <div class="form-row">
             <div class="input-group full-width">
               <label><i class="fas fa-level-up-alt"></i> Niveau Sportif</label>
@@ -73,7 +93,8 @@
                 <option *ngFor="let lvl of levels" [value]="lvl">{{lvl}}</option>
               </select>
             </div>
-          </div>
+          </div>  <!-- ✅ Ferme form-row niveau -->
+
         </fieldset>
 
         <div class="form-actions">

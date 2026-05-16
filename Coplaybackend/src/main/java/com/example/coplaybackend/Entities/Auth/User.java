@@ -24,8 +24,10 @@ public class User {
 
     private Role role;
 
+    @Builder.Default
     private Boolean isEmailVerified = false;
 
+    @Builder.Default
     private Boolean isActive = true;
 
     // L'AGRÉGATION (EMBEDDING) SE FAIT ICI

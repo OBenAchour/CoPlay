@@ -27,6 +27,7 @@ import { CompetitionListComponent } from './Features/Competitions/components/com
 import { CompetitionDetailComponent } from './Features/Competitions/components/competition-detail.component';
 import { ClassementComponent } from './Features/Competitions/components/classement.component';
 import { MatchListComponent } from './Features/Competitions/components/match-list.component';
+import { MatchDetailComponent } from './Features/Competitions/components/match-detail.component';
 import { StatisticsComponent } from './Features/Competitions/components/statistics.component';
 import { TrainingProgramListComponent } from '@events/training-program-list/training-program-list.component';
 import { TrainingProgramFormComponent } from '@events/training-program-form/training-program-form.component';
@@ -80,7 +81,8 @@ const routes: Routes = [
   { path: 'competitions/:id', component: CompetitionDetailComponent, canActivate: [AuthGuard] },
   { path: 'classement', component: ClassementComponent, canActivate: [AuthGuard] },
   { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
-  { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
+  { path: 'matchs/:id', component: MatchDetailComponent, canActivate: [AuthGuard] },
+
 
   // Réclamations admin
   { path: 'admin/reclamations', component: AdminReclamationComponent, canActivate: [AdminGuard] },

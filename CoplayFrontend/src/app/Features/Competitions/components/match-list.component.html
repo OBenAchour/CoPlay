@@ -1,0 +1,72 @@
+<div class="match-list-page">
+  <div class="list-header">
+    <h2>🏟️ Match History</h2>
+    <span class="match-count">{{ matches.length }} match{{ matches.length !== 1 ? 'es' : '' }}</span>
+  </div>
+
+  <div class="empty-state" *ngIf="matches.length === 0">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5">
+      <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+    <p>No matches analyzed yet.</p>
+    <small>Upload a video from the Statistics page to get started.</small>
+  </div>
+
+  <div class="match-grid">
+    <div class="match-card" *ngFor="let match of matches; let i = index; trackBy: trackByJob"
+         [class]="getStatusClass(match.status)">
+
+      <div class="card-top">
+        <div class="teams-label">
+          <span class="team-badge" [style.background]="match.team1Color">{{ match.team1.charAt(0) }}</span>
+          <span class="vs-text">{{ match.team1 }} vs {{ match.team2 }}</span>
+          <span class="team-badge" [style.background]="match.team2Color">{{ match.team2.charAt(0) }}</span>
+        </div>
+        <span class="status-pill" [class]="getStatusClass(match.status)">
+          {{ getStatusLabel(match.status) }}
+        </span>
+      </div>
+
+      <!-- Progress (if processing) -->
+      <div class="card-progress" *ngIf="match.status === 'processing'">
+        <div class="mini-bar"><div class="mini-fill" [style.width.%]="match.progress"></div></div>
+        <span>{{ match.progress }}%</span>
+      </div>
+
+      <!-- Result (if completed) -->
+      <div class="card-result" *ngIf="match.status === 'completed' && match.possessionTeam1">
+        <div class="poss-mini">
+          <span>{{ match.team1 }}: <b>{{ match.possessionTeam1 }}</b></span>
+          <span>{{ match.team2 }}: <b>{{ match.possessionTeam2 }}</b></span>
+        </div>
+        <div class="dom-line" *ngIf="match.dominantTeam">
+          🏆 {{ match.dominantTeam }} dominated
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="card-error" *ngIf="match.status === 'failed'">
+        <span>❌ Analysis failed</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="card-actions">
+        <button class="act-btn" (click)="viewDetails(match)" *ngIf="match.status === 'completed'">
+          📊 Details
+        </button>
+        <button class="act-btn" (click)="downloadVideo(match)" *ngIf="match.status === 'completed'">
+          ⬇ Video
+        </button>
+        <button class="act-btn" (click)="refreshStatus(match)"
+                *ngIf="match.status === 'processing' || match.status === 'uploading'">
+          🔄 Refresh
+        </button>
+        <button class="act-btn del" (click)="removeMatch(i)">🗑️</button>
+      </div>
+
+      <div class="card-time">
+        {{ match.timestamp | date:'short' }}
+        <span *ngIf="match.processingTime"> · {{ match.processingTime }}s</span>
+      </div>
+    </div>
+  </div>
+</div>

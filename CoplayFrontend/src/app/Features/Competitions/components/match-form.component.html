@@ -1,0 +1,86 @@
+<div class="modal-backdrop" *ngIf="show" (click)="onClose()">
+  <div class="modal-card animate-slide-up" (click)="$event.stopPropagation()">
+    
+    <!-- ══ MODAL HEADER ══ -->
+    <div class="modal-header">
+      <div class="header-icon">⚔️</div>
+      <div class="header-text">
+        <h2 class="modal-title">Planifier un Match</h2>
+        <p class="modal-subtitle">Défiez un adversaire ou organisez une rencontre de tournoi.</p>
+      </div>
+      <button class="btn-back" (click)="onClose()">← Retour</button>
+    </div>
+
+    <!-- ══ SUBTITLE / ERROR ══ -->
+    <div class="alert-error mx-4 mt-3" *ngIf="errorMessage">
+      ⚠️ {{ errorMessage }}
+    </div>
+
+    <!-- ══ FORM ══ -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-form p-4">
+      
+      <!-- Section: Les Équipes -->
+      <div class="form-section-title">LES ÉQUIPES</div>
+      <div class="form-grid">
+        <!-- Team A -->
+        <div class="form-group">
+          <label class="form-label">Équipe A (Initié par)</label>
+          <div class="input-wrap" [class.disabled]="!isAdmin()">
+            <span class="input-prefix">🏢</span>
+            <select class="form-control" formControlName="teamIdA" [attr.disabled]="isAdmin() ? null : true">
+              <option value="" disabled>-- Choisir Équipe A --</option>
+              <option *ngFor="let team of availableTeamsA" [value]="team.id">{{ team.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Team B -->
+        <div class="form-group">
+          <label class="form-label">Équipe B (Adversaire)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">⚔️</span>
+            <select class="form-control" formControlName="teamIdB">
+              <option value="" disabled>-- Choisir Équipe B --</option>
+              <option *ngFor="let team of availableTeamsB" [value]="team.id">{{ team.name }} ({{ team.city }})</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Détails -->
+      <div class="form-section-title mt-4">LOGISTIQUE & COMPÉTITION</div>
+      <div class="form-grid">
+        <!-- Date -->
+        <div class="form-group">
+          <label class="form-label">Date et Heure</label>
+          <div class="input-wrap">
+            <span class="input-prefix">🗓️</span>
+            <input type="datetime-local" class="form-control" formControlName="dateMatch">
+          </div>
+        </div>
+
+        <!-- Competition -->
+        <div class="form-group">
+          <label class="form-label">Compétition (Optionnel)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">🏆</span>
+            <select class="form-control" formControlName="competitionId">
+              <option value="">-- Match Amical --</option>
+              <option *ngFor="let comp of competitions" [value]="comp.id">{{ comp.name }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="modal-footer mt-4 pt-3">
+        <button type="button" class="btn-secondary" (click)="onClose()">Annuler</button>
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting || form.invalid">
+          <span *ngIf="!isSubmitting">✅ Planifier le Match</span>
+          <span *ngIf="isSubmitting">Création en cours...</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

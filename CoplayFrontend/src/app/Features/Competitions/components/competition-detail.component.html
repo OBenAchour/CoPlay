@@ -1,0 +1,636 @@
+<div class="events-page competition-detail">
+
+  <!-- ═══ HEADER (matches /competitions design) ═══ -->
+  <div class="page-header" *ngIf="competition" @fadeIn>
+    <h1 class="page-title"><span class="title-icon">🏆</span> {{ competition.name }}</h1>
+    <p class="page-subtitle">Classement, matchs et statistiques de la compétition.</p>
+    <div class="header-badges">
+      <span class="visibility-chip">{{ competition.sport || 'Football' }}</span>
+      <span class="status-badge" [ngClass]="competition.type==='LEAGUE' ? 'status-scheduled' : 'status-ongoing'">
+        {{ competition.type==='LEAGUE' ? 'Championnat' : 'Tournoi' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══ SKELETON ═══ -->
+  <div class="skeleton-wrap" *ngIf="loading && !competition">
+    <div class="skel skel-header"></div>
+    <div class="skel skel-tabs"></div>
+    <div class="skel-row">
+      <div class="skel skel-card"></div>
+      <div class="skel skel-card"></div>
+      <div class="skel skel-card"></div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="competition">
+    <!-- ═══ TABS (Position tab REMOVED) ═══ -->
+    <div class="tab-nav">
+      <button class="tab-btn" [class.active]="activeTab==='classement'" (click)="switchTab('classement')"><span
+          class="tab-ico">📊</span> Classement</button>
+      <button class="tab-btn" [class.active]="activeTab==='matchs'" (click)="switchTab('matchs')"><span
+          class="tab-ico">⚽</span> Matchs</button>
+      <button class="tab-btn" [class.active]="activeTab==='stats'" (click)="switchTab('stats')"><span
+          class="tab-ico">📈</span> Statistiques</button>
+      <button class="tab-btn" [class.active]="activeTab==='calendrier'" (click)="switchTab('calendrier')"><span
+          class="tab-ico">📅</span> Calendrier</button>
+    </div>
+
+    <!-- ╔═══════════════════════════════════╗
+         ║      TAB : CLASSEMENT             ║
+         ╚═══════════════════════════════════╝ -->
+    <div class="tab-panel" *ngIf="activeTab==='classement'" @fadeIn>
+      <div class="card-glass table-wrap">
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th width="45" class="sortable" (click)="toggleSort('rank')">#</th>
+              <th class="sortable" (click)="toggleSort('teamName')">Équipe</th>
+              <th class="tc sortable" width="50" (click)="toggleSort('played')">MJ</th>
+              <th class="tc sortable" width="50" (click)="toggleSort('won')">V</th>
+              <th class="tc sortable" width="50">N</th>
+              <th class="tc sortable" width="50" (click)="toggleSort('lost')">D</th>
+              <th class="tc hide-m" width="75">BP-BC</th>
+              <th class="tc sortable hide-m" width="55" (click)="toggleSort('diff')">Diff</th>
+              <th class="tc sortable pts-col" width="55" (click)="toggleSort('points')">Pts</th>
+              <th class="tc" width="145">Forme</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let team of getSortedClassement(); let i = index"
+              [class.row-highlight]="hoveredOpponentId === getTeamId(team)">
+              <td><span class="rank-badge" [ngClass]="{'rank-1':i===0,'rank-2':i===1,'rank-3':i===2}">{{ i+1 }}</span>
+              </td>
+              <td class="team-cell">{{ getTeamName(team) }}</td>
+              <td class="tc">{{ team.played || 0 }}</td>
+              <td class="tc">{{ team.won || 0 }}</td>
+              <td class="tc">{{ (team.played||0) - (team.won||0) - (team.lost||0) }}</td>
+              <td class="tc">{{ team.lost || 0 }}</td>
+              <td class="tc hide-m muted">{{ team.goalsFor||0 }}-{{ team.goalsAgainst||0 }}</td>
+              <td class="tc hide-m">
+                <span [class.text-pos]="(team.goalsFor||0)-(team.goalsAgainst||0)>0"
+                  [class.text-neg]="(team.goalsFor||0)-(team.goalsAgainst||0)<0">
+                  {{ (team.goalsFor||0)-(team.goalsAgainst||0)>0?'+':'' }}{{ (team.goalsFor||0)-(team.goalsAgainst||0)
+                  }}
+                </span>
+              </td>
+              <td class="tc pts-col fw-b">{{ team.points || 0 }}</td>
+              <td class="tc">
+                <div class="form-row">
+                  <span *ngFor="let f of getForm(team)" class="form-dot" [ngClass]="'f-'+f.result"
+                    (mouseenter)="onFormHover(f.opponentId)" (mouseleave)="onFormLeave()"
+                    [title]="f.resultFull+' vs '+f.opponentName">{{ f.result }}</span>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="classement.length===0">
+              <td colspan="10" class="tc muted p-lg">Aucune donnée de classement.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ╔═══════════════════════════════════╗
+         ║      TAB : MATCHS                 ║
+         ╚═══════════════════════════════════╝ -->
+    <div class="tab-panel" *ngIf="activeTab==='matchs'" @fadeIn>
+      <!-- Match Filter -->
+      <div class="match-filter-bar">
+        <button class="match-filter-btn" [class.active]="matchFilter==='all'" (click)="matchFilter='all'">🏟️ Tous</button>
+        <button class="match-filter-btn" [class.active]="matchFilter==='played'" (click)="matchFilter='played'">✅ Joués</button>
+        <button class="match-filter-btn" [class.active]="matchFilter==='upcoming'" (click)="matchFilter='upcoming'">⏳ À venir</button>
+      </div>
+      <div class="match-grid">
+        <div class="match-card" *ngFor="let m of getFilteredMatchList(); let i = index" [style.animation-delay]="(i*0.06)+'s'"
+          [class.clickable]="isMatchClickable(m)" (click)="onMatchCardClick(m)">
+
+          <!-- Card Header: Day + ML Status -->
+          <div class="mc-head">
+            <span class="mc-day">JOURNÉE {{ m.numeroJournee }}</span>
+            <span class="mc-status" [ngClass]="getMatchStatusClass(m)">
+              <span class="status-spinner" *ngIf="getMlStatus(m) === 'PROCESSING'"></span>
+              {{ getMatchStatusLabel(m) }}
+            </span>
+          </div>
+
+          <!-- Teams + Score -->
+          <div class="mc-body">
+            <div class="mc-team">{{ getTeamName(m.equipeA) }}</div>
+            <div class="mc-score-zone" (click)="stopPropagation($event)">
+              <ng-container *ngIf="editingMatchId !== m.id">
+                <span class="mc-score">{{ m.scoreA ?? '-' }}</span>
+                <span class="mc-sep">:</span>
+                <span class="mc-score">{{ m.scoreB ?? '-' }}</span>
+              </ng-container>
+              <ng-container *ngIf="editingMatchId === m.id">
+                <input type="number" [(ngModel)]="m.scoreA" class="score-inp" min="0">
+                <span class="mc-sep">:</span>
+                <input type="number" [(ngModel)]="m.scoreB" class="score-inp" min="0">
+              </ng-container>
+            </div>
+            <div class="mc-team right">{{ getTeamName(m.equipeB) }}</div>
+          </div>
+
+          <!-- Possession mini-bar -->
+          <div class="mc-poss" *ngIf="m.possessionA">
+            <div class="poss-fill-a" [style.width.%]="m.possessionA"></div>
+            <span class="poss-lbl left">{{ m.possessionA }}%</span>
+            <span class="poss-lbl right">{{ m.possessionB }}%</span>
+          </div>
+
+          <!-- ML Status Badge Row -->
+          <div class="mc-ml-badge" *ngIf="getMlStatus(m) !== 'NONE'">
+            <span class="ml-icon" [ngClass]="getMlStatusClass(m)">
+              <span *ngIf="getMlStatus(m)==='COMPLETED'">✨</span>
+              <span *ngIf="getMlStatus(m)==='PROCESSING'" class="pulse-dot">⏳</span>
+            </span>
+            <span class="ml-label">{{ getMlStatus(m)==='COMPLETED' ? 'Vérifié par IA' : 'Traitement IA...' }}</span>
+          </div>
+
+          <!-- Footer: Date + Actions -->
+          <div class="mc-foot" (click)="stopPropagation($event)">
+            <span class="mc-date"><span>🗓️</span> {{ m.dateMatch | date:'dd MMM yyyy' }}</span>
+            <div class="mc-actions">
+              <ng-container *ngIf="canEditMatch(m)">
+                <button class="btn-sm edit" *ngIf="editingMatchId !== m.id" (click)="editingMatchId = m.id">✏️
+                  Score</button>
+                <button class="btn-sm save" *ngIf="editingMatchId === m.id" (click)="saveScore(m)">💾 Sauver</button>
+                <button class="btn-sm cancel" *ngIf="editingMatchId === m.id" (click)="editingMatchId = null">✖</button>
+              </ng-container>
+              <button class="btn-sm primary" *ngIf="getMlStatus(m)==='NONE' && canEditMatch(m) && isFinished(m)"
+                (click)="openAnalysisModal(m, $event)">🎥 Analyser</button>
+            </div>
+          </div>
+
+          <!-- Tooltip for non-processed -->
+          <div class="mc-tooltip-hint" *ngIf="getMlStatus(m)==='NONE' && isFinished(m)">
+            Cliquez sur "Analyser" pour lancer l'analyse IA
+          </div>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="matches.length===0">
+        <div class="empty-icon">⚽</div>
+        <h3>Aucun match planifié</h3>
+      </div>
+    </div>
+
+    <!-- ╔═══════════════════════════════════╗
+         ║    TAB : STATISTIQUES (Tiles)     ║
+         ╚═══════════════════════════════════╝ -->
+    <div class="tab-panel" *ngIf="activeTab==='stats'" @fadeIn>
+      <!-- Win8 Tiles -->
+      <div class="tiles-grid">
+        <div class="tile tile-blue"><span class="tile-icon">📅</span><span class="tile-val">{{ animCounters['planned']
+            ?? matches.length }}</span><span class="tile-lbl">Matchs Planifiés</span></div>
+        <div class="tile tile-cyan"><span class="tile-icon">✅</span><span class="tile-val">{{ animCounters['played'] ??
+            played() }}</span><span class="tile-lbl">Matchs Joués</span></div>
+        <div class="tile tile-orange"><span class="tile-icon">⚽</span><span class="tile-val">{{ animCounters['goals'] ??
+            totalGoals() }}</span><span class="tile-lbl">Total Buts</span></div>
+        <div class="tile tile-green"><span class="tile-icon">📊</span><span class="tile-val">{{ goalsPerMatch() |
+            number:'1.1-1' }}</span><span class="tile-lbl">Buts / Match</span></div>
+        <div class="tile tile-purple"><span class="tile-icon">🔄</span><span class="tile-val">{{ avgPossession()
+            }}%</span><span class="tile-lbl">Possession Moy.</span></div>
+        <div class="tile tile-pink"><span class="tile-icon">🤖</span><span class="tile-val">{{ analyzedCount()
+            }}</span><span class="tile-lbl">Matchs Analysés</span></div>
+        <div class="tile tile-gold wide"><span class="tile-icon">🏆</span><span class="tile-val">{{
+            getTeamName(topTeam()) }}</span><span class="tile-lbl">Meilleure Équipe</span></div>
+        <div class="tile tile-indigo"><span class="tile-icon">👥</span><span class="tile-val">{{ animCounters['teams']
+            ?? classement.length }}</span><span class="tile-lbl">Équipes Engagées</span></div>
+      </div>
+
+     
+    
+  
+</div>
+
+    <!-- ╔═══════════════════════════════════╗
+         ║      TAB : CALENDRIER             ║
+         ╚═══════════════════════════════════╝ -->
+    <div class="tab-panel" *ngIf="activeTab==='calendrier'" @fadeIn>
+
+      <!-- 📅 Date Filters -->
+      <div class="cal-filters">
+        <button class="cal-filter-btn" [class.active]="calendarFilter==='yesterday'" (click)="setCalendarFilter('yesterday')">
+          ◀ Hier <span class="cal-badge" *ngIf="matchCountForFilter('yesterday')">{{ matchCountForFilter('yesterday') }}</span>
+        </button>
+        <button class="cal-filter-btn" [class.active]="calendarFilter==='today'" (click)="setCalendarFilter('today')">
+          📅 Aujourd'hui <span class="cal-badge" *ngIf="matchCountForFilter('today')">{{ matchCountForFilter('today') }}</span>
+        </button>
+        <button class="cal-filter-btn" [class.active]="calendarFilter==='tomorrow'" (click)="setCalendarFilter('tomorrow')">
+          Demain ▶ <span class="cal-badge" *ngIf="matchCountForFilter('tomorrow')">{{ matchCountForFilter('tomorrow') }}</span>
+        </button>
+        <button class="cal-filter-btn" [class.active]="calendarFilter==='all'" (click)="setCalendarFilter('all')">
+          🗓️ Tous <span class="cal-badge">{{ matches.length }}</span>
+        </button>
+      </div>
+
+      <!-- 📋 Filtered Match List -->
+      <div class="cal-match-list" *ngIf="getFilteredMatches().length > 0">
+        <div class="cal-match-item" *ngFor="let m of getFilteredMatches()" [class.finished]="isFinished(m)">
+          <span class="cal-match-date">{{ m.dateMatch | date:'dd/MM' }}</span>
+          <div class="cal-match-teams">
+            <span class="cal-team" [class.winner]="isWinner(m,'A')">{{ getTeamName(m.equipeA) }}</span>
+            <span class="cal-score" *ngIf="isFinished(m)">{{ m.scoreA }} - {{ m.scoreB }}</span>
+            <span class="cal-vs" *ngIf="!isFinished(m)">VS</span>
+            <span class="cal-team" [class.winner]="isWinner(m,'B')">{{ getTeamName(m.equipeB) }}</span>
+          </div>
+          <span class="cal-match-status">
+            <span *ngIf="getMlStatus(m)==='COMPLETED'" class="cal-status-icon done">🛡️</span>
+            <span *ngIf="getMlStatus(m)==='PROCESSING'" class="cal-status-icon proc">⏳</span>
+            <span *ngIf="isFinished(m) && getMlStatus(m)==='NONE'" class="cal-status-icon none">🏁</span>
+            <span *ngIf="!isFinished(m)" class="cal-status-icon pend">⏳</span>
+          </span>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="getFilteredMatches().length === 0 && calendarFilter !== 'all'">
+        <div class="empty-icon">📅</div>
+        <h3>Aucun match pour cette période</h3>
+        <p>Essayez un autre filtre ou consultez tous les matchs.</p>
+      </div>
+
+      <!-- 🏆 Professional Soccer Tournament Bracket -->
+      <div class="bracket-section" *ngIf="competition.type !== 'LEAGUE' && (bracketLeft.length || bracketRight.length || bracketFinal)">
+        
+        <div class="bracket-header">
+          <h2 class="bracket-main-title">TOURNAMENT BRACKET</h2>
+          <h3 class="bracket-sub-title">SOCCER CHAMPIONSHIP</h3>
+        </div>
+
+        <div class="bracket-container">
+          
+          <!-- LEFT SIDE BRACKET -->
+          <div class="bracket-halves left">
+            <div class="bracket-column" *ngFor="let r of bracketLeft; let ri = index">
+              <div class="col-header">{{ r.label }}</div>
+              <div class="bracket-match-item" *ngFor="let m of r.matches">
+                <div class="match-slot" [class.highlight]="isWinner(m, 'A') || isWinner(m, 'B')">
+                  <div class="team-row" [class.winner]="isWinner(m, 'A')" [class.loser]="isFinished(m) && !isWinner(m, 'A')">
+                    <span class="status-dot" [class.w]="isWinner(m, 'A')" [class.l]="isFinished(m) && !isWinner(m, 'A')">{{ isWinner(m, 'A') ? 'W' : 'L' }}</span>
+                    <span class="team-name">{{ getTeamName(m.equipeA) }}</span>
+                    <span class="team-score">{{ m.scoreA ?? 0 }}</span>
+                  </div>
+                  <div class="team-row" [class.winner]="isWinner(m, 'B')" [class.loser]="isFinished(m) && !isWinner(m, 'B')">
+                    <span class="status-dot" [class.w]="isWinner(m, 'B')" [class.l]="isFinished(m) && !isWinner(m, 'B')">{{ isWinner(m, 'B') ? 'W' : 'L' }}</span>
+                    <span class="team-name">{{ getTeamName(m.equipeB) }}</span>
+                    <span class="team-score">{{ m.scoreB ?? 0 }}</span>
+                  </div>
+                </div>
+                <!-- Connector lines for left side -->
+                <div class="connector left">
+                  <div class="line horizontal"></div>
+                  <div class="line vertical"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTERPIECE HUB -->
+          <div class="bracket-centerpiece">
+            <div class="trophy-wrapper">
+              <div class="silver-trophy">🏆</div>
+              <div class="soccer-ball-base">⚽</div>
+            </div>
+
+            <!-- Match Card for Finalists -->
+            <div class="final-prediction-card" *ngIf="bracketFinal">
+              <div class="card-head">FINAL MATCH</div>
+              <div class="match-vs">
+                <div class="p-team">
+                  <span class="p-name">{{ getTeamName(bracketFinal.equipeA) }}</span>
+                  <span class="p-prob">{{ bracketFinal.winProbA }}%</span>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="p-team">
+                  <span class="p-name">{{ getTeamName(bracketFinal.equipeB) }}</span>
+                  <span class="p-prob">{{ bracketFinal.winProbB }}%</span>
+                </div>
+              </div>
+              <div class="prob-bar">
+                <div class="prob-fill left" [style.width.%]="bracketFinal.winProbA"></div>
+                <div class="prob-fill right" [style.width.%]="bracketFinal.winProbB"></div>
+              </div>
+              <div class="card-foot">Win Probability</div>
+            </div>
+          </div>
+
+          <!-- RIGHT SIDE BRACKET -->
+          <div class="bracket-halves right">
+            <div class="bracket-column" *ngFor="let r of bracketRight; let ri = index">
+              <div class="col-header">{{ r.label }}</div>
+              <div class="bracket-match-item" *ngFor="let m of r.matches">
+                 <!-- Connector lines for right side -->
+                 <div class="connector right">
+                  <div class="line horizontal"></div>
+                  <div class="line vertical"></div>
+                </div>
+                <div class="match-slot" [class.highlight]="isWinner(m, 'A') || isWinner(m, 'B')">
+                  <div class="team-row" [class.winner]="isWinner(m, 'A')" [class.loser]="isFinished(m) && !isWinner(m, 'A')">
+                    <span class="team-score">{{ m.scoreA ?? 0 }}</span>
+                    <span class="team-name">{{ getTeamName(m.equipeA) }}</span>
+                    <span class="status-dot" [class.w]="isWinner(m, 'A')" [class.l]="isFinished(m) && !isWinner(m, 'A')">{{ isWinner(m, 'A') ? 'W' : 'L' }}</span>
+                  </div>
+                  <div class="team-row" [class.winner]="isWinner(m, 'B')" [class.loser]="isFinished(m) && !isWinner(m, 'B')">
+                    <span class="team-score">{{ m.scoreB ?? 0 }}</span>
+                    <span class="team-name">{{ getTeamName(m.equipeB) }}</span>
+                    <span class="status-dot" [class.w]="isWinner(m, 'B')" [class.l]="isFinished(m) && !isWinner(m, 'B')">{{ isWinner(m, 'B') ? 'W' : 'L' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="competition.type === 'LEAGUE' && getFilteredMatches().length === 0 && calendarFilter === 'all'">
+        <div class="empty-icon">📅</div>
+        <h3>Calendrier de Championnat</h3>
+        <p>Les matchs sont organisés par journées. Consultez l'onglet "Matchs" pour le détail.</p>
+      </div>
+      
+      <div class="empty-state" *ngIf="competition.type !== 'LEAGUE' && !bracketRounds.length && !bracketFinal && calendarFilter === 'all'">
+        <div class="empty-icon">🏆</div>
+        <h3>Tableau non généré</h3>
+        <p>Les matchs de phase finale n'ont pas encore été définis.</p>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ═══ ANALYSIS UPLOAD MODAL ═══ -->
+  <div class="modal-overlay" *ngIf="showAnalysisModal" @modalAnim (click)="closeAnalysisModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>🎥 Analyser le Match</h3><button class="close-x" (click)="closeAnalysisModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-vs"><span>{{ getTeamName(selectedMatch?.equipeA) }}</span><span class="vs">VS</span><span>{{
+            getTeamName(selectedMatch?.equipeB) }}</span></div>
+        <label class="upload-zone">
+          <input type="file" accept="video/*" (change)="onFileSelected($event)" hidden>
+          <div class="upload-inner">
+            <span class="upload-ico" *ngIf="!analysisFile">☁️</span>
+            <span class="upload-ico check" *ngIf="analysisFile">✅</span>
+            <span class="upload-filename">{{ analysisFile ? analysisFile.name : 'Cliquer pour sélectionner la vidéo'
+              }}</span>
+            <span class="upload-hint" *ngIf="!analysisFile">Formats: MP4, AVI, MOV • Max 500 MB</span>
+          </div>
+        </label>
+
+        <!-- Auto / Manual Toggle -->
+        <div class="color-mode-toggle">
+          <label class="toggle-option" [class.active]="colorMode==='auto'">
+            <input type="radio" name="colorMode" value="auto" [(ngModel)]="colorMode" hidden>
+            <span class="toggle-radio"></span> 🤖 Auto (détection automatique)
+          </label>
+          <label class="toggle-option" [class.active]="colorMode==='manual'">
+            <input type="radio" name="colorMode" value="manual" [(ngModel)]="colorMode" hidden>
+            <span class="toggle-radio"></span> 🎨 Manuel (choisir les couleurs)
+          </label>
+        </div>
+
+        <div class="calibration-zone" *ngIf="colorMode==='manual' && analysisFile">
+          <div class="calibration-header">
+            <h4>🎯 Calibration des couleurs</h4>
+            <div class="team-toggle">
+              <button class="toggle-btn" [class.active]="activePickingTeam==='teamA'" (click)="activePickingTeam='teamA'">
+                🏠 {{ getTeamName(selectedMatch?.equipeA) }}
+                <span class="color-indicator" [style.background-color]="team1Color"></span>
+              </button>
+              <button class="toggle-btn" [class.active]="activePickingTeam==='teamB'" (click)="activePickingTeam='teamB'">
+                🚀 {{ getTeamName(selectedMatch?.equipeB) }}
+                <span class="color-indicator" [style.background-color]="team2Color"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="frame-carousel-wrap">
+            <div class="frame-loader" *ngIf="isExtractingFrames">
+              <span class="loader-spinner"></span>
+              <p>Extraction des aperçus...</p>
+            </div>
+            <div class="frame-slider" *ngIf="!isExtractingFrames && extractedFrames.length > 0">
+              <div class="frame-item" *ngFor="let frame of extractedFrames">
+                <img [src]="frame" #frameImg (click)="pickColor($event, frameImg)" class="pickable-frame" title="Cliquez sur le maillot pour définir la couleur">
+              </div>
+            </div>
+            <p class="calibration-hint" *ngIf="!isExtractingFrames && extractedFrames.length > 0">
+              💡 Cliquez sur un maillot dans l'un des aperçus pour définir la couleur de l'équipe active.
+            </p>
+          </div>
+
+          <div class="color-summary">
+            <div class="summary-item" [class.defined]="manualTeamAColor">
+              <span>Domicile:</span>
+              <strong [style.color]="team1Color">{{ team1Color }}</strong>
+              <span class="status-check" *ngIf="manualTeamAColor">✔</span>
+            </div>
+            <div class="summary-item" [class.defined]="manualTeamBColor">
+              <span>Extérieur:</span>
+              <strong [style.color]="team2Color">{{ team2Color }}</strong>
+              <span class="status-check" *ngIf="manualTeamBColor">✔</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="analysis-progress-section" *ngIf="analysisLoading">
+          <div class="progress-ring-wrap">
+            <svg class="progress-ring" width="80" height="80" viewBox="0 0 80 80">
+              <circle class="progress-ring-bg" cx="40" cy="40" r="34" />
+              <circle class="progress-ring-fg" cx="40" cy="40" r="34"
+                [style.stroke-dashoffset]="213.6 - (213.6 * analysisProgress / 100)" />
+            </svg>
+            <span class="progress-ring-text">{{ analysisProgress }}%</span>
+          </div>
+          <p class="progress-label">Analyse en cours... veuillez patienter</p>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-ghost" (click)="closeAnalysisModal()">Annuler</button>
+        <button class="btn-primary" 
+                [disabled]="!analysisFile || analysisLoading || (colorMode==='manual' && (!manualTeamAColor || !manualTeamBColor))" 
+                (click)="runAnalysis()">
+          <span *ngIf="!analysisLoading">🚀 Lancer l'Analyse</span>
+          <span *ngIf="analysisLoading" class="btn-spinner"></span>
+          <span *ngIf="analysisLoading">Analyse en cours...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FULLSCREEN ANALYSIS VIEWER + STADIUM ═══ -->
+  <div class="viewer-overlay" *ngIf="showViewModal" @modalAnim>
+    <button class="viewer-close" (click)="closeViewModal()">&times;</button>
+    
+
+
+
+
+
+
+
+
+    
+    <!-- 🟢 PROCESSED MODE -->
+
+    <div class="viewer-content" *ngIf="viewData.mlStatus === 'COMPLETED'">
+      <div class="viewer-split">
+        <div class="viewer-video">
+          <video [src]="sanitizeUrl(viewData?.videoUrl)" controls autoplay crossorigin="anonymous"></video>
+        </div>
+        <div class="viewer-data">
+          <h2>📊 Résumé IA</h2>
+          <div class="vd-section">
+            <h4>Possession</h4>
+            <div class="vd-bar">
+              <div class="vd-fill-a" [style.width.%]="viewData?.possA"></div>
+              <div class="vd-fill-b" [style.width.%]="viewData?.possB"></div>
+            </div>
+            <div class="vd-labels">
+              <span>{{ viewData?.teamA }} {{ viewData?.possA }}%</span>
+              <span>{{ viewData?.teamB }} {{ viewData?.possB }}%</span>
+            </div>
+          </div>
+          <div class="vd-section" *ngIf="viewData?.mlSummary?.video">
+            <h4>Statistiques Vidéo</h4>
+            <div class="vd-stat-grid">
+              <div class="vd-stat" *ngIf="viewData.mlSummary.video.total_frames">
+                <span class="vd-stat-val">{{ viewData.mlSummary.video.total_frames }}</span>
+                <span class="vd-stat-lbl">Images</span>
+              </div>
+              <div class="vd-stat" *ngIf="viewData.mlSummary.video.duration_seconds">
+                <span class="vd-stat-val">{{ viewData.mlSummary.video.duration_seconds | number:'1.0-0' }}s</span>
+                <span class="vd-stat-lbl">Durée</span>
+              </div>
+              <div class="vd-stat" *ngIf="viewData.mlSummary.processing_time_seconds">
+                <span class="vd-stat-val">{{ viewData.mlSummary.processing_time_seconds | number:'1.1-1' }}s</span>
+                <span class="vd-stat-lbl">Traitement</span>
+              </div>
+            </div>
+          </div>
+          <div class="vd-section">
+            <h4>Formation</h4>
+            <div class="formation-badges">
+              <span class="formation-badge team-a-bg">{{ viewData?.teamA }}: {{ viewData?.formationA }}</span>
+              <span class="formation-badge team-b-bg">{{ viewData?.teamB }}: {{ viewData?.formationB }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viewer-stadium-section">
+        <h3 class="stadium-section-title">🎯 Positions Tactiques</h3>
+        <div class="stadium-box-viewer">
+          <div class="pitch">
+            <div class="pitch-lines">
+              <div class="center-line"></div>
+              <div class="center-circle"></div>
+              <div class="penalty-box left"></div>
+              <div class="penalty-box right"></div>
+              <div class="goal-box left"></div>
+              <div class="goal-box right"></div>
+              <div class="center-dot"></div>
+            </div>
+            <div class="player team-a" *ngFor="let p of viewPitchPlayers.teamA; let pi = index" [style.left.%]="p.x / 2"
+              [style.top.%]="p.y" [style.animation-delay]="(pi * 0.08) + 's'" (mouseenter)="onPlayerHover(p)"
+              (mouseleave)="onPlayerLeave()">
+              <span class="player-num">{{ p.num }}</span>
+              <div class="player-tooltip" *ngIf="hoveredPlayer === p">
+                <span class="tooltip-name">{{ p.name }}</span>
+                <span class="tooltip-role">{{ p.role }}</span>
+              </div>
+            </div>
+            <div class="player team-b" *ngFor="let p of viewPitchPlayers.teamB; let pi = index"
+              [style.right.%]="p.x / 2" [style.top.%]="p.y" [style.animation-delay]="(pi * 0.08 + 0.5) + 's'"
+              (mouseenter)="onPlayerHover(p)" (mouseleave)="onPlayerLeave()">
+              <span class="player-num">{{ p.num }}</span>
+              <div class="player-tooltip" *ngIf="hoveredPlayer === p">
+                <span class="tooltip-name">{{ p.name }}</span>
+                <span class="tooltip-role">{{ p.role }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="pitch-legend">
+            <span><i class="ldot a"></i> {{ viewData?.teamA }} ({{ viewData?.formationA }})</span>
+            <span><i class="ldot b"></i> {{ viewData?.teamB }} ({{ viewData?.formationB }})</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⏳ PROCESSING MODE -->
+    <div class="v-empty-container" *ngIf="viewData.mlStatus === 'PROCESSING'">
+      <div class="v-empty-box">
+        <div class="v-spinner-ring"><div></div><div></div><div></div><div></div></div>
+        <h3>Analyse en cours...</h3>
+        <p>L'IA traite actuellement la vidéo du match. Revenez dans quelques instants.</p>
+        <button class="btn-primary" disabled>Traitement IA...</button>
+      </div>
+    </div>
+
+    <!-- ❌ EMPTY MODE -->
+    <div class="v-empty-container" *ngIf="viewData.mlStatus === 'NONE'">
+      <div class="v-empty-box upload-form-container">
+        <div class="v-empty-icon">📂</div>
+        <h3>Aucune analyse disponible</h3>
+        <p>Ce match n'a pas encore été analysé par notre système d'IA.</p>
+        
+        <!-- ✅ ADMIN/CAPTAIN UPLOAD FORM -->
+        <div class="v-analysis-form" *ngIf="currentUser && canAnalyzeMatch(selectedMatch)">
+          <div class="v-form-sep"></div>
+          <h4>🎥 Paramétrer l'analyse</h4>
+          
+          <div class="v-upload-field">
+            <label class="v-file-label">
+              <input type="file" (change)="onFileSelected($event)" hidden />
+              <span class="v-file-btn">📁 Choisir une vidéo</span>
+              <span class="v-file-name" *ngIf="analysisFile">{{ analysisFile.name }}</span>
+            </label>
+          </div>
+
+          <div class="v-config-grid">
+            <div class="v-config-group">
+              <h5>Domicile ({{ viewData.teamA }})</h5>
+              <div class="v-color-row">
+                <input type="color" [(ngModel)]="team1Color" title="Couleur maillot" />
+                <input type="color" [(ngModel)]="team1GkColor" title="Couleur gardien" />
+              </div>
+            </div>
+            <div class="v-config-group">
+              <h5>Extérieur ({{ viewData.teamB }})</h5>
+              <div class="v-color-row">
+                <input type="color" [(ngModel)]="team2Color" title="Couleur maillot" />
+                <input type="color" [(ngModel)]="team2GkColor" title="Couleur gardien" />
+              </div>
+            </div>
+          </div>
+
+          <button class="v-submit-btn" [disabled]="!analysisFile || analysisLoading" (click)="runAnalysis()">
+            <span *ngIf="!analysisLoading">🚀 Lancer l'analyse</span>
+            <span *ngIf="analysisLoading" class="v-spinner-inline"></span>
+          </button>
+        </div>
+
+        <p class="v-note" *ngIf="currentUser && !canAnalyzeMatch(selectedMatch)">
+          Seul l'Admin ou le Capitaine peuvent lancer l'analyse.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST NOTIFICATIONS ═══ -->
+  <div class="toast-container">
+    <div class="toast-item" *ngFor="let t of toasts" [ngClass]="'toast-' + t.type" @fadeIn>
+      <span class="toast-icon">
+        <ng-container [ngSwitch]="t.type">
+          <span *ngSwitchCase="'success'">✅</span>
+          <span *ngSwitchCase="'error'">❌</span>
+          <span *ngSwitchDefault>ℹ️</span>
+        </ng-container>
+      </span>
+      <span class="toast-msg">{{ t.message }}</span>
+    </div>
+  </div>
+
+</div>

@@ -48,6 +48,13 @@ public abstract class Competition {
     private CompetitionType type;
 
     private Integer maxTeams;
+
+    private Boolean isDoubleLeg;
+
+    private Integer currentRound;
+    
+    @Builder.Default
+    private Integer countTeams = 0;
     // ----------------------------------------------------
 
     @DBRef

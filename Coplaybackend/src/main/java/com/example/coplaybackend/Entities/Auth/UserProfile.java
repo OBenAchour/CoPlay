@@ -27,5 +27,7 @@ public class UserProfile {
 
     private String phone;
 
+    private String teamId; // L'équipe à laquelle appartient l'utilisateur
+
     private LocalDateTime updatedAt;
 }

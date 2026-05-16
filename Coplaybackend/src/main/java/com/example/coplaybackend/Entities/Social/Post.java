@@ -32,5 +32,6 @@ public class Post {
 
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     private Boolean isDeleted = false;
 }

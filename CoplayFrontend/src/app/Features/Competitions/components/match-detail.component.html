@@ -1,0 +1,98 @@
+<div class="match-detail-page animate-fade-in" *ngIf="match">
+  
+  <!-- ══ PAGE HEADER ══ -->
+  <header class="detail-header">
+    <button class="btn-back" (click)="goBack()">← Back to Matchs</button>
+    <div class="header-main">
+      <h1 class="page-title">Match Details</h1>
+      <span class="status-badge" [class]="match.status">{{ getTranslatedStatus(match.status) }}</span>
+    </div>
+  </header>
+
+  <!-- ══ SUMMARY CARD ══ -->
+  <section class="summary-card">
+    <div class="team-block side-a">
+       <div class="team-logo">🏢</div>
+       <h2 class="team-name">{{ getTeamName(match.equipeA) }}</h2>
+    </div>
+
+    <div class="score-block">
+       <div class="vs-badge">VS</div>
+       <div class="score-val">{{ match.scoreA || 0 }} - {{ match.scoreB || 0 }}</div>
+       <div class="match-meta">
+         <div class="meta-item">🗓️ {{ match.dateMatch | date:'mediumDate' }}</div>
+         <div class="meta-item">⏰ {{ match.dateMatch | date:'shortTime' }}</div>
+       </div>
+    </div>
+
+    <div class="team-block side-b">
+       <div class="team-logo">⚔️</div>
+       <h2 class="team-name">{{ getTeamName(match.equipeB) }}</h2>
+    </div>
+  </section>
+
+  <div class="detail-grid">
+    
+    <!-- ══ EVENT TIMELINE ══ -->
+    <aside class="events-panel">
+      <h3 class="panel-title">Match Events</h3>
+      <div class="timeline" *ngIf="events.length > 0">
+        <div class="event-item" *ngFor="let ev of events">
+          <div class="event-time">{{ ev.minute }}'</div>
+          <div class="event-dot"></div>
+          <div class="event-content">
+             <span class="event-icon">{{ getEventIcon(ev.type) }}</span>
+             <span class="event-text">{{ ev.description }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="empty-events" *ngIf="events.length === 0">
+         <p>No major events recorded yet.</p>
+      </div>
+    </aside>
+
+    <!-- ══ VISUAL FIELD ══ -->
+    <main class="field-container">
+      <h3 class="panel-title">Tactical View</h3>
+      
+      <div class="stadium-field">
+        <!-- Field markings -->
+        <div class="field-center-line"></div>
+        <div class="field-center-circle"></div>
+        <div class="field-goal-area top"></div>
+        <div class="field-goal-area bottom"></div>
+
+        <!-- Team A Players -->
+        <div class="player-avatar team-a" 
+             *ngFor="let p of playersA"
+             [style.left.%]="p.pos.x"
+             [style.top.%]="p.pos.y">
+          <div class="avatar-circle">A</div>
+          <div class="player-tooltip">
+             <div class="tooltip-name">{{ p.name }}</div>
+             <div class="tooltip-meta" *ngIf="p.cards">{{ p.cards }} Card Received</div>
+          </div>
+        </div>
+
+        <!-- Team B Players -->
+        <div class="player-avatar team-b" 
+             *ngFor="let p of playersB"
+             [style.left.%]="p.pos.x"
+             [style.top.%]="p.pos.y">
+          <div class="avatar-circle">B</div>
+          <div class="player-tooltip">
+             <div class="tooltip-name">{{ p.name }}</div>
+             <div class="tooltip-meta" *ngIf="p.cards">{{ p.cards }} Card Received</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+</div>
+
+<div class="loading-state" *ngIf="loading">
+  <div class="spinner"></div>
+</div>

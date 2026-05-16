@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -89,7 +90,8 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
   ],
   imports: [
     BrowserModule,
-    CommonModule,
+    BrowserAnimationsModule,
+    CommonModule,        // Fournit ngClass, ngIf, ngFor
     AppRoutingModule,
     HttpClientModule, 
     FormsModule,           // Fournit ngModel

@@ -25,5 +25,6 @@ public class Participant {
 
     private LocalDateTime lastReadAt;
 
+    @Builder.Default
     private Boolean isActive = true;
 }

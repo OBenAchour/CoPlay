@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:host { display:block; font-family:'Inter',sans-serif; color:#e2e8f0; }
+
+.match-list-page { max-width:940px; margin:0 auto; padding:24px 20px 60px; }
+
+.list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.list-header h2 { font-size:1.3rem; font-weight:700; background:linear-gradient(135deg,#c084fc,#6366f1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.match-count { font-size:.78rem; color:#64748b; font-weight:500; padding:4px 12px; border-radius:99px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); }
+
+/* Empty */
+.empty-state { text-align:center; padding:60px 20px; color:#475569; }
+.empty-state p { font-size:1rem; margin-top:12px; color:#94a3b8; }
+.empty-state small { font-size:.82rem; }
+
+/* Grid */
+.match-grid { display:flex; flex-direction:column; gap:12px; }
+
+.match-card { background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:16px 18px; transition:all .3s; }
+.match-card:hover { border-color:rgba(255,255,255,.12); transform:translateY(-1px); }
+
+.card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.teams-label { display:flex; align-items:center; gap:8px; font-weight:600; font-size:.9rem; }
+.team-badge { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.75rem; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.3); flex-shrink:0; }
+.vs-text { color:#e2e8f0; }
+
+.status-pill { font-size:.7rem; font-weight:600; padding:4px 10px; border-radius:99px; text-transform:uppercase; letter-spacing:.04em; }
+.status-uploading { background:rgba(99,102,241,.12); color:#818cf8; }
+.status-processing { background:rgba(245,158,11,.12); color:#fbbf24; }
+.status-completed { background:rgba(34,197,94,.12); color:#4ade80; }
+.status-failed { background:rgba(239,68,68,.12); color:#f87171; }
+
+/* Progress mini */
+.card-progress { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.mini-bar { flex:1; height:6px; border-radius:99px; background:rgba(255,255,255,.06); overflow:hidden; }
+.mini-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#6366f1,#a855f7); transition:width .6s; }
+.card-progress span { font-size:.78rem; font-weight:700; color:#c084fc; min-width:36px; text-align:right; }
+
+/* Result */
+.card-result { margin-bottom:8px; }
+.poss-mini { display:flex; gap:16px; font-size:.82rem; color:#94a3b8; }
+.poss-mini b { color:#e2e8f0; }
+.dom-line { font-size:.8rem; color:#c084fc; margin-top:4px; font-weight:500; }
+
+.card-error span { font-size:.82rem; color:#fca5a5; }
+
+/* Actions */
+.card-actions { display:flex; gap:6px; margin-top:8px; }
+.act-btn { padding:5px 11px; border:1px solid rgba(255,255,255,.08); border-radius:8px; background:rgba(255,255,255,.04); color:#cbd5e1; font-family:inherit; font-size:.75rem; font-weight:500; cursor:pointer; transition:all .2s; }
+.act-btn:hover { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.15); }
+.act-btn.del { margin-left:auto; color:#f87171; border-color:rgba(239,68,68,.15); }
+.act-btn.del:hover { background:rgba(239,68,68,.1); }
+
+.card-time { font-size:.7rem; color:#475569; margin-top:8px; }
+
+@media(max-width:600px){
+  .card-top { flex-direction:column; align-items:flex-start; gap:6px; }
+  .poss-mini { flex-direction:column; gap:4px; }
+}

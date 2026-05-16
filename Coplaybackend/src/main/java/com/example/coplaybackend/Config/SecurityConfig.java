@@ -33,22 +33,18 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/api/teams/**").permitAll()
                         .requestMatchers("/api/sponsors/**").permitAll()
                         .requestMatchers("/ws-call/**").permitAll()
-
-                        // Nouvelles routes pour la Ligue Master Coplay
                         .requestMatchers("/api/competitions/**").permitAll()
                         .requestMatchers("/api/matches/**").permitAll()
                         .requestMatchers("/api/statistiques/**").permitAll()
+                        .requestMatchers("/api/coplay/registrations/**").permitAll()
                         .requestMatchers("/api/posts/**").permitAll()
                         .requestMatchers("/api/ai/**").permitAll()
                         .requestMatchers("/api/users/me").authenticated()
-
-                        // Routes réservées aux Administrateurs
                         .requestMatchers("/api/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/api/reclamations").permitAll()
@@ -59,7 +55,6 @@ public class SecurityConfig {
                         // Tout le reste doit être authentifié
                         .anyRequest().authenticated()
                 )
-                // Injection du filtre JWT avant le filtre standard d'authentification
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -68,16 +63,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Autorise ton frontend Angular
         config.setAllowedOrigins(List.of("http://localhost:4200"));
-
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
+        // --- CORRECTION : user-id est maintenant autorisé ---
+        config.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "user-id"
+        ));
+
+        config.setExposedHeaders(Arrays.asList("Authorization", "user-id"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Applique cette config à tous les endpoints
         source.registerCorsConfiguration("/**", config);
         return source;
     }

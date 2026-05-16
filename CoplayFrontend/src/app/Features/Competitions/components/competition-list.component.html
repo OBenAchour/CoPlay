@@ -1,0 +1,183 @@
+<div class="events-page competition-list">
+
+  <!-- ══ HEADER ══ -->
+  <div class="page-header">
+    <div class="header-left">
+
+      <h1 class="page-title">
+        <span class="title-icon">⚽</span> Compétitions
+      </h1>
+
+      <p class="page-subtitle">
+        Organisez et suivez vos compétitions
+      </p>
+
+      <!-- FILTERS -->
+      <div class="header-actions mt-4">
+
+        <button class="btn-create" [class.active]="selectedType === 'ALL'" (click)="filterByType('ALL')">
+          🌍 Toutes
+        </button>
+
+        <button class="btn-create league-trigger" [class.active]="selectedType === 'LEAGUE'"
+          (click)="filterByType('LEAGUE')">
+          🏆 Championnat
+        </button>
+
+        <button class="btn-create tournament-trigger" [class.active]="selectedType === 'TOURNAMENT'"
+          (click)="filterByType('TOURNAMENT')">
+          🥇 Tournoi
+        </button>
+
+        <!-- CREATE -->
+        <button class="btn-create" style="margin-left:auto;" (click)="openCompetitionModal()">
+          ＋ Créer
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <!-- GRID -->
+  <div class="events-grid" *ngIf="!loading">
+
+    <div class="event-card competition-card" *ngFor="let comp of filteredCompetitions">
+
+      <!-- HEADER -->
+      <div class="card-header">
+        <span class="status-badge">
+          {{ comp.type === 'LEAGUE' ? 'Championnat' : 'Tournoi' }}
+        </span>
+
+        <span class="visibility-chip">
+          {{ comp.sport }}
+        </span>
+      </div>
+
+      <!-- TITLE -->
+      <h3 class="event-title">{{ comp.name }}</h3>
+
+      <!-- INFO -->
+      <div class="event-info">
+        <div class="info-row">
+          👥 {{ comp.countTeams || 0 }}/{{ comp.maxTeams }} équipes
+        </div>
+        <div class="info-row">
+          🗓️ {{ comp.startDate | date:'mediumDate' }}
+        </div>
+      </div>
+
+      <!-- ACTIONS (ON SAME LINE) -->
+      <div class="card-footer mt-auto">
+        <div class="actions-row">
+          <button class="btn-detail flex-grow" (click)="goToDetail(comp.id)">
+            Voir →
+          </button>
+          
+          <!-- JOIN -->
+          <button class="btn-join" *ngIf="canJoin(comp)" (click)="joinCompetition(comp.id)">
+            ➕ Rejoindre
+          </button>
+          
+          <!-- DELETE (ADMIN) -->
+          <button class="btn-action btn-delete-small" *ngIf="canDelete(comp)"
+            (click)="deleteCompetition(comp.id); $event.stopPropagation()"
+            [disabled]="deletingCompetitionId === comp.id" title="Supprimer">
+
+            <svg *ngIf="deletingCompetitionId !== comp.id" class="action-icon" viewBox="0 0 24 24">
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            
+            <span *ngIf="deletingCompetitionId === comp.id" class="mini-spinner"></span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- EMPTY -->
+  <div class="empty-state" *ngIf="!loading && filteredCompetitions.length === 0">
+    <div class="empty-icon">🏟️</div>
+    <h3>Aucune compétition</h3>
+    <p>Soyez le premier à organiser un événement !</p>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-container">
+    <div class="toast-item" *ngFor="let t of toasts" [ngClass]="'toast-' + t.type" @fadeIn>
+      <span class="toast-icon">
+        <ng-container [ngSwitch]="t.type">
+          <span *ngSwitchCase="'success'">✅</span>
+          <span *ngSwitchCase="'error'">❌</span>
+          <span *ngSwitchCase="'info'">ℹ️</span>
+        </ng-container>
+      </span>
+      <span class="toast-msg">{{ t.message }}</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═════════ MODAL ═════════ -->
+<div class="modal-overlay" *ngIf="showCompetitionModal" (click)="closeCompetitionModal()">
+
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-head">
+      <h3>Créer compétition</h3>
+      <button class="close-x" (click)="closeCompetitionModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+
+      <input placeholder="Nom" [(ngModel)]="newCompetition.name">
+
+
+
+      <select [(ngModel)]="newCompetition.sport">
+        <option value="Football">Football</option>
+        <option value="Handball">Handball</option>
+        <option value="Basketball ">Basketball </option>
+      </select>
+
+      <select [(ngModel)]="newCompetition.type">
+        <option value="LEAGUE">Championnat</option>
+        <option value="TOURNAMENT">Tournoi</option>
+      </select>
+
+      <input type="number" placeholder="Max équipes" [(ngModel)]="newCompetition.maxTeams">
+
+      <input type="date" [(ngModel)]="newCompetition.startDate">
+
+      <input type="date" [(ngModel)]="newCompetition.endDate">
+
+      <label>
+        <input type="checkbox" [(ngModel)]="newCompetition.isDoubleLeg">
+        Aller / Retour
+      </label>
+
+    </div>
+
+    <div class="modal-foot">
+
+      <button class="btn-ghost" (click)="closeCompetitionModal()">
+        Annuler
+      </button>
+
+      <button class="btn-primary" (click)="submitCompetition()">
+        Créer
+      </button>
+
+    </div>
+
+  </div>
+</div>

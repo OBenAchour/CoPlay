@@ -1,0 +1,141 @@
+<div class="page-container">
+  <div class="main-background"></div>
+
+  <div class="content-overlay container pt-5">
+
+    <!-- Titre -->
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold text-white text-shadow">🎟️ Billets du Match</h1>
+      <p class="text-white-50">Choisissez votre catégorie et achetez votre place</p>
+    </div>
+
+    <!-- Loader -->
+    <div *ngIf="loading" class="text-center p-5">
+      <div class="spinner-border text-light"></div>
+    </div>
+
+    <!-- Cartes catégories -->
+    <div *ngIf="!loading" class="row justify-content-center gap-4 mb-5">
+
+      <!-- VIP -->
+      <div class="col-auto">
+        <div class="ticket-category-card glass-style">
+          <div class="text-center p-4">
+            <div class="category-icon mb-2">👑</div>
+            <h4 class="fw-bold text-dark">VIP</h4>
+            <p class="text-muted small mb-2">Places premium avec vue privilégiée</p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <span class="badge bg-warning text-dark px-3 py-2">
+                {{ countByCategory('VIP') }} disponibles
+              </span>
+              <span class="fw-bold text-dark fs-5">
+                {{ getPriceByCategory('VIP') }} DT
+              </span>
+            </div>
+            <button class="btn btn-vip w-100 mt-3"
+                    (click)="selectCategory('VIP')"
+                    [disabled]="countByCategory('VIP') === 0">
+              {{ selectedCategory === 'VIP' ? '✓ Sélectionné' : 'Choisir VIP' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tribune -->
+      <div class="col-auto">
+        <div class="ticket-category-card glass-style">
+          <div class="text-center p-4">
+            <div class="category-icon mb-2">🏟️</div>
+            <h4 class="fw-bold text-dark">Tribune</h4>
+            <p class="text-muted small mb-2">Bonne visibilité dans les tribunes</p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <span class="badge bg-info text-white px-3 py-2">
+                {{ countByCategory('TRIBUNE') }} disponibles
+              </span>
+              <span class="fw-bold text-dark fs-5">
+                {{ getPriceByCategory('TRIBUNE') }} DT
+              </span>
+            </div>
+            <button class="btn btn-tribune w-100 mt-3"
+                    (click)="selectCategory('TRIBUNE')"
+                    [disabled]="countByCategory('TRIBUNE') === 0">
+              {{ selectedCategory === 'TRIBUNE' ? '✓ Sélectionné' : 'Choisir Tribune' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pelouse -->
+      <div class="col-auto">
+        <div class="ticket-category-card glass-style">
+          <div class="text-center p-4">
+            <div class="category-icon mb-2">⚽</div>
+            <h4 class="fw-bold text-dark">Pelouse</h4>
+            <p class="text-muted small mb-2">Ambiance au plus près du terrain</p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <span class="badge bg-success text-white px-3 py-2">
+                {{ countByCategory('PELOUSE') }} disponibles
+              </span>
+              <span class="fw-bold text-dark fs-5">
+                {{ getPriceByCategory('PELOUSE') }} DT
+              </span>
+            </div>
+            <button class="btn btn-pelouse w-100 mt-3"
+                    (click)="selectCategory('PELOUSE')"
+                    [disabled]="countByCategory('PELOUSE') === 0">
+              {{ selectedCategory === 'PELOUSE' ? '✓ Sélectionné' : 'Choisir Pelouse' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sièges disponibles -->
+    <div *ngIf="selectedCategory && !loading"
+         class="glass-style p-4 mx-auto mb-5"
+         style="max-width: 700px;">
+
+      <h5 class="fw-bold text-dark mb-3">
+        Sièges {{ selectedCategory }} disponibles
+      </h5>
+
+      <div class="d-flex flex-wrap gap-2">
+        <button *ngFor="let ticket of filteredTickets"
+                class="btn btn-seat"
+                [class.selected]="selectedTicket?.id === ticket.id"
+                (click)="selectTicket(ticket)">
+          {{ ticket.seatNumber }}
+        </button>
+      </div>
+
+      <!-- Confirmation -->
+      <div *ngIf="selectedTicket"
+           class="mt-4 p-3 rounded-3 border border-success bg-light">
+        <p class="mb-1">🎟️ <strong>Siège :</strong> {{ selectedTicket.seatNumber }}</p>
+        <p class="mb-1">💰 <strong>Prix :</strong> {{ selectedTicket.price }} DT</p>
+        <p class="mb-3">📋 <strong>Numéro :</strong> {{ selectedTicket.ticketNumber }}</p>
+        <button class="btn btn-success px-4"
+                (click)="confirmBuy()"
+                [disabled]="buying">
+          <span *ngIf="buying" class="spinner-border spinner-border-sm me-2"></span>
+          {{ buying ? 'Traitement...' : "Confirmer l'achat" }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="successMessage"
+         class="alert alert-success text-center mx-auto"
+         style="max-width: 500px;">
+      ✅ {{ successMessage }}
+    </div>
+
+    <div *ngIf="errorMessage"
+         class="alert alert-danger text-center mx-auto"
+         style="max-width: 500px;">
+      ❌ {{ errorMessage }}
+    </div>
+
+  </div>
+</div>

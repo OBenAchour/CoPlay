@@ -13,16 +13,16 @@ import { LoginComponent } from './Auth/login/login.component';
 import { AuthInterceptor } from './Core/Interceptors/auth.interceptor';
 import { ProfileComponent } from './Features/User/profile/profile.component';
 
-// Features (Home, Admin & Shared)
+// Features
 import { HomeComponent } from './Features/home/home.component';
 import { DashboardComponent } from './Features/dashboard/dashboard.component';
 import { UserListComponent } from './Features/Admin/user-list/user-list.component';
 import { NavbarComponent } from './Shared/Components/navbar/navbar.component';
 
-// Messaging - On importe UNIQUEMENT le module global
+// Messaging
 import { MessagingModule } from './Features/Messaging/messaging.module';
 
-// Team Components
+// Teams
 import { TeamComponent } from './components/team/team.component';
 import { CoachComponent } from './components/coach/coach.component';
 import { DemandeAdhesionComponent } from './components/demande-adhesion/demande-adhesion.component';
@@ -31,11 +31,12 @@ import { HistoriqueActionComponent } from './components/historique-action/histor
 import { InvitationComponent } from './components/invitation/invitation.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
 
-// Event & Training Components (Conservation du dossier avec "&")
+// Events
 import { EventListComponent } from './Features/Event & Training/event-list-component/event-list-component.component';
 import { EventDetailComponent } from './Features/Event & Training/event-detail/event-detail.component';
 import { EventFormComponent } from './Features/Event & Training/event-form/event-form.component';
 import { TrainingListComponent } from './Features/Event & Training/training-list/training-list.component';
+
 import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
 
 @NgModule({
@@ -48,8 +49,8 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     UserListComponent,
     ProfileComponent,
     HomeComponent,
-    
-    // Events & Training
+
+    // Events
     EventListComponent,
     EventDetailComponent,
     EventFormComponent,
@@ -63,19 +64,18 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     HistoriqueActionComponent,
     InvitationComponent,
     TeamMemberComponent,
-    AdminReclamationComponent
-    
-    // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés 
-    // exclusivement dans MessagingModule, pas ici.
+
+    AdminReclamationComponent,
   ],
   imports: [
     BrowserModule,
-    CommonModule,        // Fournit ngClass, ngIf, ngFor
+    CommonModule,
     AppRoutingModule,
-    HttpClientModule, 
-    FormsModule,           // Fournit ngModel
-    ReactiveFormsModule,   // Fournit formGroup
-    MessagingModule        // Importé ici pour éviter les doublons de déclaration
+    HttpClientModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MessagingModule
+    // ❌ PAS de standalone ici
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

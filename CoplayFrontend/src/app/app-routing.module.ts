@@ -29,6 +29,8 @@ import { ClassementComponent } from './Features/Competitions/components/classeme
 import { MatchListComponent } from './Features/Competitions/components/match-list.component';
 import { StatisticsComponent } from './Features/Competitions/components/statistics.component';
 import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
+import { TicketShopComponent } from './Features/Tickets/ticket-shop/ticket-shop.component';
+import { MyTicketsComponent } from './Features/Tickets/my-tickets/my-tickets.component';
 
 const routes: Routes = [
   // Route principale (Accueil)
@@ -62,6 +64,12 @@ const routes: Routes = [
   // Réclamations admin
 { path: 'admin/reclamations', component: AdminReclamationComponent, canActivate: [AdminGuard] },
   // Redirection par défaut pour les routes inconnues
+
+ 
+{ path: 'tickets/:matchId', component: TicketShopComponent, canActivate: [AuthGuard] },
+
+{ path: 'my-tickets',       component: MyTicketsComponent,  canActivate: [AuthGuard] },
+
   { path: '**', redirectTo: '' },
 
  

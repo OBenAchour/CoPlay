@@ -8,5 +8,6 @@ export interface UserProfile {
     level: SportLevel;
     city: string;
     phone?: string;
+    teamId?: string;
     updatedAt: Date;
 }

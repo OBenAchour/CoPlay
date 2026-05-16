@@ -20,34 +20,59 @@ public class MatchCompetition {
     @Id
     private String id;
 
-    @DBRef
+    @DBRef(lazy = true)
     private Competition competition;
 
-    @DBRef
+    @DBRef(lazy = true)
     private Team equipeA;
 
-    @DBRef
+    @DBRef(lazy = true)
     private Team equipeB;
 
-    // --- AJOUT CORRECTIF ---
     private Integer numeroJournee;
-    // -----------------------
 
     private LocalDate dateMatch;
     private Integer scoreA;
     private Integer scoreB;
+
+    private Integer scoreAByCaptainA;
+    private Integer scoreBByCaptainA;
+    private Integer scoreAByCaptainB;
+    private Integer scoreBByCaptainB;
+
     private MatchStatus status;
+    @Builder.Default
     private Boolean isValidated = false;
 
-    @DBRef
+    @DBRef(lazy = true)
     private User validatedBy;
     private LocalDateTime validatedAt;
     private Integer penaltyScoreA;
     private Integer penaltyScoreB;
 
-    @DBRef
+    @DBRef(lazy = true)
     private User manOfTheMatch;
 
-    @DBRef
+    @DBRef(lazy = true)
     private List<MatchEvent> events;
+
+    // --- POSSESSION & VIDEO AI ---
+    private Double possessionA;
+    private Double possessionB;
+    private String videoUrl;
+
+    // --- ADDITIONAL STATS ---
+    private Integer shotsA;
+    private Integer shotsB;
+    private Double passAccuracyA;
+    private Double passAccuracyB;
+    private Integer foulsA;
+    private Integer foulsB;
+    private String formationA;
+    private String formationB;
+
+    // --- ML ANALYSIS ---
+    private String mlSummaryJson;
+    private String mlStatus;
+    private String mlJobId;
 }

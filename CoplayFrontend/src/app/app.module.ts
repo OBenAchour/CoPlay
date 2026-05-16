@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'; 
@@ -68,6 +69,7 @@ import { TrainingListComponent } from './Features/Event & Training/training-list
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     CommonModule,        // Fournit ngClass, ngIf, ngFor
     AppRoutingModule,
     HttpClientModule, 

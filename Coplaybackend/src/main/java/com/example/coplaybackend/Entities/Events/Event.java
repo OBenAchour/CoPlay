@@ -35,6 +35,7 @@ public class Event {
 
     private EventStatus status;     // SCHEDULED | ONGOING | COMPLETED | CANCELLED
 
+    @Builder.Default
     private Boolean isPublic = true;
 
     // ── Capacité & Liste d'attente ─────────────────────────────────

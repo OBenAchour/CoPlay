@@ -27,6 +27,7 @@ import { CompetitionListComponent } from './Features/Competitions/components/com
 import { CompetitionDetailComponent } from './Features/Competitions/components/competition-detail.component';
 import { ClassementComponent } from './Features/Competitions/components/classement.component';
 import { MatchListComponent } from './Features/Competitions/components/match-list.component';
+import { MatchDetailComponent } from './Features/Competitions/components/match-detail.component';
 import { StatisticsComponent } from './Features/Competitions/components/statistics.component';
 
 const routes: Routes = [
@@ -57,7 +58,8 @@ const routes: Routes = [
   { path: 'competitions/:id', component: CompetitionDetailComponent, canActivate: [AuthGuard] },
   { path: 'classement', component: ClassementComponent, canActivate: [AuthGuard] },
   { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
-  { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
+  { path: 'matchs/:id', component: MatchDetailComponent, canActivate: [AuthGuard] },
+
 
   // Redirection par défaut pour les routes inconnues
   { path: '**', redirectTo: '' }

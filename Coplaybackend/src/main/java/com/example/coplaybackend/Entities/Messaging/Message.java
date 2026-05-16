@@ -31,11 +31,13 @@ public class Message {
 
     private LocalDateTime sentAt;
 
+    @Builder.Default
     private Boolean isDeleted = false;
 
     @Builder.Default
     private List<MessageReaction> reactions = new ArrayList<>();
 
+    @Builder.Default
     private Boolean isEdited = false;
 
     private LocalDateTime editedAt;

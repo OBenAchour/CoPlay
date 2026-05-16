@@ -1,99 +1,141 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CompetitionService } from '../services/competition.service';
-import { MatchService } from '../services/match.service';
+import { Router } from '@angular/router';
+import {
+  StatistiqueService,
+  JobStatusResponse,
+  JobResultResponse
+} from '../services/statistique.service';
+
+interface MatchEntry {
+  jobId: string;
+  team1: string;
+  team2: string;
+  team1Color: string;
+  team2Color: string;
+  status: 'uploading' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  possessionTeam1?: string;
+  possessionTeam2?: string;
+  dominantTeam?: string;
+  processingTime?: number;
+  timestamp: Date;
+}
 
 @Component({
   selector: 'app-match-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div class="container mt-4">
-      <h2>Matchs des Compétitions</h2>
-      
-      <div class="mb-3">
-        <label class="form-label">Compétition:</label>
-        <select class="form-select" [(ngModel)]="selectedCompetitionId" (change)="loadMatches()">
-          <option value="">-- Choisir --</option>
-          <option *ngFor="let comp of competitions" [value]="comp.id || comp.competitionId">
-            {{comp.name}}
-          </option>
-        </select>
-      </div>
-
-      <div *ngIf="loading" class="text-center">Chargement...</div>
-
-      <div *ngIf="!loading && filteredMatches.length > 0">
-        <div class="row">
-          <div class="col-md-6 mb-3" *ngFor="let match of filteredMatches">
-            <div class="card">
-              <div class="card-body">
-                <div class="row text-center">
-                  <div class="col-5">
-                    <h5>{{getTeamName(match.equipeA)}}</h5>
-                  </div>
-                  <div class="col-2">
-                    <span class="fs-4 fw-bold">
-                      {{match.scoreA !== null ? match.scoreA : '?'}} - {{match.scoreB !== null ? match.scoreB : '?'}}
-                    </span>
-                  </div>
-                  <div class="col-5">
-                    <h5>{{getTeamName(match.equipeB)}}</h5>
-                  </div>
-                </div>
-                <p class="text-center text-muted mb-1">{{match.dateMatch}}</p>
-                <p class="text-center">
-                  <span class="badge bg-secondary">{{match.status}}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="!loading && selectedCompetitionId && filteredMatches.length === 0" class="alert alert-info">
-        Aucun match trouvé
-      </div>
-    </div>
-  `
+  templateUrl: './match-list.component.html',
+  styleUrls: ['./match-list.component.css']
 })
 export class MatchListComponent implements OnInit {
-  competitions: any[] = [];
-  allMatches: any[] = [];
-  filteredMatches: any[] = [];
-  selectedCompetitionId = '';
-  loading = false;
+
+  matches: MatchEntry[] = [];
 
   constructor(
-    private competitionService: CompetitionService,
-    private matchService: MatchService
+    private statistiqueService: StatistiqueService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadCompetitions();
+    this.loadFromStorage();
   }
 
-  loadCompetitions(): void {
-    this.competitionService.getAllCompetitions().subscribe({
-      next: (data) => { this.competitions = data; }
+  addMatch(entry: MatchEntry): void {
+    this.matches.unshift(entry);
+    this.saveToStorage();
+  }
+
+  removeMatch(index: number): void {
+    this.matches.splice(index, 1);
+    this.saveToStorage();
+  }
+
+  viewDetails(match: MatchEntry): void {
+    if (match.status === 'completed') {
+      this.router.navigate(['/competitions/statistics'], {
+        queryParams: { jobId: match.jobId, team1: match.team1, team2: match.team2 }
+      });
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'uploading': return 'Uploading…';
+      case 'processing': return 'Processing…';
+      case 'completed': return 'Completed';
+      case 'failed': return 'Failed';
+      default: return status;
+    }
+  }
+
+  getStatusClass(status: string): string {
+    return `status-${status}`;
+  }
+
+  downloadVideo(match: MatchEntry): void {
+    if (match.jobId) {
+      window.open(this.statistiqueService.getDownloadUrl(match.jobId), '_blank');
+    }
+  }
+
+  refreshStatus(match: MatchEntry): void {
+    if (match.status === 'processing' || match.status === 'uploading') {
+      this.statistiqueService.getJobStatus(match.jobId).subscribe({
+        next: (s: JobStatusResponse) => {
+          match.progress = Math.round((s.progress || 0) * 100);
+          if (s.status === 'completed') {
+            match.status = 'completed';
+            this.fetchMatchResult(match);
+          } else if (s.status === 'failed') {
+            match.status = 'failed';
+          }
+          this.saveToStorage();
+        }
+      });
+    }
+  }
+
+  fetchMatchResult(match: MatchEntry): void {
+    this.statistiqueService.getJobResult(match.jobId).subscribe({
+      next: (res: JobResultResponse) => {
+        if (res.video?.possession) {
+          match.possessionTeam1 = res.video.possession['Team 1'];
+          match.possessionTeam2 = res.video.possession['Team 2'];
+          const p1 = parseFloat((match.possessionTeam1 || '0').replace('%', ''));
+          const p2 = parseFloat((match.possessionTeam2 || '0').replace('%', ''));
+          match.dominantTeam = p1 >= p2 ? match.team1 : match.team2;
+        }
+        match.processingTime = res.processing_time_seconds;
+        match.status = 'completed';
+        this.saveToStorage();
+      }
     });
   }
 
-  loadMatches(): void {
-    if (!this.selectedCompetitionId) return;
-    this.loading = true;
-    this.matchService.getCompetitionMatches(this.selectedCompetitionId).subscribe({
-      next: (data) => { 
-        this.allMatches = data; 
-        this.filteredMatches = data;
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
-    });
+  private saveToStorage(): void {
+    try {
+      localStorage.setItem('match_history', JSON.stringify(this.matches));
+    } catch (_) {}
   }
 
-  getTeamName(team: any): string {
-    return team?.name || team?.teamId || 'Équipe';
+  private loadFromStorage(): void {
+    try {
+      const raw = localStorage.getItem('match_history');
+      if (raw) {
+        this.matches = JSON.parse(raw).map((m: any) => ({
+          ...m,
+          timestamp: new Date(m.timestamp)
+        }));
+      }
+    } catch (_) {
+      this.matches = [];
+    }
+  }
+
+  trackByJob(_: number, match: MatchEntry): string {
+    return match.jobId;
   }
 }

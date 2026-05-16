@@ -1,10 +1,11 @@
 package com.example.coplaybackend.Services.Teams.Impl;
 
+import com.example.coplaybackend.Entities.Coaching.Injury;
 import com.example.coplaybackend.Entities.Teams.CoachingSession;
 import com.example.coplaybackend.Entities.Teams.SessionStatus;
+import com.example.coplaybackend.Repositories.Coaching.InjuryRepository;
 import com.example.coplaybackend.Repositories.Teams.CoachingSessionRepository;
 import com.example.coplaybackend.Services.Teams.CoachingSessionService;
-import com.example.coplaybackend.Services.Teams.InjuryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ import java.util.List;
 public class CoachingSessionServiceImpl implements CoachingSessionService {
 
     private final CoachingSessionRepository repository;
-    private final InjuryService injuryService;
+    private final InjuryRepository injuryRepository;
 
     @Override
     public CoachingSession scheduleSession(String coachId,
@@ -25,7 +26,9 @@ public class CoachingSessionServiceImpl implements CoachingSessionService {
                                            LocalDateTime scheduledAt,
                                            Integer duration) {
 
-        if (!injuryService.isAthleteAvailable(athleteId)) {
+        boolean hasActiveInjury = injuryRepository.findByUserId(athleteId).stream()
+                .anyMatch(i -> "ACTIVE".equalsIgnoreCase(String.valueOf(i.getStatus())));
+        if (hasActiveInjury) {
             throw new IllegalStateException(
                     "Cannot schedule session: athlete " + athleteId + " has an active injury.");
         }

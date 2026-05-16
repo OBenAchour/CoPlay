@@ -9,7 +9,13 @@
       "Bash(git merge *)",
       "Bash(git checkout *)",
       "Read(//tmp/**)",
-      "Bash(git commit -m 'merge: align with pedantic-jackson-be01e6 \\(richer coaching+marketplace UI\\) *)"
+      "Bash(git commit -m 'merge: align with pedantic-jackson-be01e6 \\(richer coaching+marketplace UI\\) *)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //F //PID 23740)",
+      "Bash(taskkill //F //PID 16720)",
+      "Read(//c/Users/Dev/OneDrive - YELLOWSYS/Bureau/Nouveau dossier \\(2\\)/CoPlay/**)",
+      "Read(//c/Users/Dev/OneDrive - YELLOWSYS/Bureau/Nouveau dossier \\(2\\)/CoPlay/CoplayFrontend/src/app/Features/**)",
+      "Bash(git commit -m 'feat\\(ux\\): cross-module connections visible on Coaching & Marketplace home *)"
     ]
   }
 }

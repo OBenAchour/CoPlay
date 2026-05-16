@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MarketplaceService } from '../services/marketplace.service';
+import { CoachingService } from '../../Coaching/services/coaching.service';
 import { Equipment } from '../../../Core/Models/Marketplace/Equipment';
 
 @Component({
@@ -184,6 +187,62 @@ import { Equipment } from '../../../Core/Models/Marketplace/Equipment';
         </div>
       </section>
 
+      <!-- 🆕 SECTION ADAPTÉ À TON ENTRAÎNEMENT (lien Coaching → Marketplace) -->
+      <section class="row-section" *ngIf="trainingContext" style="padding-top:calc(var(--row-y) * 0.6)">
+        <div [cpReveal]="0" style="margin-bottom:24px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="width:36px;height:1px;background:var(--accent)"></span>
+            <span class="eyebrow" style="color:var(--accent)">Lien Coaching ↔ Marketplace</span>
+          </div>
+          <h2 class="display" style="font-size:42px;margin:0">Adapté à ton entraînement</h2>
+          <p style="color:var(--muted);max-width:620px;margin:10px 0 0;font-size:14px">
+            {{ trainingContext }}
+          </p>
+        </div>
+
+        <div *ngIf="adaptedItems.length === 0" class="cp-empty" style="padding:32px">
+          <i class="bi bi-search"></i>
+          <p>Aucun équipement ne matche encore ton profil. Essaie d'ajouter un sport dans ton coach profile.</p>
+        </div>
+
+        <div *ngIf="adaptedItems.length > 0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--gap)">
+          <div *ngFor="let p of adaptedItems; let i = index" [cpReveal]="i*30" (click)="open(p)" style="cursor:pointer">
+            <div class="card-cp tilt prod">
+              <div class="prod-img">
+                <img *ngIf="p.images?.length" [src]="p.images?.[0]" [alt]="p.name" loading="lazy">
+                <div *ngIf="!p.images?.length" style="height:100%;display:grid;place-items:center;color:var(--line-strong)">
+                  <i class="bi bi-image" style="font-size:2.5rem"></i>
+                </div>
+                <span class="match-badge"><i class="bi bi-bullseye"></i> Match</span>
+              </div>
+              <div class="prod-meta">
+                <div class="row1">
+                  <span class="tag">{{ p.sport }}</span>
+                  <span *ngIf="p.rating" style="font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:4px">
+                    <i class="bi bi-star-fill" style="color:var(--warning)"></i>
+                    {{ p.rating | number:'1.1-1' }}
+                  </span>
+                </div>
+                <h4>{{ p.name }}</h4>
+                <div class="price">{{ p.price }} €</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="injuriesActiveCount > 0" class="cross-alert">
+          <i class="bi bi-bandaid-fill"></i>
+          <div>
+            <strong>⚠️ {{ injuriesActiveCount }} blessure(s) active(s) détectée(s)</strong>
+            <p>On te recommande de consulter un kiné ou physio avant de reprendre l'entraînement.</p>
+          </div>
+          <a class="btn-cp btn-primary-cp" routerLink="/marketplace" fragment="services">
+            Voir les prestations PHYSIO
+            <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </section>
+
       <!-- CATALOGUE -->
       <section class="row-section" style="padding-top:calc(var(--row-y) * 0.85)">
         <div [cpReveal]="0" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:24px;flex-wrap:wrap">
@@ -303,6 +362,50 @@ import { Equipment } from '../../../Core/Models/Marketplace/Equipment';
       </div>
     </ng-template>
   `,
+  styles: [`
+    /* Badge "match" sur les produits adaptés à l'entraînement */
+    .match-badge {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: var(--accent);
+      color: var(--navy);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 2;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    /* Alerte cross-module (blessures → marketplace) */
+    .cross-alert {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 22px;
+      margin-top: 24px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(239,68,68,.15), rgba(239,68,68,.05));
+      border: 1px solid rgba(239,68,68,.4);
+    }
+    .cross-alert > i {
+      font-size: 28px;
+      color: #ef4444;
+    }
+    .cross-alert strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+    .cross-alert p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .cross-alert > div { flex: 1; }
+  `],
 })
 export class MarketplaceHomeComponent implements OnInit {
   items: Equipment[] = [];
@@ -313,17 +416,62 @@ export class MarketplaceHomeComponent implements OnInit {
   layout: 'bento' | 'grid' | 'list' = 'bento';
   fallbackImg = 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=900';
 
+  // 🆕 Lien cross-module Coaching → Marketplace
+  adaptedItems: Equipment[] = [];
+  trainingContext = '';
+  injuriesActiveCount = 0;
+
   matchMetrics = [
     { label: 'MATCH NIVEAU', value: 96 },
     { label: 'PRIX MARCHÉ', value: 87 },
     { label: 'RÉPUTATION', value: 99 },
   ];
 
-  constructor(private mp: MarketplaceService, private router: Router) {}
+  constructor(
+    private mp: MarketplaceService,
+    private cs: CoachingService,
+    private router: Router,
+  ) {}
 
   ngOnInit() {
     this.load();
     this.mp.recommendations(8).subscribe({ next: r => this.recommended = r || [], error: () => {} });
+    this.loadTrainingContext();
+  }
+
+  /** Récupère sport + blessures depuis le module Coaching pour filtrer le marketplace. */
+  loadTrainingContext() {
+    forkJoin({
+      profile: this.cs.myCoachProfile().pipe(catchError(() => of(null as any))),
+      injuries: this.cs.myInjuries().pipe(catchError(() => of([] as any[]))),
+      programs: this.cs.programsAsClient().pipe(catchError(() => of([] as any[]))),
+    }).subscribe(({ profile, injuries, programs }) => {
+      this.injuriesActiveCount = (injuries || []).filter(
+        (i: any) => i.status === 'ACTIVE' || i.status === 'OPEN' || !i.healed
+      ).length;
+
+      // Détermine le sport pertinent : profile coach > 1er programme > rien
+      const sport: string | undefined =
+        profile?.sport ||
+        (programs?.[0] as any)?.sport ||
+        undefined;
+
+      if (sport) {
+        this.trainingContext = `Sélection basée sur ton sport (${sport})` +
+          (programs.length ? ` et tes ${programs.length} programme(s)` : '') +
+          (this.injuriesActiveCount > 0 ? ` — ${this.injuriesActiveCount} blessure(s) active(s)` : '');
+
+        this.mp.searchEquipments({ sport, condition: '', q: '' }).subscribe({
+          next: r => this.adaptedItems = (r || []).slice(0, 8),
+          error: () => this.adaptedItems = [],
+        });
+      } else if (this.injuriesActiveCount > 0) {
+        this.trainingContext = `Tu as ${this.injuriesActiveCount} blessure(s) active(s). On te suggère des prestations de récupération.`;
+        this.adaptedItems = [];
+      } else {
+        this.trainingContext = '';
+      }
+    });
   }
 
   load() { this.mp.listEquipment(0, 24).subscribe(p => this.items = p?.content || []); }

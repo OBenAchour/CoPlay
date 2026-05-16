@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { CoachingService } from '../services/coaching.service';
+import { MarketplaceService } from '../../Marketplace/services/marketplace.service';
 
 interface Tile {
   icon: string;
@@ -39,6 +43,41 @@ interface Tile {
             <i class="bi bi-stars"></i> Coach IA
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- 🆕 BANNIÈRE MODULES CONNECTÉS -->
+    <div class="connected-modules">
+      <div class="cm-title">
+        <i class="bi bi-diagram-3-fill"></i>
+        <span>Modules connectés</span>
+        <small *ngIf="loadingCounters">chargement…</small>
+      </div>
+      <div class="cm-grid">
+        <a class="cm-card cm-injury" [class.alert]="activeInjuriesCount > 0" routerLink="/coaching/injuries">
+          <div class="cm-num">{{ activeInjuriesCount }}</div>
+          <div class="cm-label"><i class="bi bi-bandaid"></i> Blessures actives</div>
+          <div class="cm-hint" *ngIf="activeInjuriesCount > 0">⚠️ Sessions bloquées</div>
+          <div class="cm-hint" *ngIf="activeInjuriesCount === 0">✅ Tu peux t'entraîner</div>
+        </a>
+
+        <a class="cm-card" routerLink="/coaching/programs">
+          <div class="cm-num">{{ activeProgramsCount }}</div>
+          <div class="cm-label"><i class="bi bi-calendar3"></i> Programmes actifs</div>
+          <div class="cm-hint">{{ activeProgramsCount > 0 ? 'Voir le planning' : 'Aucun en cours' }}</div>
+        </a>
+
+        <a class="cm-card" routerLink="/marketplace/orders">
+          <div class="cm-num">{{ pendingOrdersCount }}</div>
+          <div class="cm-label"><i class="bi bi-bag-check"></i> Commandes en cours</div>
+          <div class="cm-hint">{{ pendingOrdersCount > 0 ? 'Voir mes achats' : 'Aucune commande' }}</div>
+        </a>
+
+        <a class="cm-card" routerLink="/coaching/coaches">
+          <div class="cm-num">{{ coachesAvailableCount }}</div>
+          <div class="cm-label"><i class="bi bi-person-badge"></i> Coachs disponibles</div>
+          <div class="cm-hint">Trouve le tien</div>
+        </a>
       </div>
     </div>
 
@@ -162,6 +201,59 @@ interface Tile {
         </a>
       </div>
     </section>
+
+    <!-- 🆕 MODAL ANALYSE MA FORME -->
+    <div class="analysis-modal" *ngIf="showAnalysis" (click)="showAnalysis = false">
+      <div class="analysis-content" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="showAnalysis = false" aria-label="Fermer">×</button>
+
+        <header class="analysis-header">
+          <i class="bi bi-activity"></i>
+          <div>
+            <div class="eyebrow">Analyse multi-modules</div>
+            <h2>Bilan de ta forme</h2>
+          </div>
+        </header>
+
+        <div class="analysis-status" [ngClass]="analysisStatusClass">
+          <i class="bi" [class]="analysisIcon"></i>
+          <div>
+            <strong>{{ analysisHeadline }}</strong>
+            <p>{{ analysisAdvice }}</p>
+          </div>
+        </div>
+
+        <div class="analysis-grid">
+          <div class="analysis-card">
+            <div class="mono small">BLESSURES (Coaching)</div>
+            <div class="big-num">{{ activeInjuriesCount }}</div>
+            <p>{{ activeInjuriesCount > 0 ? 'Tu as une blessure ACTIVE qui bloque la planification de sessions.' : 'Aucune blessure active — tu es libre de tout enchaîner.' }}</p>
+            <a class="link" routerLink="/coaching/injuries" (click)="showAnalysis = false">→ Gérer mes blessures</a>
+          </div>
+
+          <div class="analysis-card">
+            <div class="mono small">PROGRAMMES (Coaching)</div>
+            <div class="big-num">{{ activeProgramsCount }}</div>
+            <p>{{ activeProgramsCount > 0 ? activeProgramsCount + ' programme(s) en cours.' : 'Aucun programme actif — génère-en un avec le Coach IA.' }}</p>
+            <a class="link" routerLink="/coaching/programs" (click)="showAnalysis = false">→ Voir le planning</a>
+          </div>
+
+          <div class="analysis-card">
+            <div class="mono small">PERFORMANCE (Coaching)</div>
+            <div class="big-num">{{ acwrValue }}</div>
+            <p>Ratio ACWR · {{ bars[2].value }}</p>
+            <a class="link" routerLink="/coaching/progress" (click)="showAnalysis = false">→ Voir la progression</a>
+          </div>
+
+          <div class="analysis-card" *ngIf="recommendedServiceLink">
+            <div class="mono small">RECOMMANDATION (Marketplace)</div>
+            <div class="big-num"><i class="bi bi-bag-heart"></i></div>
+            <p>{{ recommendedServiceLabel }}</p>
+            <a class="link" [routerLink]="recommendedServiceLink" (click)="showAnalysis = false">→ {{ recommendedServiceCta }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .lede {
@@ -170,6 +262,155 @@ interface Tile {
       line-height: 1.55;
       color: #C7CFDC;
     }
+
+    /* Bannière modules connectés */
+    .connected-modules {
+      max-width: var(--maxw, 1280px);
+      margin: 24px auto 0;
+      padding: 0 var(--gutter, 24px);
+    }
+    .cm-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-family: var(--font-mono);
+    }
+    .cm-title i { color: var(--accent); }
+    .cm-title small { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted-2); }
+    .cm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .cm-card {
+      display: block;
+      padding: 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      text-decoration: none;
+      color: inherit;
+      transition: transform .15s, border-color .15s, background .15s;
+    }
+    .cm-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      background: rgba(255,255,255,.07);
+    }
+    .cm-card.alert {
+      background: linear-gradient(135deg, rgba(239,68,68,.18), rgba(239,68,68,.06));
+      border-color: rgba(239,68,68,.55);
+    }
+    .cm-num {
+      font-family: var(--font-display, inherit);
+      font-size: 40px;
+      line-height: 1;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .cm-card.alert .cm-num { color: #fca5a5; }
+    .cm-label {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cm-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted-2);
+      letter-spacing: .04em;
+    }
+
+    /* Modal analyse */
+    .analysis-modal {
+      position: fixed; inset: 0;
+      background: rgba(8,14,26,.78);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      animation: fade .2s ease-out;
+    }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .analysis-content {
+      width: min(880px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #0E1A2B;
+      color: white;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 22px;
+      padding: 36px;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 14px; right: 18px;
+      background: transparent; border: none;
+      color: rgba(255,255,255,.5);
+      font-size: 32px; line-height: 1;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: white; }
+    .analysis-header {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+    }
+    .analysis-header > i {
+      width: 52px; height: 52px;
+      display: grid; place-items: center;
+      border-radius: 14px;
+      background: var(--accent); color: var(--navy);
+      font-size: 24px;
+    }
+    .analysis-header h2 { margin: 4px 0 0; font-size: 32px; }
+    .analysis-status {
+      padding: 18px;
+      border-radius: 14px;
+      display: flex; gap: 14px; align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    .analysis-status.ok { background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.45); }
+    .analysis-status.warn { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.45); }
+    .analysis-status.neutral { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); }
+    .analysis-status i { font-size: 22px; margin-top: 2px; }
+    .analysis-status strong { display: block; font-size: 16px; margin-bottom: 4px; }
+    .analysis-status p { margin: 0; color: var(--muted-2); font-size: 14px; }
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .analysis-card {
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .analysis-card .mono.small {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .16em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+    .analysis-card .big-num {
+      font-size: 36px; font-weight: 700; margin: 6px 0 10px;
+    }
+    .analysis-card p { font-size: 13px; color: var(--muted-2); margin: 0 0 12px; }
+    .analysis-card .link {
+      font-size: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .analysis-card .link:hover { text-decoration: underline; }
   `],
 })
 export class CoachingHomeComponent implements OnInit {
@@ -183,6 +424,23 @@ export class CoachingHomeComponent implements OnInit {
     { label: 'RISQUE BLESSURE', value: 'Faible', pct: 18 },
   ];
 
+  // 🆕 Compteurs cross-modules
+  activeInjuriesCount = 0;
+  activeProgramsCount = 0;
+  pendingOrdersCount = 0;
+  coachesAvailableCount = 0;
+  loadingCounters = true;
+
+  // 🆕 État du modal d'analyse
+  showAnalysis = false;
+  analysisStatusClass = 'neutral';
+  analysisIcon = 'bi-info-circle';
+  analysisHeadline = '';
+  analysisAdvice = '';
+  recommendedServiceLink: string | null = null;
+  recommendedServiceLabel = '';
+  recommendedServiceCta = '';
+
   tiles: Tile[] = [
     { icon: 'card-checklist', label: 'Programmes', desc: "Vos plans d'entraînement actifs", link: '/coaching/programs', count: '3 actifs', span: 'b-1' },
     { icon: 'stars', label: 'Coach IA', desc: 'Génération auto + chatbot 24/7', link: '/coaching/ai', accent: true, badge: 'NEW', span: 'b-2' },
@@ -195,7 +453,11 @@ export class CoachingHomeComponent implements OnInit {
     { icon: 'people-fill', label: 'Coaches', desc: 'Trouver un coach certifié', link: '/coaching/coaches', count: '48 dispo', span: 'b-1' },
   ];
 
-  constructor(private cs: CoachingService) {}
+  constructor(
+    private cs: CoachingService,
+    private mp: MarketplaceService,
+    private router: Router,
+  ) {}
 
   ngOnInit() {
     this.cs.recovery().subscribe({
@@ -211,13 +473,76 @@ export class CoachingHomeComponent implements OnInit {
       },
       error: () => {},
     });
+
+    this.loadCrossModuleCounters();
   }
 
-  analyzeForm() {
-    this.cs.injuryRisk().subscribe({
-      next: () => alert('Analyse lancée ! Vérifiez vos données de performance.'),
-      error: () => alert('Connectez-vous d\'abord pour analyser votre forme.'),
+  /** Charge en parallèle les compteurs des 4 modules connectés. */
+  loadCrossModuleCounters() {
+    forkJoin({
+      injuries: this.cs.myInjuries().pipe(catchError(() => of([]))),
+      programs: this.cs.programsAsClient().pipe(catchError(() => of([]))),
+      orders: this.mp.myOrders().pipe(catchError(() => of({ content: [] } as any))),
+      coaches: this.cs.listCoaches(true, 0, 50).pipe(catchError(() => of({ content: [] } as any))),
+    }).subscribe(res => {
+      this.activeInjuriesCount = (res.injuries || []).filter(
+        (i: any) => i.status === 'ACTIVE' || i.status === 'OPEN' || !i.healed
+      ).length;
+      this.activeProgramsCount = (res.programs || []).filter(
+        (p: any) => !p.status || p.status === 'ACTIVE' || p.status === 'IN_PROGRESS'
+      ).length;
+      const ordersPage: any = res.orders || {};
+      const ordersList = ordersPage.content || ordersPage || [];
+      this.pendingOrdersCount = ordersList.filter(
+        (o: any) => o.status === 'PENDING' || o.status === 'PAID'
+      ).length;
+      const coachesPage: any = res.coaches || {};
+      const coachesList = coachesPage.content || coachesPage || [];
+      this.coachesAvailableCount = coachesList.length;
+
+      // Synchroniser le compteur dans la tuile "Blessures"
+      const blessTile = this.tiles.find(t => t.label === 'Blessures');
+      if (blessTile) blessTile.count = this.activeInjuriesCount + ' active(s)';
+
+      this.loadingCounters = false;
     });
+  }
+
+  /** Vraie analyse cross-modules basée sur les données chargées. */
+  analyzeForm() {
+    if (this.loadingCounters) {
+      // Charge encore en cours → on attend
+      setTimeout(() => this.analyzeForm(), 300);
+      return;
+    }
+
+    if (this.activeInjuriesCount > 0) {
+      this.analysisStatusClass = 'warn';
+      this.analysisIcon = 'bi-exclamation-triangle-fill';
+      this.analysisHeadline = `⛔ ${this.activeInjuriesCount} blessure(s) ACTIVE(s) détectée(s)`;
+      this.analysisAdvice = 'La planification de nouvelles séances de coaching est bloquée. Consulte un professionnel via la marketplace ou marque ta blessure comme guérie pour continuer.';
+      this.recommendedServiceLink = '/marketplace';
+      this.recommendedServiceLabel = 'Trouve un kiné, ostéo ou physio dans la marketplace pour accélérer ta récupération.';
+      this.recommendedServiceCta = 'Voir les prestations PHYSIO';
+    } else if (this.activeProgramsCount === 0) {
+      this.analysisStatusClass = 'neutral';
+      this.analysisIcon = 'bi-stars';
+      this.analysisHeadline = '🚀 Tu n\'as aucun programme actif';
+      this.analysisAdvice = 'Lance le Coach IA pour générer un plan personnalisé basé sur ton sport, ton niveau et ta charge actuelle.';
+      this.recommendedServiceLink = '/coaching/ai';
+      this.recommendedServiceLabel = 'Le Coach IA peut générer un programme en 30 secondes.';
+      this.recommendedServiceCta = 'Générer mon programme';
+    } else {
+      this.analysisStatusClass = 'ok';
+      this.analysisIcon = 'bi-check-circle-fill';
+      this.analysisHeadline = '✅ Tu es en forme — continue comme ça';
+      this.analysisAdvice = `Aucune blessure active, ${this.activeProgramsCount} programme(s) en cours, ratio ACWR à ${this.acwrValue}. Tu peux planifier d'autres sessions ou enrichir ta routine.`;
+      this.recommendedServiceLink = '/marketplace';
+      this.recommendedServiceLabel = 'Découvre des équipements ou des prestations pour passer au niveau supérieur.';
+      this.recommendedServiceCta = 'Explorer la marketplace';
+    }
+
+    this.showAnalysis = true;
   }
 
   riskLabel(l: string): string {

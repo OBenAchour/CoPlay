@@ -128,7 +128,10 @@
 .btn-search,
 .btn-submit,
 .btn-cancel,
-.btn-change {
+.btn-change,
+.btn-show-map,
+.btn-confirm-location,
+.btn-cancel-location {
   border: none;
   outline: none;
   cursor: pointer;
@@ -223,6 +226,121 @@
 .btn-change:hover {
   transform: translateY(-1px);
   background: #ffe4e6;
+}
+
+/* ===== STYLE AJOUTÉ : BOUTONS SECTION 2 ===== */
+.btn-show-map {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  margin-top: 8px;
+  padding: 0 22px;
+  border-radius: 18px;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #fff;
+  background:
+    linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #06b6d4 100%);
+  box-shadow:
+    0 16px 30px rgba(37, 99, 235, 0.22),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-show-map::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255,255,255,0.08) 35%,
+    rgba(255,255,255,0.16) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+
+.btn-show-map:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 22px 38px rgba(37, 99, 235, 0.28),
+    inset 0 1px 0 rgba(255,255,255,0.22);
+}
+
+.btn-show-map:hover::before {
+  transform: translateX(120%);
+}
+
+.btn-show-map:active {
+  transform: translateY(0) scale(0.995);
+}
+
+.btn-confirm-location,
+.btn-cancel-location {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 18px;
+  border-radius: 15px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.btn-confirm-location {
+  color: #fff;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow:
+    0 14px 26px rgba(16, 185, 129, 0.22),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+.btn-confirm-location:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 32px rgba(16, 185, 129, 0.28),
+    inset 0 1px 0 rgba(255,255,255,0.22);
+}
+
+.btn-confirm-location:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-cancel-location {
+  color: #b91c1c;
+  background: linear-gradient(180deg, #ffffff 0%, #fff5f5 100%);
+  border: 1px solid #fecaca;
+  box-shadow:
+    0 10px 22px rgba(239, 68, 68, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.btn-cancel-location:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, #fff7f7 0%, #ffecec 100%);
+  box-shadow:
+    0 14px 26px rgba(239, 68, 68, 0.12),
+    inset 0 1px 0 rgba(255,255,255,0.95);
+}
+
+.btn-cancel-location:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.temp-location-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
 }
 
 /* ===== LOADING / ERRORS ===== */
@@ -664,6 +782,16 @@ select:focus-visible {
   }
 
   .btn-change {
+    width: 100%;
+  }
+
+  .temp-location-actions {
+    flex-direction: column;
+  }
+
+  .btn-confirm-location,
+  .btn-cancel-location,
+  .btn-show-map {
     width: 100%;
   }
 

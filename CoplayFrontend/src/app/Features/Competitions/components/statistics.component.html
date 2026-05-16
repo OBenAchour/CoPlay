@@ -1,0 +1,251 @@
+<div class="stats-container">
+  <!-- HEADER -->
+  <div class="stats-header" [@fadeInUp]>
+    <div class="header-content">
+      <div class="title-group">
+        <i class="fas fa-chart-pie header-icon"></i>
+        <h1>STATISTIQUES & ANALYSES</h1>
+      </div>
+      <div class="filter-group">
+        <select [(ngModel)]="selectedCompetitionId" (change)="onCompetitionChange()" class="modern-select">
+          <option value="">Sélectionner une compétition</option>
+          <option *ngFor="let c of competitions" [value]="c.id || c.competitionId">{{ c.name }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!selectedCompetitionId" class="no-selection" [@fadeInUp]>
+    <div class="icon-blob">🏆</div>
+    <h3>Prêt pour l'analyse ?</h3>
+    <p>Choisissez un tournoi pour explorer les performances et lancer l'IA.</p>
+  </div>
+
+  <div *ngIf="selectedCompetitionId" class="stats-content" [@fadeInUp]>
+    <!-- TABS -->
+    <div class="navigation-tabs">
+      <button [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">
+        <i class="fas fa-tachometer-alt"></i> VUE D'ENSEMBLE
+      </button>
+      <button [class.active]="activeTab === 'matches'" (click)="activeTab = 'matches'">
+        <i class="fas fa-list"></i> MATCHS
+      </button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div *ngIf="activeTab === 'overview'" class="tab-body">
+      <div class="grid-overview">
+        <!-- Metric Cards -->
+        <div class="metrics-row">
+          <div class="metric-card">
+            <span class="m-label">MATCHS JOUÉS</span>
+            <span class="m-value">{{ stats?.playedMatches || 0 }}</span>
+            <div class="m-sub">Sur {{ stats?.totalMatches || 0 }} au total</div>
+          </div>
+          <div class="metric-card highlight">
+            <span class="m-label">POSSESSION MOYENNE</span>
+            <span class="m-value">{{ avgPossession.teamA | number:'1.0-0' }}%</span>
+            <div class="m-sub">Performance globale</div>
+          </div>
+          <div class="metric-card">
+            <span class="m-label">EFFICACITÉ</span>
+            <span class="m-value">84%</span>
+            <div class="m-sub">Analyse technique</div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-row">
+          <div class="chart-container main-chart">
+            <h3>Distribution de la Possession</h3>
+            <div class="possession-chart-visual">
+                <div class="p-bar-label">
+                    <span>DOMICILE</span>
+                    <span>EXTÉRIEUR</span>
+                </div>
+                <div class="p-bar-track">
+                    <div class="p-bar-fill a" [style.width.%]="avgPossession.teamA">
+                        <span class="p-pct">{{ avgPossession.teamA | number:'1.0-0' }}%</span>
+                    </div>
+                    <div class="p-bar-fill b" [style.width.%]="avgPossession.teamB">
+                        <span class="p-pct">{{ avgPossession.teamB | number:'1.0-0' }}%</span>
+                    </div>
+                </div>
+                <div class="p-legend">
+                    <span><i class="dot a"></i> Moyenne Domicile</span>
+                    <span><i class="dot b"></i> Moyenne Extérieur</span>
+                </div>
+            </div>
+          </div>
+
+          <div class="chart-container side-list">
+            <h3>Top Buteurs</h3>
+            <div class="leaderboard">
+                <div class="lb-item" *ngFor="let p of topScorers.slice(0, 3); let i = index">
+                    <span class="lb-rank">#{{ i + 1 }}</span>
+                    <span class="lb-name">{{ getPlayerName(p) }}</span>
+                    <span class="lb-val">{{ p.buts || 0 }}</span>
+                </div>
+                <div *ngIf="topScorers.length === 0" class="muted-info">Aucune donnée pour le moment</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCHS TAB -->
+    <div *ngIf="activeTab === 'matches'" class="tab-body">
+      <div class="matches-list">
+        <div class="match-item-card" *ngFor="let m of matches" (click)="openMatchDetails(m.id)">
+          <div class="mi-time">JOURNÉE {{ m.numeroJournee }}</div>
+          <div class="mi-main">
+            <span class="mi-team">{{ getTeamName(m.equipeA) }}</span>
+            <div class="mi-score-box">
+                <span class="score-val">{{ m.scoreA ?? '-' }}</span>
+                <span class="score-sep">:</span>
+                <span class="score-val">{{ m.scoreB ?? '-' }}</span>
+            </div>
+            <span class="mi-team text-right">{{ getTeamName(m.equipeB) }}</span>
+          </div>
+          <div class="mi-footer">
+            <span class="mi-status" [class.done]="m.status === 'FINISHED'">
+                <i class="fas fa-check-circle" *ngIf="m.status === 'FINISHED'"></i> 
+                {{ m.status === 'FINISHED' ? 'TERMINÉ' : 'À VENIR' }}
+            </span>
+            <div class="mi-stats-preview" *ngIf="m.possessionA">
+                📊 {{ m.possessionA }}% / {{ m.possessionB }}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MATCH MODAL -->
+<div class="overlay" *ngIf="showMatchModal" (click)="closeMatchModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()" [@fadeInUp]>
+    <div class="modal-top">
+      <button class="btn-close" (click)="closeMatchModal()">&times;</button>
+      <div class="modal-teams-display">
+        <div class="m-team-info">
+            <div class="team-initials">{{ getTeamName(selectedMatch?.equipeA)[0] }}</div>
+            <h4>{{ getTeamName(selectedMatch?.equipeA) }}</h4>
+        </div>
+        
+        <div class="m-center-data">
+            <div *ngIf="!editingMatchData" class="display-data">
+                <div class="score-row">
+                    <span>{{ selectedMatch?.scoreA }}</span>
+                    <span class="sep">-</span>
+                    <span>{{ selectedMatch?.scoreB }}</span>
+                </div>
+                <div class="poss-row" *ngIf="selectedMatch?.possessionA">
+                    <small>POSSESSION: {{ selectedMatch?.possessionA }}% - {{ selectedMatch?.possessionB }}%</small>
+                </div>
+            </div>
+            <div *ngIf="editingMatchData" class="edit-form-mini">
+                <div class="input-set">
+                    <label>Score</label>
+                    <div class="inputs">
+                        <input type="number" [(ngModel)]="editScoreA">
+                        <input type="number" [(ngModel)]="editScoreB">
+                    </div>
+                </div>
+                <div class="input-set">
+                    <label>Possession (%)</label>
+                    <div class="inputs">
+                        <input type="number" [(ngModel)]="editPossA" (blur)="editPossB = 100 - editPossA">
+                        <input type="number" [(ngModel)]="editPossB" (blur)="editPossA = 100 - editPossB">
+                    </div>
+                </div>
+            </div>
+            
+            <button *ngIf="isCaptain && !editingMatchData" class="btn-manage" (click)="toggleEditData()">
+                <i class="fas fa-cog"></i> Gérer Score & Possession
+            </button>
+            <div *ngIf="editingMatchData" class="save-actions">
+                <button class="btn-save" (click)="saveMatchData()">ENREGISTRER</button>
+                <button class="btn-cancel" (click)="toggleEditData()">ANNULER</button>
+            </div>
+        </div>
+
+        <div class="m-team-info text-right">
+            <div class="team-initials right">{{ getTeamName(selectedMatch?.equipeB)[0] }}</div>
+            <h4>{{ getTeamName(selectedMatch?.equipeB) }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-body scrollable">
+      <div class="persisted-video" *ngIf="selectedMatch?.videoUrl && !showAiAnalysis">
+        <div class="v-head">ANALYSE VIDÉO ENREGISTRÉE</div>
+        <video [src]="selectedMatch.videoUrl" controls class="match-video"></video>
+      </div>
+
+      <button class="btn-ai-trigger" (click)="toggleAiAnaylsis()" [class.active]="showAiAnalysis">
+        <i class="fas fa-robot"></i> {{ showAiAnalysis ? 'FERMER ANALYSE AI' : 'GÉRER POSSESSION AVEC AI' }}
+      </button>
+
+      <div class="ai-collapsible" [@expandCollapse]="showAiAnalysis ? 'expanded' : 'collapsed'">
+        <div class="ai-loading" *ngIf="aiProcessing">
+            <div class="loader-ring">
+                <div class="loader-inner"></div>
+                <i class="fas fa-brain robot-pulse"></i>
+            </div>
+            <h3>Analyse par vision artificielle...</h3>
+            <div class="ai-progress-bar">
+                <div class="ap-fill" [style.width.%]="aiProgress"></div>
+                <span class="ap-val">{{ aiProgress }}%</span>
+            </div>
+        </div>
+
+        <div class="ai-form" *ngIf="!aiProcessing && !aiResult && isCaptain">
+            <div class="upload-area" (click)="fInput.click()">
+                <input type="file" #fInput hidden (change)="onFileSelected($event)">
+                <i class="fas fa-file-video upload-icon"></i>
+                <p>{{ aiVideoFile ? aiVideoFile.name : 'Cliquez pour sélectionner la vidéo du match' }}</p>
+            </div>
+            <div class="color-pickers-mini">
+                <div class="cp-group">
+                    <label>{{ getTeamName(selectedMatch?.equipeA) }}</label>
+                    <div class="cp-row">
+                        <input type="color" [(ngModel)]="team1Color">
+                        <input type="color" [(ngModel)]="team1GkColor">
+                    </div>
+                </div>
+                <div class="cp-group">
+                    <label>{{ getTeamName(selectedMatch?.equipeB) }}</label>
+                    <div class="cp-row">
+                        <input type="color" [(ngModel)]="team2Color">
+                        <input type="color" [(ngModel)]="team2GkColor">
+                    </div>
+                </div>
+            </div>
+            <button class="btn-start-ai" [disabled]="!aiVideoFile" (click)="runAIAnalysis()">
+                LANCER L'ANALYSE (PYTHON AI)
+            </button>
+        </div>
+
+        <div *ngIf="!isCaptain && !aiProcessing && !aiResult && !selectedMatch?.videoUrl" class="no-captain-view">
+            <p>Seul le capitaine ou l'admin peut lancer une analyse AI.</p>
+        </div>
+
+        <div class="ai-results-display" *ngIf="aiResult">
+            <div class="res-poss-bar">
+                <div class="res-bar-fill team-a" [style.width]="aiResult.video?.possession['Team 1']">
+                    {{ aiResult.video?.possession['Team 1'] }}
+                </div>
+                <div class="res-bar-fill team-b" [style.width]="aiResult.video?.possession['Team 2']">
+                    {{ aiResult.video?.possession['Team 2'] }}
+                </div>
+            </div>
+            <div class="video-container-ai">
+                <video *ngIf="aiVideoUrl" [src]="aiVideoUrl" controls></video>
+            </div>
+            <button class="btn-reset-ai" (click)="aiResult = null" *ngIf="isCaptain">RECIBLER UNE VIDÉO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

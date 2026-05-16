@@ -9,6 +9,7 @@ import { ParticipationStatus } from 'src/app/Core/Models/Events & Training/Parti
 import { PaymentStatus }       from 'src/app/Core/Models/Events & Training/PaymentStatus';
 import { EventService }        from 'src/app/Core/Services/Events & Training/EventService/event-service.service';
 import { LocationService }     from 'src/app/Core/Services/Events & Training/LocationService/location-service.service';
+import { AuthService }         from 'src/app/Core/Services/Auth/auth.service';
 
 @Component({
   selector: 'app-event-detail',
@@ -21,6 +22,7 @@ export class EventDetailComponent implements OnInit {
   participations: EventParticipation[] = [];
   userParticipation: EventParticipation | null = null;
   mapsLink = '';
+  userAttendanceRate: number | null = null;  // ✅ NOUVEAU
 
   isLoading        = false;
   errorMessage     = '';
@@ -28,11 +30,8 @@ export class EventDetailComponent implements OnInit {
   isCancelling     = false;
   rsvpError        = '';
   cancelError      = '';
-
-  // ⚠️ Temporaire — sera remplacé après intégration Auth
-  readonly teamId    = 'test-team-001';
-  readonly userId    = 'test-user-001';
-  readonly isCaptain = true;
+  isChangingStatus = false;
+  statusError      = '';
 
   // Exposer les enums au template
   RSVPStatus          = RSVPStatus;
@@ -44,112 +43,112 @@ export class EventDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private eventService: EventService,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadEvent(id);
+      this.loadUserAttendanceRate();  // ✅ NOUVEAU
     } else {
       this.errorMessage = 'Identifiant d\'événement manquant.';
     }
   }
 
-  // Ajoute ces propriétés en haut de la classe
-isChangingStatus = false;
-statusError = '';
+  // ─── Getters Auth ───────────────────────────────────────────────────────────
 
-// ✅ NOUVEAU : Obtenir les statuts disponibles selon le statut actuel
-getAvailableStatuses(): { value: string; label: string }[] {
-  const current = this.event?.status;
-  
-  const allStatuses = [
-    { value: 'SCHEDULED', label: '📅 Planifié' },
-    { value: 'ONGOING',   label: '▶️ En cours' },
-    { value: 'COMPLETED', label: '✅ Terminé' },
-    { value: 'CANCELLED', label: '❌ Annulé' }
-  ];
-
-  // Logique des transitions autorisées
-  switch (current) {
-    case EventStatus.SCHEDULED:
-      // Peut aller vers : ONGOING, CANCELLED
-      return allStatuses.filter(s => 
-        ['SCHEDULED', 'ONGOING', 'CANCELLED'].includes(s.value)
-      );
-    
-    case EventStatus.ONGOING:
-      // Peut aller vers : COMPLETED, CANCELLED
-      return allStatuses.filter(s => 
-        ['ONGOING', 'COMPLETED', 'CANCELLED'].includes(s.value)
-      );
-    
-    case EventStatus.CANCELLED:
-      // Peut revenir à : SCHEDULED (réactivation)
-      return allStatuses.filter(s => 
-        ['CANCELLED', 'SCHEDULED'].includes(s.value)
-      );
-    
-    case EventStatus.COMPLETED:
-      // Pas de changement possible
-      return allStatuses.filter(s => s.value === 'COMPLETED');
-    
-    default:
-      return allStatuses;
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
   }
-}
 
-// ✅ NOUVEAU : Changer le statut
-changeStatus(newStatus: string): void {
-  if (!this.event?.eventId) return;
-  if (newStatus === this.event.status) return;
+  get userId(): string {
+    return this.authService.getUserId() || '';
+  }
 
-  // Confirmation pour les actions critiques
-  if (newStatus === 'CANCELLED') {
-    if (!confirm('Êtes-vous sûr de vouloir annuler cet événement ?')) {
-      return;
+  get userRole(): string | null {
+    return this.authService.getUserRole();
+  }
+
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  // ─── Statuts ────────────────────────────────────────────────────────────────
+
+  getAvailableStatuses(): { value: string; label: string }[] {
+    const current = this.event?.status;
+    
+    const allStatuses = [
+      { value: 'SCHEDULED', label: '📅 Planifié' },
+      { value: 'ONGOING',   label: '▶️ En cours' },
+      { value: 'COMPLETED', label: '✅ Terminé' },
+      { value: 'CANCELLED', label: '❌ Annulé' }
+    ];
+
+    switch (current) {
+      case EventStatus.SCHEDULED:
+        return allStatuses.filter(s => 
+          ['SCHEDULED', 'ONGOING', 'CANCELLED'].includes(s.value)
+        );
+      case EventStatus.ONGOING:
+        return allStatuses.filter(s => 
+          ['ONGOING', 'COMPLETED', 'CANCELLED'].includes(s.value)
+        );
+      case EventStatus.CANCELLED:
+        return allStatuses.filter(s => 
+          ['CANCELLED', 'SCHEDULED'].includes(s.value)
+        );
+      case EventStatus.COMPLETED:
+        return allStatuses.filter(s => s.value === 'COMPLETED');
+      default:
+        return allStatuses;
     }
   }
 
-  if (newStatus === 'COMPLETED') {
-    if (!confirm('Marquer cet événement comme terminé ? Vous pourrez ensuite valider les présences.')) {
-      return;
+  changeStatus(newStatus: string): void {
+    if (!this.event?.eventId) return;
+    if (newStatus === this.event.status) return;
+
+    if (newStatus === 'CANCELLED') {
+      if (!confirm('Êtes-vous sûr de vouloir annuler cet événement ?')) {
+        return;
+      }
     }
+
+    if (newStatus === 'COMPLETED') {
+      if (!confirm('Marquer cet événement comme terminé ? Vous pourrez ensuite valider les présences.')) {
+        return;
+      }
+    }
+
+    this.isChangingStatus = true;
+    this.statusError = '';
+
+    this.eventService.updateEventStatus(this.event.eventId, newStatus).subscribe({
+      next: (updatedEvent) => {
+        this.event = updatedEvent;
+        this.isChangingStatus = false;
+      },
+      error: (err) => {
+        console.error('Erreur changement statut:', err);
+        this.statusError = 'Erreur lors du changement de statut.';
+        this.isChangingStatus = false;
+        this.loadEvent(this.event!.eventId!);
+      }
+    });
   }
-
-  this.isChangingStatus = true;
-  this.statusError = '';
-
-  // Appeler l'API pour mettre à jour le statut
-  this.eventService.updateEventStatus(this.event.eventId, newStatus).subscribe({
-    next: (updatedEvent) => {
-      this.event = updatedEvent;
-      this.isChangingStatus = false;
-    },
-    error: (err) => {
-      console.error('Erreur changement statut:', err);
-      this.statusError = 'Erreur lors du changement de statut.';
-      this.isChangingStatus = false;
-      // Recharger l'event pour remettre le bon statut
-      this.loadEvent(this.event!.eventId!);
-    }
-  });
-}
 
   // ─── Chargement ─────────────────────────────────────────────────────────────
 
   private loadEvent(id: string): void {
     this.isLoading = true;
 
-    // ✅ Charge directement par ID — plus efficace que charger toute la liste
     this.eventService.getEventById(id).subscribe({
       next: event => {
         this.event = event;
         this.loadParticipations(id);
-        if (this.event.location?.locationId) {
-          this.loadMapsLink(this.event.location.locationId);
-        }
         this.isLoading = false;
       },
       error: () => {
@@ -162,43 +161,64 @@ changeStatus(newStatus: string): void {
   private loadParticipations(eventId: string): void {
     this.eventService.getParticipations(eventId).subscribe({
       next: data => {
-        this.participations    = data;
-        // ✅ Cherche la participation du user courant
-        this.userParticipation = data.find(
-          p => (p.userId as any)?.userId === this.userId || p.userId === this.userId
-        ) ?? null;
+        this.participations = data;
+        // Trouver la participation de l'utilisateur connecté
+        this.userParticipation = data.find(p => {
+          const pUserId = this.extractUserId(p);
+          return pUserId === this.userId;
+        }) ?? null;
       },
       error: () => {}
     });
   }
 
-  private loadMapsLink(locationId: string): void {
-    this.locationService.getGoogleMapsLink(locationId).subscribe({
-      next:  link => { this.mapsLink = link; },
-      error: ()   => {}
+  // ✅ NOUVEAU : Charger le score d'assiduité de l'utilisateur
+  private loadUserAttendanceRate(): void {
+    if (!this.userId) return;
+
+    this.eventService.getAttendanceRate(this.userId).subscribe({
+      next: (rate) => {
+        this.userAttendanceRate = rate;
+      },
+      error: () => {
+        this.userAttendanceRate = null;
+      }
     });
   }
 
   // ─── RSVP ───────────────────────────────────────────────────────────────────
 
   respondToEvent(status: RSVPStatus): void {
-    if (!this.event?.eventId) return;
-    this.isSubmittingRSVP = true;
-    this.rsvpError        = '';
-
-    this.eventService.respondToEvent(this.event.eventId, this.userId, status).subscribe({
-      next: participation => {
-        this.userParticipation = participation;
-        this.isSubmittingRSVP  = false;
-        // Recharger la liste des participations
-        this.loadParticipations(this.event!.eventId!);
-      },
-      error: () => {
-        this.rsvpError        = 'Erreur lors de la réponse à l\'événement.';
-        this.isSubmittingRSVP = false;
-      }
-    });
+  if (!this.event?.eventId) return;
+  if (!this.userId) {
+    this.rsvpError = 'Vous devez être connecté pour participer.';
+    return;
   }
+
+  console.log('🔍 Envoi RSVP → userId envoyé =', this.userId);   // ← AJOUTE ÇA
+
+  if (this.userId.includes('@')) {
+    this.rsvpError = 'Erreur : userId est un email au lieu d’un ID MongoDB !';
+    console.error('❌ userId est un email ! Vérifie AuthService.getUserId()');
+    return;
+  }
+
+  this.isSubmittingRSVP = true;
+  this.rsvpError = '';
+
+  this.eventService.respondToEvent(this.event.eventId, this.userId, status).subscribe({
+    next: participation => {
+      this.userParticipation = participation;
+      this.isSubmittingRSVP = false;
+      this.loadParticipations(this.event!.eventId!);
+    },
+    error: (err) => {
+      console.error('Erreur RSVP:', err);
+      this.rsvpError = err.error?.message || 'Erreur lors de la réponse.';
+      this.isSubmittingRSVP = false;
+    }
+  });
+}
 
   // ─── Annulation ─────────────────────────────────────────────────────────────
 
@@ -207,7 +227,7 @@ changeStatus(newStatus: string): void {
     if (!confirm('Êtes-vous sûr de vouloir annuler cet événement ? Cette action est irréversible.')) return;
 
     this.isCancelling = true;
-    this.cancelError  = '';
+    this.cancelError = '';
 
     this.eventService.cancelEvent(this.event.eventId).subscribe({
       next: () => {
@@ -215,7 +235,7 @@ changeStatus(newStatus: string): void {
         this.router.navigate(['/events']);
       },
       error: () => {
-        this.cancelError  = 'Erreur lors de l\'annulation.';
+        this.cancelError = 'Erreur lors de l\'annulation.';
         this.isCancelling = false;
       }
     });
@@ -226,30 +246,56 @@ changeStatus(newStatus: string): void {
   togglePresence(participation: EventParticipation, isPresent: boolean): void {
     if (!this.event?.eventId) return;
 
-    // ✅ Extraire l'userId — peut être String ou objet User selon l'intégration
-    const userId = typeof participation.userId === 'string'
-      ? participation.userId
-      : (participation.userId as any)?.userId ?? this.userId;
+    const participationUserId = this.extractUserId(participation);
 
-    this.eventService.validatePresence(this.event.eventId, userId, isPresent).subscribe({
+    this.eventService.validatePresence(this.event.eventId, participationUserId, isPresent).subscribe({
       next: updated => {
         const idx = this.participations.findIndex(
           p => p.participationId === updated.participationId
         );
         if (idx !== -1) this.participations[idx] = updated;
       },
-      error: () => {}
+      error: (err) => {
+        console.error('Erreur validation présence:', err);
+      }
     });
   }
 
   // ─── Navigation ─────────────────────────────────────────────────────────────
 
   goToEdit(): void {
+    if (!this.isAdmin) {
+      alert('Seul un administrateur peut modifier un événement.');
+      return;
+    }
     this.router.navigate(['/events/edit', this.event?.eventId]);
   }
 
   goBack(): void {
     this.router.navigate(['/events']);
+  }
+
+  // ─── Helpers pour extraire les infos des participants ───────────────────────
+
+  extractUserId(participation: EventParticipation): string {
+    if (typeof participation.userId === 'string') {
+      return participation.userId;
+    }
+    return (participation.userId as any)?.userId || '';
+  }
+
+  getParticipantName(participation: EventParticipation): string {
+    if (typeof participation.userId === 'string') {
+      return participation.userId;
+    }
+    const user = participation.userId as any;
+    return user?.displayName || user?.email || user?.userId || 'Inconnu';
+  }
+
+  getParticipantInitials(participation: EventParticipation): string {
+    const name = this.getParticipantName(participation);
+    if (!name || name === 'Inconnu') return '??';
+    return name.slice(0, 2).toUpperCase();
   }
 
   // ─── Helpers template ────────────────────────────────────────────────────────
@@ -306,6 +352,33 @@ changeStatus(newStatus: string): void {
     }
   }
 
+ getPaymentStatusLabel(status?: PaymentStatus | null): string {
+  // Gère null, undefined, ou toute valeur falsy
+  if (!status) return '—';
+  
+  switch (status) {
+    case PaymentStatus.PENDING:      return 'En attente';
+    case PaymentStatus.PAID:         return 'Payé';
+    case PaymentStatus.EXPIRED:      return 'Expiré';
+    case PaymentStatus.REFUNDED:     return 'Remboursé';
+    case PaymentStatus.NOT_REQUIRED: return 'Non requis';
+    default: return '—';
+  }
+}
+
+ getPaymentStatusClass(status?: PaymentStatus | null): string {
+  // Gère null, undefined, ou toute valeur falsy
+  if (!status) return '';
+  
+  switch (status) {
+    case PaymentStatus.PENDING:  return 'pay-pending';
+    case PaymentStatus.PAID:     return 'pay-paid';
+    case PaymentStatus.EXPIRED:  return 'pay-expired';
+    case PaymentStatus.REFUNDED: return 'pay-refunded';
+    default: return '';
+  }
+}
+
   getRSVPLabel(status?: RSVPStatus): string {
     switch (status) {
       case RSVPStatus.YES:     return '✅ Participation confirmée';
@@ -313,6 +386,13 @@ changeStatus(newStatus: string): void {
       case RSVPStatus.PENDING: return '⏳ En attente de réponse';
       default: return '⏳ Pas encore répondu';
     }
+  }
+
+  getScoreClass(score: number): string {
+    if (score >= 80) return 'score-excellent';
+    if (score >= 60) return 'score-good';
+    if (score >= 40) return 'score-average';
+    return 'score-low';
   }
 
   // ─── Getters calculés ────────────────────────────────────────────────────────
@@ -338,6 +418,6 @@ changeStatus(newStatus: string): void {
   }
 
   get canValidatePresences(): boolean {
-    return this.isCaptain && this.isCompleted;
+    return this.isAdmin && this.isCompleted;
   }
 }

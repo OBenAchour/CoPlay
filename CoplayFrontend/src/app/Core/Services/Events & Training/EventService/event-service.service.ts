@@ -55,19 +55,16 @@ export class EventService {
   respondToEvent(
     eventId: string,
     userId: string,
-    status: RSVPStatus,
-    attendanceScore: number = 50
+    status: RSVPStatus
   ): Observable<EventParticipation> {
     return this.http.post<EventParticipation>(
-      `${this.apiUrl}/rsvp/add/${eventId}/${userId}?status=${status}&attendanceScore=${attendanceScore}`,
+      `${this.apiUrl}/rsvp/add/${eventId}/${userId}?status=${status}`,
       {}
     );
   }
 
   getParticipations(eventId: string): Observable<EventParticipation[]> {
-    return this.http.get<EventParticipation[]>(
-      `${this.apiUrl}/participations/get/${eventId}`
-    );
+    return this.http.get<EventParticipation[]>(`${this.apiUrl}/participations/get/${eventId}`);
   }
 
   // ═══════════════════════════════════════════════════════════════

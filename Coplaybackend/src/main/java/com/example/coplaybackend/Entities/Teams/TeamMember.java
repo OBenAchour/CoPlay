@@ -28,5 +28,6 @@ public class TeamMember {
 
     private LocalDate joinedAt;
 
+    @Builder.Default
     private Boolean active = true;
 }

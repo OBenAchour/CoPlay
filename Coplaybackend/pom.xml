@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.3</version> <relativePath/> </parent>
+        <version>3.2.5</version> <relativePath/> </parent>
     <groupId>com.example</groupId>
     <artifactId>Coplaybackend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -19,17 +19,12 @@
     <dependencies>
 
         <!-- AWS SDK S3 -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <version>2.26.25</version>
-        </dependency>
+
 
         <!-- Spring AOP -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
-            <version>3.2.5</version>
         </dependency>
 
         <!-- JJWT - JSON Web Token -->
@@ -38,10 +33,15 @@
             <artifactId>jjwt-api</artifactId>
             <version>0.12.6</version>
         </dependency>
-
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
             <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
@@ -50,18 +50,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>0.12.6</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
         <dependency>
@@ -75,7 +63,6 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>6.2.0</version> <!-- or latest -->
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -95,33 +82,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>0.12.5</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>0.12.5</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>0.12.5</version>
-            <scope>runtime</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
 
         <dependency>
@@ -133,15 +97,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
-            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

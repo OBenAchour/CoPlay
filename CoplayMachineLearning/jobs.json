@@ -1,0 +1,1111 @@
+{
+    "4a30ef5b-3cc5-4b9e-8e4a-7278ddf3c517": {
+        "job_id": "4a30ef5b-3cc5-4b9e-8e4a-7278ddf3c517",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778037300.1446497,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    129,
+                    199,
+                    203
+                ],
+                "team2": [
+                    90,
+                    75,
+                    134
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs/4a30ef5b-3cc5-4b9e-8e4a-7278ddf3c517/output_d63bf8fd_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 1018
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 17,
+                    "Team 2": 10
+                }
+            }
+        },
+        "completed_at": 1778037317.051827,
+        "processing_time_seconds": 16.9
+    },
+    "0eef1b1a-9a42-495b-ada4-e7705aa34329": {
+        "job_id": "0eef1b1a-9a42-495b-ada4-e7705aa34329",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778071221.8761196,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": null
+        },
+        "output_path": "outputs/0eef1b1a-9a42-495b-ada4-e7705aa34329/output_ca3637d7_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 792
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 10,
+                    "Team 2": 11
+                }
+            }
+        },
+        "completed_at": 1778071239.8554332,
+        "processing_time_seconds": 18.0
+    },
+    "5d83bad6-4bc7-454b-94e8-5ca9bfe301ef": {
+        "job_id": "5d83bad6-4bc7-454b-94e8-5ca9bfe301ef",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778074002.636996,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    139,
+                    210,
+                    214
+                ],
+                "team2": [
+                    66,
+                    70,
+                    153
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs/5d83bad6-4bc7-454b-94e8-5ca9bfe301ef/output_d2ed224d_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 1225
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 16,
+                    "Team 2": 11
+                }
+            }
+        },
+        "completed_at": 1778074021.739011,
+        "processing_time_seconds": 19.1
+    },
+    "9efcdee6-7ba6-462d-9b75-0e3f977cb085": {
+        "job_id": "9efcdee6-7ba6-462d-9b75-0e3f977cb085",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778097319.1014562,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    135,
+                    213,
+                    214
+                ],
+                "team2": [
+                    61,
+                    62,
+                    123
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs/9efcdee6-7ba6-462d-9b75-0e3f977cb085/output_e01f1c03_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 1195
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 16,
+                    "Team 2": 12
+                }
+            }
+        },
+        "completed_at": 1778097336.306633,
+        "processing_time_seconds": 17.2
+    },
+    "d8167248-bed0-4ee2-968b-2ad7376ca908": {
+        "job_id": "d8167248-bed0-4ee2-968b-2ad7376ca908",
+        "status": "failed",
+        "progress": 1.0,
+        "created_at": 1778103121.2561657,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    82,
+                    96,
+                    149
+                ],
+                "team2": [
+                    106,
+                    168,
+                    176
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": null,
+        "error": "[WinError 193] %1 n\u2019est pas une application Win32 valide",
+        "completed_at": 1778103168.4301875,
+        "processing_time_seconds": 47.2
+    },
+    "15e58cc0-1507-4031-b53f-998a415dd2a9": {
+        "job_id": "15e58cc0-1507-4031-b53f-998a415dd2a9",
+        "status": "failed",
+        "progress": 1.0,
+        "created_at": 1778104526.8241847,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": null
+        },
+        "output_path": null,
+        "error": "[WinError 193] %1 n\u2019est pas une application Win32 valide",
+        "completed_at": 1778104565.8538468,
+        "processing_time_seconds": 39.0
+    },
+    "4b586d18-7c55-40e6-9b69-f107e144696c": {
+        "job_id": "4b586d18-7c55-40e6-9b69-f107e144696c",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778104720.890486,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": null
+        },
+        "output_path": "outputs\\4b586d18-7c55-40e6-9b69-f107e144696c\\output_b56b417a_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 61
+                },
+                "referee_frames": 788
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 12,
+                    "Team 2": 11
+                }
+            }
+        },
+        "completed_at": 1778104764.5945654,
+        "processing_time_seconds": 43.7
+    },
+    "f1f28ec3-422b-45a6-b497-16125f8594e6": {
+        "job_id": "f1f28ec3-422b-45a6-b497-16125f8594e6",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778105480.6676764,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    219,
+                    203,
+                    196
+                ],
+                "team2": [
+                    60,
+                    46,
+                    47
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\f1f28ec3-422b-45a6-b497-16125f8594e6\\output_db295ada_Imagesdunmatchdefootballamateur.mp4",
+        "result": {
+            "video": {
+                "total_frames": 9113,
+                "possession": {
+                    "Team 1": "66.0%",
+                    "Team 2": "34.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 345,
+                    "Team 2": 178
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 34997
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 872,
+                    "Team 2": 623
+                }
+            }
+        },
+        "completed_at": 1778106374.1990137,
+        "processing_time_seconds": 893.5
+    },
+    "77bc46bb-8e1d-421d-95b3-e4e4af90c8b5": {
+        "job_id": "77bc46bb-8e1d-421d-95b3-e4e4af90c8b5",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778106683.7349877,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    142,
+                    204,
+                    214
+                ],
+                "team2": [
+                    36,
+                    34,
+                    104
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\77bc46bb-8e1d-421d-95b3-e4e4af90c8b5\\output_897fa608_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 1011
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 18,
+                    "Team 2": 11
+                }
+            }
+        },
+        "completed_at": 1778106715.337483,
+        "processing_time_seconds": 31.6
+    },
+    "3421f44e-0803-4a94-a759-27b89a645a04": {
+        "job_id": "3421f44e-0803-4a94-a759-27b89a645a04",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778254352.146163,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    127,
+                    112,
+                    103
+                ],
+                "team2": [
+                    55,
+                    44,
+                    40
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\3421f44e-0803-4a94-a759-27b89a645a04\\output_c735014c_Imagesdunmatchdefootballamateur.mp4",
+        "result": {
+            "video": {
+                "total_frames": 9113,
+                "possession": {
+                    "Team 1": "97.3%",
+                    "Team 2": "2.7%"
+                },
+                "possession_frames": {
+                    "Team 1": 109,
+                    "Team 2": 3
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 67863
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 418,
+                    "Team 2": 83
+                }
+            }
+        },
+        "completed_at": 1778255171.340466,
+        "processing_time_seconds": 819.2
+    },
+    "203edf65-f775-4bfe-b621-6c06a9577c92": {
+        "job_id": "203edf65-f775-4bfe-b621-6c06a9577c92",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778254985.6137714,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    59,
+                    61,
+                    61
+                ],
+                "team2": [
+                    80,
+                    116,
+                    116
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\203edf65-f775-4bfe-b621-6c06a9577c92\\output_c63818a6_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 160
+                },
+                "referee_frames": 847
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 17,
+                    "Team 2": 12
+                }
+            }
+        },
+        "completed_at": 1778255049.092004,
+        "processing_time_seconds": 63.5
+    },
+    "ea807d98-d1e1-48b2-93d6-73ad0b5633f7": {
+        "job_id": "ea807d98-d1e1-48b2-93d6-73ad0b5633f7",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778255070.188172,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    59,
+                    61,
+                    61
+                ],
+                "team2": [
+                    80,
+                    116,
+                    116
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\ea807d98-d1e1-48b2-93d6-73ad0b5633f7\\output_6bcd67d0_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 160
+                },
+                "referee_frames": 847
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 17,
+                    "Team 2": 12
+                }
+            }
+        },
+        "completed_at": 1778255136.4681973,
+        "processing_time_seconds": 66.3
+    },
+    "e39285ba-08b4-40b0-a463-71094de5c464": {
+        "job_id": "e39285ba-08b4-40b0-a463-71094de5c464",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778255471.2669754,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    102,
+                    160,
+                    166
+                ],
+                "team2": [
+                    246,
+                    242,
+                    255
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\e39285ba-08b4-40b0-a463-71094de5c464\\output_a7b2e48c_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 348
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 17,
+                    "Team 2": 24
+                }
+            }
+        },
+        "completed_at": 1778255514.3844085,
+        "processing_time_seconds": 43.1
+    },
+    "47dc0ea9-c1d0-4c3b-83f1-fdbf0c6c8f0d": {
+        "job_id": "47dc0ea9-c1d0-4c3b-83f1-fdbf0c6c8f0d",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778263091.4739156,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    99,
+                    149,
+                    171
+                ],
+                "team2": [
+                    44,
+                    4,
+                    200
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\47dc0ea9-c1d0-4c3b-83f1-fdbf0c6c8f0d\\output_8e339861_videoplayback.mp4",
+        "result": {
+            "video": {
+                "total_frames": 2099,
+                "possession": {
+                    "Team 1": "3.8%",
+                    "Team 2": "96.2%"
+                },
+                "possession_frames": {
+                    "Team 1": 8,
+                    "Team 2": 204
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 7817
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 13,
+                    "Team 2": 167
+                }
+            }
+        },
+        "completed_at": 1778263292.891454,
+        "processing_time_seconds": 201.4
+    },
+    "b9d377e6-41f6-4fdd-abe9-fcd8936ba058": {
+        "job_id": "b9d377e6-41f6-4fdd-abe9-fcd8936ba058",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778274924.291393,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    123,
+                    117,
+                    98
+                ],
+                "team2": [
+                    75,
+                    25,
+                    186
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\b9d377e6-41f6-4fdd-abe9-fcd8936ba058\\output_9e4634cc_videoplayback.mp4",
+        "result": {
+            "video": {
+                "total_frames": 2099,
+                "possession": {
+                    "Team 1": "0.5%",
+                    "Team 2": "99.5%"
+                },
+                "possession_frames": {
+                    "Team 1": 1,
+                    "Team 2": 181
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 9060
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 6,
+                    "Team 2": 142
+                }
+            }
+        },
+        "completed_at": 1778275184.6614609,
+        "processing_time_seconds": 260.4
+    },
+    "2d4b20af-68ff-486d-8588-fe72e9b1be2e": {
+        "job_id": "2d4b20af-68ff-486d-8588-fe72e9b1be2e",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778286898.2560496,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    59,
+                    102,
+                    117
+                ],
+                "team2": [
+                    122,
+                    126,
+                    161
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\2d4b20af-68ff-486d-8588-fe72e9b1be2e\\output_a661ba0e_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 2012
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 1,
+                    "Team 2": 13
+                }
+            }
+        },
+        "completed_at": 1778286927.9448435,
+        "processing_time_seconds": 29.7
+    },
+    "9d3ea6b1-b7fe-442f-9835-bcab12fadc70": {
+        "job_id": "9d3ea6b1-b7fe-442f-9835-bcab12fadc70",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778287064.5136924,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": null
+        },
+        "output_path": "outputs\\9d3ea6b1-b7fe-442f-9835-bcab12fadc70\\output_c89105f0_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 61
+                },
+                "referee_frames": 788
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 12,
+                    "Team 2": 11
+                }
+            }
+        },
+        "completed_at": 1778287093.983487,
+        "processing_time_seconds": 29.5
+    },
+    "f5d60339-1d98-490c-98b7-2d0724575713": {
+        "job_id": "f5d60339-1d98-490c-98b7-2d0724575713",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778328345.237282,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    102,
+                    160,
+                    166
+                ],
+                "team2": [
+                    65,
+                    85,
+                    140
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\f5d60339-1d98-490c-98b7-2d0724575713\\output_8fdedb86_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 1308
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 16,
+                    "Team 2": 0
+                }
+            }
+        },
+        "completed_at": 1778328389.0008693,
+        "processing_time_seconds": 43.8
+    },
+    "2b32486a-4f69-45f8-9189-035bdc4a31d3": {
+        "job_id": "2b32486a-4f69-45f8-9189-035bdc4a31d3",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778335095.6538944,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    43,
+                    37,
+                    32
+                ],
+                "team2": [
+                    156,
+                    144,
+                    172
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\2b32486a-4f69-45f8-9189-035bdc4a31d3\\output_ea378d7a_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 2061
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 1,
+                    "Team 2": 4
+                }
+            }
+        },
+        "completed_at": 1778335118.515474,
+        "processing_time_seconds": 22.9
+    },
+    "7eced025-3af5-4f58-b336-1dc141e9f408": {
+        "job_id": "7eced025-3af5-4f58-b336-1dc141e9f408",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778335265.394051,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": {
+                "team1": [
+                    127,
+                    187,
+                    193
+                ],
+                "team2": [
+                    77,
+                    103,
+                    133
+                ],
+                "gk_team1": [
+                    247,
+                    85,
+                    168
+                ],
+                "gk_team2": [
+                    11,
+                    158,
+                    245
+                ]
+            }
+        },
+        "output_path": "outputs\\7eced025-3af5-4f58-b336-1dc141e9f408\\output_d4ca92bd_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "referee_frames": 1301
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 17,
+                    "Team 2": 1
+                }
+            }
+        },
+        "completed_at": 1778335301.7922611,
+        "processing_time_seconds": 36.4
+    },
+    "1538ebd8-64c3-484c-8b18-07c2de3c2d8b": {
+        "job_id": "1538ebd8-64c3-484c-8b18-07c2de3c2d8b",
+        "status": "completed",
+        "progress": 1.0,
+        "created_at": 1778337421.1014729,
+        "params": {
+            "max_seconds": 0.0,
+            "frame_skip": 1,
+            "model": "yolo11n.pt",
+            "jersey_colors": null
+        },
+        "output_path": "outputs\\1538ebd8-64c3-484c-8b18-07c2de3c2d8b\\output_703069cb_foot1.mp4",
+        "result": {
+            "video": {
+                "total_frames": 277,
+                "possession": {
+                    "Team 1": "50.0%",
+                    "Team 2": "50.0%"
+                },
+                "possession_frames": {
+                    "Team 1": 0,
+                    "Team 2": 0
+                },
+                "goalkeeper_frames": {
+                    "Team 1": 0,
+                    "Team 2": 61
+                },
+                "referee_frames": 788
+            },
+            "detections": {
+                "players": {
+                    "Team 1": 12,
+                    "Team 2": 11
+                }
+            }
+        },
+        "completed_at": 1778337460.583703,
+        "processing_time_seconds": 39.5
+    }
+}

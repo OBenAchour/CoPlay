@@ -30,7 +30,14 @@ import { CompetitionListComponent } from './Features/Competitions/components/com
 import { CompetitionDetailComponent } from './Features/Competitions/components/competition-detail.component';
 import { ClassementComponent } from './Features/Competitions/components/classement.component';
 import { MatchListComponent } from './Features/Competitions/components/match-list.component';
+import { MatchDetailComponent } from './Features/Competitions/components/match-detail.component';
 import { StatisticsComponent } from './Features/Competitions/components/statistics.component';
+import { TrainingProgramListComponent } from '@events/training-program-list/training-program-list.component';
+import { TrainingProgramFormComponent } from '@events/training-program-form/training-program-form.component';
+import { TrainingProgramDetailComponent } from '@events/training-program-detail/training-program-detail.component';
+import { TrainingListComponent } from '@events/training-list/training-list.component';
+import { TrainingSessionFormComponent } from '@events/training-session-form/training-session-form.component';
+import { TrainingSessionDetailComponent } from '@events/training-session-detail/training-session-detail.component';
 import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
 import { TicketShopComponent } from './Features/Tickets/ticket-shop/ticket-shop.component';
 import { MyTicketsComponent } from './Features/Tickets/my-tickets/my-tickets.component';
@@ -51,11 +58,22 @@ const routes: Routes = [
   { path: 'admin/users', component: UserListComponent, canActivate: [AdminGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
 
-  // Événements & Entraînements
+  // Events
   { path: 'events', component: EventListComponent, canActivate: [AuthGuard] },
   { path: 'events/create', component: EventFormComponent, canActivate: [AuthGuard] },
   { path: 'events/edit/:id', component: EventFormComponent, canActivate: [AuthGuard] },
   { path: 'events/:id', component: EventDetailComponent, canActivate: [AuthGuard] },
+
+  // Training Programs
+  { path: 'training-programs', component: TrainingProgramListComponent, canActivate: [AuthGuard] },
+  { path: 'training-programs/new', component: TrainingProgramFormComponent, canActivate: [AuthGuard] },
+  { path: 'training-programs/:id', component: TrainingProgramDetailComponent, canActivate: [AuthGuard] },
+
+  // Training Sessions
+  { path: 'training-sessions', component: TrainingListComponent, canActivate: [AuthGuard] },
+  { path: 'training-sessions/new', component: TrainingSessionFormComponent, canActivate: [AuthGuard] },
+  { path: 'training-sessions/:id/edit', component: TrainingSessionFormComponent, canActivate: [AuthGuard] },
+  { path: 'training-sessions/:id', component: TrainingSessionDetailComponent, canActivate: [AuthGuard] },
 
   // Équipes
   { path: 'team', component: TeamComponent, canActivate: [AuthGuard] },
@@ -66,7 +84,8 @@ const routes: Routes = [
   { path: 'competitions/:id', component: CompetitionDetailComponent, canActivate: [AuthGuard] },
   { path: 'classement', component: ClassementComponent, canActivate: [AuthGuard] },
   { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
-  { path: 'statistics', component: StatisticsComponent, canActivate: [AuthGuard] },
+  { path: 'matchs/:id', component: MatchDetailComponent, canActivate: [AuthGuard] },
+
 
   // Marketplace (lazy-loaded feature module)
   {

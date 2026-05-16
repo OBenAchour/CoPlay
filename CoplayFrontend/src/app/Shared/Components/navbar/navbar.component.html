@@ -7,12 +7,39 @@
   <ul class="nav-links" *ngIf="authService.isLoggedIn()">
     <li><a routerLink="/profile" routerLinkActive="active">Mon Profil</a></li>
     <li><a routerLink="/dashboard" routerLinkActive="active">Tableau de bord</a></li>
-    <li><a routerLink="/events" routerLinkActive="active">Événements</a></li>
+<!-- Menu déroulant Événements & Entraînements -->
+    <li class="events-dropdown" [class.events-open]="isEventsDropdownOpen">
+      <a class="events-dropdown-trigger" (click)="toggleEventsDropdown()">
+        Événements & Entraînements <span class="events-dropdown-arrow">▾</span>
+      </a>
+      <ul class="events-dropdown-menu">
+        <li>
+          <a routerLink="/events" routerLinkActive="active" (click)="closeEventsDropdown()">
+            📅 Événements
+          </a>
+        </li>
+        <li>
+          <a routerLink="/training-programs" routerLinkActive="active" (click)="closeEventsDropdown()">
+            📋 Programmes d'entraînement
+          </a>
+        </li>
+        <li>
+          <a routerLink="/training-sessions" routerLinkActive="active" (click)="closeEventsDropdown()">
+            🏃 Séances d'entraînement
+          </a>
+        </li>
+      </ul>
+    </li>
+    <!-- ⬆️ FIN menu déroulant ⬆️ -->
+
+
     <li><a routerLink="/feed" routerLinkActive="active">Feed</a></li>
     <li><a routerLink="/competitions" routerLinkActive="active">Compétitions</a></li>
+
     <li><a routerLink="/classement" routerLinkActive="active">Classement</a></li>
     <li><a routerLink="/matchs" routerLinkActive="active">Matchs</a></li>
     <li><a routerLink="/statistics" routerLinkActive="active">Statistiques</a></li>
+
     <li><a routerLink="/my-tickets" class="nav-link">🎟️ Mes Billets</a></li>
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/reclamations" routerLinkActive="active">Réclamations</a>
@@ -29,6 +56,7 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
       Planning
     </a></li>
+
 
     <li *ngIf="authService.isAdmin()">
       <a routerLink="/admin/users" routerLinkActive="active" class="admin-link">
@@ -56,7 +84,7 @@
         <button (click)="onLogout()" class="btn-logout">Déconnexion</button>
       </div>
     </ng-container>
-    
+
     <ng-template #authButtons>
       <button *ngIf="router.url !== '/'" routerLink="/login" class="btn-login">Connexion</button>
     </ng-template>

@@ -54,6 +54,22 @@ export class TrainingService {
   }
 
   /**
+   * Retourne tous les programmes d'entraînement.
+   * GET /api/training/all
+   */
+  getAllPrograms(): Observable<TrainingProgram[]> {
+    return this.http.get<TrainingProgram[]>(`${this.baseUrl}/all`);
+  }
+
+  /**
+   * Modifie un programme existant.
+   * PUT /api/training/update/{programId}
+   */
+  updateProgram(programId: string, program: TrainingProgram): Observable<TrainingProgram> {
+    return this.http.put<TrainingProgram>(`${this.baseUrl}/update/${programId}`, program);
+  }
+
+  /**
    * Supprime un programme et tous ses exercices.
    * DELETE /api/training/delete/{programId}
    */

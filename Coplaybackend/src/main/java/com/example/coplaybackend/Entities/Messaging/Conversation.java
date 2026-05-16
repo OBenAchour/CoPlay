@@ -23,5 +23,6 @@ public class Conversation {
 
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     private Boolean isArchived = false;
 }

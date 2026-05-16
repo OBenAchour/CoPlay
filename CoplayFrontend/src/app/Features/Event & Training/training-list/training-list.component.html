@@ -1,93 +1,82 @@
-<div class="training-page">
+<div class="sessions-container">
 
-  <div class="page-header">
-    <div class="header-left">
-      <h1 class="page-title">🏋️ Programmes d'entraînement</h1>
-      <p class="page-subtitle">Gérez les programmes et exercices de votre équipe</p>
-    </div>
-    <button class="btn-create" (click)="openNewProgramForm()" *ngIf="!showNewProgramForm">
-      <span>＋</span> Créer un programme
+  <!-- Header -->
+  <div class="header">
+    <h1>📅 Séances d'entraînement</h1>
+    <button *ngIf="canCreateFreeSession()" class="btn btn-primary" (click)="goToCreate()">
+      + Nouvelle séance
     </button>
   </div>
 
+  <!-- Filtres -->
   <div class="filters">
-    <button
-      *ngFor="let option of levelOptions"
-      class="filter-btn"
-      [class.active]="selectedLevel === option.value"
-      (click)="filterByLevel(option.value)">
-      {{ option.label }}
-    </button>
+    <button [class.active]="filter === 'ALL'" (click)="setFilter('ALL')">Toutes</button>
+    <button [class.active]="filter === 'UPCOMING'" (click)="setFilter('UPCOMING')">À venir</button>
+    <button [class.active]="filter === 'OFFICIAL'" (click)="setFilter('OFFICIAL')">🟢 Officielles</button>
+    <button [class.active]="filter === 'FREE'" (click)="setFilter('FREE')">🔵 Libres</button>
   </div>
 
-  <div class="new-program-form" *ngIf="showNewProgramForm">
-    <div class="form-header">
-      <span class="form-badge">Nouveau programme</span>
-      <button class="btn-close-form" (click)="cancelNewProgram()">✕</button>
-    </div>
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">Chargement...</div>
 
-    <div class="form-row-3">
-      <div class="form-group">
-        <label class="form-label">Titre <span class="req">*</span></label>
-        <input type="text" class="form-input" [(ngModel)]="newProgram.title" placeholder="Ex : Préparation physique">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Niveau</label>
-        <select class="form-input" [(ngModel)]="newProgram.level">
-          <option value="">— Niveau —</option>
-          <option value="BEGINNER">Débutant</option>
-          <option value="INTERMEDIATE">Intermédiaire</option>
-          <option value="ADVANCED">Avancé</option>
-          <option value="PROFESSIONAL">Professionnel</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Durée (min)</label>
-        <input type="number" class="form-input" [(ngModel)]="newProgram.duration" placeholder="Ex : 90">
-      </div>
-    </div>
+  <!-- Erreur -->
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 
-    <div class="form-actions">
-      <button class="btn-ghost" (click)="cancelNewProgram()">Annuler</button>
-      <button class="btn-primary" (click)="createProgram()">✅ Créer le programme</button>
-    </div>
+  <!-- Liste vide -->
+  <div *ngIf="!isLoading && filteredSessions.length === 0" class="empty">
+    Aucune séance trouvée.
   </div>
 
-  <div class="programs-list" *ngIf="!isLoading">
-    <div class="program-card" *ngFor="let program of filteredPrograms">
-      
-      <div class="program-header" (click)="toggleAccordion(program.programId!)">
-        <div class="program-info">
-          <div class="program-top">
-            <span class="level-badge" [ngClass]="getLevelClass(program.level)">
-              {{ getLevelLabel(program.level) }}
-            </span>
-            <h3 class="program-title">{{ program.title }}</h3>
-          </div>
-          <div class="program-meta">
-            <span class="meta-chip">⏱ {{ program.duration }} min</span>
-            <span class="meta-chip">📚 {{ program.exercises?.length || 0 }} ex.</span>
-          </div>
-        </div>
+  <!-- Liste des séances -->
+  <div class="sessions-grid">
+    <div *ngFor="let session of filteredSessions"
+         class="session-card"
+         [class.past]="isPast(session.sessionDate)"
+         (click)="goToDetail(session.sessionId!)">
 
-        <div class="program-actions" (click)="$event.stopPropagation()">
-          <button class="btn-add-ex" (click)="openExerciseForm(program.programId!)">＋ Exercice</button>
-          <button class="btn-delete-program" (click)="deleteProgram(program)">🗑️</button>
-          <span class="accordion-arrow" [class.open]="isExpanded(program.programId!)">▼</span>
-        </div>
+      <!-- Badge officielle/libre -->
+      <div class="session-badge" [class.official]="session.isOfficial">
+        {{ session.isOfficial ? '🟢 Officielle' : '🔵 Libre' }}
       </div>
 
-      <div class="accordion-body" [class.open]="isExpanded(program.programId!)">
-        <div class="exercise-item" *ngFor="let ex of program.exercises; let i = index">
-          <div class="ex-number">{{ i + 1 }}</div>
-          <div class="ex-body">
-            <div class="ex-top">
-              <span class="ex-name">{{ ex.name }}</span>
-              <button class="ex-delete" (click)="removeExercise(program.programId!, ex.exerciseId!, ex.name)">✕</button>
-            </div>
-            <p class="ex-desc">{{ ex.description }}</p>
-          </div>
-        </div>
+      <!-- Titre -->
+      <h3>{{ session.title }}</h3>
+
+      <!-- Description -->
+      <p *ngIf="session.description" class="description">{{ session.description }}</p>
+
+      <!-- Date et durée -->
+      <div class="info-row">
+        <span>📅 {{ formatDate(session.sessionDate) }}</span>
+      </div>
+      <div *ngIf="session.duration" class="info-row">
+        <span>⏱️ {{ session.duration }} min</span>
+      </div>
+
+      <!-- Programme lié -->
+      <div *ngIf="session.program" class="info-row program-link">
+        <span>📋 Programme : {{ session.program.title }}</span>
+      </div>
+
+      <!-- Statut -->
+      <div class="status" [ngClass]="getStatusClass(session.status)">
+        {{ getStatusLabel(session.status) }}
+      </div>
+
+      <!-- Actions -->
+      <div class="actions" *ngIf="session.status === 'SCHEDULED'">
+        <button class="btn-edit" (click)="goToEdit(session.sessionId!, $event)" title="Modifier">
+          ✏️
+        </button>
+        <button *ngIf="canManage()" class="btn-complete" (click)="completeSession(session, $event)" title="Terminer">
+          ✅
+        </button>
+        <button class="btn-cancel" (click)="cancelSession(session, $event)" title="Annuler">
+          ⛔
+        </button>
+        <button *ngIf="canManage()" class="btn-delete" (click)="deleteSession(session, $event)" title="Supprimer">
+          🗑️
+        </button>
       </div>
 
     </div>

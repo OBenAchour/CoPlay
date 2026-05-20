@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { CompetitionService } from '../services/competition.service';
+import { AuthService } from '../../../Core/Services/Auth/auth.service';
 
 @Component({
   selector: 'app-competition-list',
@@ -32,8 +33,9 @@ export class CompetitionListComponent implements OnInit {
   deletingCompetitionId: number | null = null;
 
 
-  userRole = localStorage.getItem('user_role');
-  userId = localStorage.getItem('userId');
+  get userRole(): string { return this.authService.getUserRole() || ''; }
+  get userId(): string    { return this.authService.getUserId(); }
+  get isAdmin(): boolean  { return this.authService.isAdmin(); }
 
   // Toast
   toasts: { message: string, type: 'success' | 'error' | 'info', id: number }[] = [];
@@ -51,12 +53,11 @@ export class CompetitionListComponent implements OnInit {
 
   constructor(
     private competitionService: CompetitionService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
-    console.log('User Role from localStorage:', this.userRole);
-    console.log('User ID from localStorage:', this.userId);
     this.loadCompetitions();
   }
 
@@ -158,21 +159,42 @@ export class CompetitionListComponent implements OnInit {
 
   // PERMISSIONS
   canDelete(comp: any): boolean {
-    return this.userRole === 'ADMIN' || (this.userId !== null && comp.creator === this.userId);
+    const uid = this.userId;
+    return this.isAdmin || (!!uid && (comp.creator === uid || comp.creatorId === uid));
+  }
+
+  canEdit(comp: any): boolean {
+    return this.canDelete(comp);
+  }
+
+  canCreate(): boolean {
+    // Any authenticated user with CAPTAIN, COACH or ADMIN role can create a competition
+    const role = this.userRole.toUpperCase();
+    return this.isAdmin || role === 'CAPTAIN' || role === 'COACH';
   }
 
   canJoin(comp: any): boolean {
     const now = new Date();
-    
-    // 1. Vérifier le rôle (COACH ou CAPTAIN uniquement)
-    const hasRightRole = this.userRole === 'COACH' || this.userRole === 'CAPTAIN';
+    const role = this.userRole.toUpperCase();
+    const uid  = this.userId;
 
-    // 2. Vérifier s'il reste de la place (countTeams < maxTeams)
-    const hasSpace = (comp.countTeams ?? 0) < (comp.maxTeams ?? 0);
-
-    // 3. Vérifier si la date de fin n'est pas dépassée
+    if (uid && (comp.creator === uid || comp.creatorId === uid)) return false;
+    const hasRightRole  = role === 'COACH' || role === 'CAPTAIN';
+    const hasSpace      = (comp.countTeams ?? 0) < (comp.maxTeams ?? 0);
     const isNotFinished = comp.endDate ? new Date(comp.endDate) > now : true;
 
     return hasRightRole && hasSpace && isNotFinished;
+  }
+
+  getJoinBlockReason(comp: any): string {
+    const now  = new Date();
+    const role = this.userRole.toUpperCase();
+    const uid  = this.userId;
+
+    if (uid && (comp.creator === uid || comp.creatorId === uid)) return '👑 Votre compétition';
+    if ((comp.countTeams ?? 0) >= (comp.maxTeams ?? 0))          return '🔒 Complet';
+    if (comp.endDate && new Date(comp.endDate) <= now)            return '🏁 Terminée';
+    if (role !== 'COACH' && role !== 'CAPTAIN')                   return '⚠️ Rôle CAPTAIN requis';
+    return '';
   }
 }

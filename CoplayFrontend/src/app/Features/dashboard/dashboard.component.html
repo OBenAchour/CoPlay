@@ -1,30 +1,273 @@
-<div class="dashboard-container">
-  <header class="welcome-section">
-    <h1>Ravi de vous revoir, {{ userName }} ! ⚽</h1>
-    <p>Prêt pour votre prochaine partie de sport ?</p>
-  </header>
+<div class="db-page">
 
-  <div class="stats-grid">
-    <div class="card">
-      <h3>Mes Matchs</h3>
-      <p>Vous n'avez pas de match prévu.</p>
-      <button class="btn-primary">Trouver une partie</button>
+  <!-- ══════════════ HERO ══════════════ -->
+  <div class="db-hero tilt-wrap"
+       (mousemove)="onTiltMove($event,'hero',4)"
+       (mouseleave)="onTiltLeave('hero')"
+       [style.transform]="tiltTransform('hero')">
+
+    <div class="db-blob db-blob-a"></div>
+    <div class="db-blob db-blob-b"></div>
+    <div class="db-blob db-blob-c"></div>
+    <div class="tilt-glow" [style.opacity]="glowOpacity('hero')" [style.background]="glowBg('hero')"></div>
+
+    <div class="db-hero-left">
+      <h1 class="db-hero-title">
+        Salut {{ userName }},<br>
+        <span class="db-hero-gradient">prêt pour ton prochain match ?</span>
+      </h1>
+      <div class="db-hero-actions">
+        <button class="db-btn-primary" [routerLink]="'/matchs'">
+          Trouver une partie <span [innerHTML]="icon('arrow',15)"></span>
+        </button>
+        <button class="db-btn-secondary" [routerLink]="'/team'">Voir mes équipes</button>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Mon Niveau</h3>
-      <span class="badge">Intermédiaire</span>
+    <!-- Scène 3D -->
+    <div class="db-scene">
+      <div class="db-ring-wrap" id="db-ring">
+        <div class="db-ring-outer"></div>
+        <div class="db-ring-dashed"></div>
+      </div>
+      <div class="db-ball">
+        <svg viewBox="0 0 100 100" class="db-ball-hex">
+          <polygon points="50,10 65,20 65,40 50,50 35,40 35,20" fill="none" stroke="white" stroke-width="1.5"/>
+          <polygon points="30,40 45,50 45,70 30,80 15,70 15,50" fill="none" stroke="white" stroke-width="1.5"/>
+          <polygon points="70,40 85,50 85,70 70,80 55,70 55,50" fill="none" stroke="white" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div *ngFor="let c of orbitCards; let i = index"
+           class="db-orbit-card"
+           [id]="'db-orbit-' + i"
+           [style.color]="c.color"
+           [style.boxShadow]="'0 14px 30px -12px '+c.color+'88,0 4px 10px rgba(0,0,0,.08)'">
+        <span [innerHTML]="icon(c.icon,18)"></span>
+        <span class="db-orbit-lbl">
+          <ng-container [ngSwitch]="i">
+            <ng-container *ngSwitchCase="0">{{ loading ? '…' : stats[0].value }}M</ng-container>
+            <ng-container *ngSwitchCase="2">{{ loading ? '…' : xpTotal }}XP</ng-container>
+            <ng-container *ngSwitchDefault>{{ c.label }}</ng-container>
+          </ng-container>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ STATS ══════════════ -->
+  <div class="db-stats-grid">
+    <div *ngFor="let s of stats; let i = index"
+         class="db-stat-tile tilt-wrap"
+         (mousemove)="onTiltMove($event,'s'+i,5)"
+         (mouseleave)="onTiltLeave('s'+i)"
+         [style.transform]="tiltTransform('s'+i)">
+      <div class="tilt-glow" [style.opacity]="glowOpacity('s'+i)" [style.background]="glowBg('s'+i)"></div>
+      <div class="db-stat-halo" [style.background]="'radial-gradient(circle,'+s.accent+'22 0%,transparent 70%)'"></div>
+      <div class="db-stat-icon" [style.background]="s.accent+'1a'" [style.color]="s.accent">
+        <span [innerHTML]="icon(s.icon,18)"></span>
+      </div>
+      <div class="db-stat-label">{{ s.label }}</div>
+      <div class="db-stat-nums">
+        <span class="db-stat-value" [class.db-stat-loading]="loading">{{ s.value }}</span>
+      </div>
+      <div class="db-stat-sub">{{ s.sub }}</div>
+    </div>
+  </div>
+
+  <!-- ══════════════ ROW 2 : NextMatch + Level ══════════════ -->
+  <div class="db-row-2">
+
+    <!-- Prochain match -->
+    <div class="db-match-card tilt-wrap"
+         (mousemove)="onTiltMove($event,'match',4)"
+         (mouseleave)="onTiltLeave('match')"
+         [style.transform]="tiltTransform('match')">
+      <div class="tilt-glow" [style.opacity]="glowOpacity('match')" [style.background]="glowBg('match')"></div>
+
+      <svg viewBox="0 0 200 120" class="db-field-svg">
+        <rect x="2" y="2" width="196" height="116" fill="none" stroke="white" stroke-width=".8"/>
+        <line x1="100" y1="2" x2="100" y2="118" stroke="white" stroke-width=".8"/>
+        <circle cx="100" cy="60" r="16" fill="none" stroke="white" stroke-width=".8"/>
+        <rect x="2" y="35" width="22" height="50" fill="none" stroke="white" stroke-width=".8"/>
+        <rect x="176" y="35" width="22" height="50" fill="none" stroke="white" stroke-width=".8"/>
+      </svg>
+
+      <div class="db-match-head">
+        <div class="db-match-badge"><span class="db-match-dot"></span>PROCHAIN MATCH</div>
+        <span class="db-match-date-lbl">{{ upcomingMatch ? formatDate(upcomingMatch.dateMatch) : '' }}</span>
+      </div>
+
+      <!-- Match trouvé -->
+      <ng-container *ngIf="upcomingMatch; else noMatch">
+        <div class="db-match-teams">
+          <div class="db-match-team">
+            <div class="db-team-av" style="background:linear-gradient(135deg,#F47920,#FFB66B);box-shadow:0 6px 18px rgba(244,121,32,.4)">
+              {{ teamInitial(upcomingMatch.equipeA.name) }}
+            </div>
+            <div class="db-team-nm">{{ upcomingMatch.equipeA.name }}</div>
+            <div class="db-team-rl">Équipe A</div>
+          </div>
+          <div class="db-match-center">
+            <div class="db-vs-lbl">VS</div>
+            <div class="db-vs-score">{{ getMatchScore(upcomingMatch) }}</div>
+          </div>
+          <div class="db-match-team">
+            <div class="db-team-av" style="background:linear-gradient(135deg,#0AADE3,#6EE7F5);box-shadow:0 6px 18px rgba(10,173,227,.4)">
+              {{ teamInitial(upcomingMatch.equipeB.name) }}
+            </div>
+            <div class="db-team-nm">{{ upcomingMatch.equipeB.name }}</div>
+            <div class="db-team-rl">Équipe B</div>
+          </div>
+        </div>
+        <div class="db-match-actions">
+          <button class="db-match-confirm" [routerLink]="'/matchs'">Voir le match</button>
+        </div>
+      </ng-container>
+
+      <!-- Pas de match -->
+      <ng-template #noMatch>
+        <div class="db-match-empty">
+          <div class="db-match-empty-txt">Aucun match programmé</div>
+          <button class="db-match-confirm" [routerLink]="'/competitions'">Rejoindre une compétition</button>
+        </div>
+      </ng-template>
     </div>
 
-    <div class="card">
-      <h3>Communauté</h3>
-      <p>3 joueurs sont disponibles dans votre ville.</p>
+    <!-- Niveau -->
+    <div class="db-level-card tilt-wrap"
+         (mousemove)="onTiltMove($event,'level',5)"
+         (mouseleave)="onTiltLeave('level')"
+         [style.transform]="tiltTransform('level')">
+      <div class="tilt-glow" [style.opacity]="glowOpacity('level')" [style.background]="glowBg('level')"></div>
+
+      <div class="db-ring-container">
+        <svg width="130" height="130" style="transform:rotate(-90deg)">
+          <defs>
+            <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#0AADE3"/>
+              <stop offset="100%" stop-color="#F47920"/>
+            </linearGradient>
+          </defs>
+          <circle cx="65" cy="65" [attr.r]="levelRadius" fill="none" stroke="#F0EBE0" stroke-width="9"/>
+          <circle cx="65" cy="65" [attr.r]="levelRadius" fill="none" stroke="url(#ringGrad)" stroke-width="9"
+                  [attr.stroke-dasharray]="levelCirc"
+                  [attr.stroke-dashoffset]="levelOffset"
+                  stroke-linecap="round"
+                  style="transition:stroke-dashoffset 1.2s ease-out"/>
+        </svg>
+        <div class="db-ring-label">
+          <div class="db-ring-pct">{{ loading ? '—' : levelPercent + '%' }}</div>
+          <div class="db-ring-sub">NIV. {{ loading ? '–' : currentLevel }}</div>
+        </div>
+      </div>
+      <div class="db-level-info">
+        <div class="db-level-name">{{ loading ? 'Chargement…' : levelName }}</div>
+        <div class="db-level-xp">{{ loading ? '' : (xpInLevel + ' / ' + xpPerLevel + ' XP') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ ROW 3 ══════════════ -->
+  <div class="db-row-3">
+
+    <!-- Événements à venir -->
+    <div class="db-activity-card">
+      <div class="db-card-head3">
+        <div>
+          <div class="db-eyebrow">CALENDRIER</div>
+          <div class="db-card-title3">Événements à venir</div>
+        </div>
+        <button class="db-link-btn" [routerLink]="'/events'">Voir tous →</button>
+      </div>
+
+      <div *ngIf="loading" class="db-skeleton-list">
+        <div class="db-skeleton-row" *ngFor="let i of [1,2,3]"></div>
+      </div>
+
+      <div *ngIf="!loading && upcomingEvents.length === 0" class="db-empty-state">
+        <span [innerHTML]="icon('calendar',28)"></span>
+        <p>Aucun événement à venir</p>
+      </div>
+
+      <div *ngIf="!loading" class="db-event-list">
+        <div *ngFor="let ev of upcomingEvents" class="db-event-row">
+          <span class="db-event-dot" [style.background]="getEventStatusColor(ev.status)"></span>
+          <div class="db-event-body">
+            <div class="db-event-title">{{ ev.title }}</div>
+            <div class="db-event-date">{{ formatDate(ev.startDate) }}</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Feed Social</h3>
-      <p>Découvrez les publications de la communauté.</p>
-      <button class="btn-primary" [routerLink]="'/feed'">Voir le Feed</button>
+    <!-- Compétitions actives -->
+    <div class="db-community-card">
+      <div class="db-card-head3">
+        <div>
+          <div class="db-eyebrow">SPORT</div>
+          <div class="db-card-title3">Compétitions</div>
+        </div>
+        <button class="db-link-btn" [routerLink]="'/competitions'">Voir toutes →</button>
+      </div>
+
+      <div *ngIf="loading" class="db-skeleton-list">
+        <div class="db-skeleton-row" *ngFor="let i of [1,2,3]"></div>
+      </div>
+
+      <div *ngIf="!loading && competitions.length === 0" class="db-empty-state">
+        <span [innerHTML]="icon('trophy',28)"></span>
+        <p>Aucune compétition</p>
+      </div>
+
+      <div *ngIf="!loading" class="db-players">
+        <div *ngFor="let comp of competitions" class="db-player" [routerLink]="'/competitions'">
+          <div class="db-player-av" style="background:linear-gradient(135deg,#F47920,#F47920cc)">
+            <span [innerHTML]="icon('trophy',16)"></span>
+          </div>
+          <div class="db-player-info">
+            <div class="db-player-nm">{{ comp.name }}</div>
+            <div class="db-player-mt">{{ comp.sport || 'Sport' }}</div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Feed social -->
+    <div class="db-feed-card">
+      <div class="db-card-head3">
+        <div>
+          <div class="db-eyebrow">COMMUNAUTÉ</div>
+          <div class="db-card-title3">Feed social</div>
+        </div>
+        <button class="db-link-btn" [routerLink]="'/feed'">Voir le feed →</button>
+      </div>
+
+      <div *ngIf="loading" class="db-skeleton-list">
+        <div class="db-skeleton-row" *ngFor="let i of [1,2,3]"></div>
+      </div>
+
+      <div *ngIf="!loading && recentPosts.length === 0" class="db-empty-state">
+        <span [innerHTML]="icon('feed',28)"></span>
+        <p>Aucune publication</p>
+      </div>
+
+      <div *ngIf="!loading" class="db-feed-list">
+        <div *ngFor="let p of recentPosts; let i = index"
+             class="db-feed-item"
+             [style.borderBottom]="i < recentPosts.length-1 ? '1px solid rgba(0,0,0,.04)' : 'none'">
+          <div class="db-feed-ico"
+               [style.background]="getAvatarColor(p.postId) + '1a'"
+               [style.color]="getAvatarColor(p.postId)">
+            <span [innerHTML]="icon('user',16)"></span>
+          </div>
+          <div class="db-feed-txt">
+            <strong>{{ postAuthor(p) }}</strong>
+            {{ p.content ? (p.content.length > 50 ? (p.content | slice:0:50) + '…' : p.content) : '' }}
+          </div>
+          <div class="db-feed-time">{{ getRelativeTime(p.createdAt) }}</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

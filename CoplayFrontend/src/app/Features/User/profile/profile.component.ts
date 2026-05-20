@@ -11,7 +11,7 @@ export class ProfileComponent implements OnInit {
   user: any = null;
   message: string = '';
   currentUserEmail: string = '';
-  availableRoles = ['COACH', 'PLAYER', 'SPECTATOR'];
+  availableRoles = ['CAPTAIN', 'COACH', 'PLAYER', 'SPECTATOR'];
 
   showPwForm = false;
   showOld = false;
@@ -34,10 +34,21 @@ export class ProfileComponent implements OnInit {
     this.userService.getMyProfile().subscribe({
       next: (data) => {
         this.user = data;
-        // Initialisation par défaut si les champs sont vides
-        if (this.user && this.user.profile) {
-          if (!this.user.profile.role) this.user.profile.role = 'PLAYER';
-          if (!this.user.profile.bio) this.user.profile.bio = '';
+        // Normalisation : certains backends retournent un objet plat (sans sous-objet profile)
+        if (this.user && !this.user.profile) {
+          this.user.profile = {
+            displayName : this.user.displayName || this.user.username || '',
+            bio         : this.user.bio         || '',
+            role        : this.user.role         || localStorage.getItem('user_role') || 'PLAYER',
+            city        : this.user.city         || '',
+            phone       : this.user.phone        || '',
+            avatarUrl   : this.user.avatarUrl    || '',
+            profilePicture: this.user.profilePicture || ''
+          };
+        }
+        if (this.user?.profile) {
+          if (!this.user.profile.role) this.user.profile.role = localStorage.getItem('user_role') || 'PLAYER';
+          if (!this.user.profile.bio)  this.user.profile.bio  = '';
         }
       },
       error: (err) => console.error('Erreur profil:', err)
@@ -49,15 +60,24 @@ export class ProfileComponent implements OnInit {
 
   // Enregistre les modifications globales du profil (pseudo, bio, rôle) via le service utilisateur
   saveProfile(): void {
-    if (this.user?.profile) {
-      this.userService.updateProfile(this.user.profile).subscribe({
-        next: () => {
-          this.message = 'Profil et bio mis à jour avec succès !';
-          setTimeout(() => this.message = '', 3000);
-        },
-        error: () => this.message = 'Erreur lors de la mise à jour.'
-      });
-    }
+    const profile = this.user?.profile;
+    if (!profile) { this.message = 'Impossible de charger le profil.'; return; }
+
+    // Mise à jour immédiate dans localStorage (avant confirmation API)
+    // pour que les autres composants voient le nouveau rôle instantanément
+    if (profile.role)        localStorage.setItem('user_role', profile.role);
+    if (profile.displayName) localStorage.setItem('user_name', profile.displayName);
+
+    this.userService.updateProfile(profile).subscribe({
+      next: () => {
+        this.message = 'Profil mis à jour avec succès !';
+        setTimeout(() => this.message = '', 3000);
+      },
+      error: () => {
+        this.message = 'Erreur lors de la mise à jour du profil.';
+        setTimeout(() => this.message = '', 4000);
+      }
+    });
   }
 
   // Vérifie les nouveaux mots de passe et appelle le service d'authentification pour effectuer le changement
@@ -89,8 +109,11 @@ export class ProfileComponent implements OnInit {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => { 
-        if (this.user?.profile) this.user.profile.profilePicture = reader.result as string; 
+      reader.onload = () => {
+        if (this.user?.profile) {
+          this.user.profile.profilePicture = reader.result as string;
+          this.user.profile.avatarUrl      = reader.result as string; // mise à jour immédiate de l'aperçu
+        }
       };
       reader.readAsDataURL(file);
     }

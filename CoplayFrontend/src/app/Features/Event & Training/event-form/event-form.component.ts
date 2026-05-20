@@ -8,6 +8,7 @@ import { Team } from 'src/app/Core/Models/Teams/Team';
 import { EventService } from 'src/app/Core/Services/Events & Training/EventService/event-service.service';
 import { LocationService } from 'src/app/Core/Services/Events & Training/LocationService/location-service.service';
 import { TeamService } from 'src/app/services/Team/team.service';
+import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
 import { MapLocation } from 'src/app/Features/Event & Training/map/map.component';
 
 @Component({
@@ -44,7 +45,8 @@ export class EventFormComponent implements OnInit {
     private router: Router,
     private eventService: EventService,
     private locationService: LocationService,
-    private teamService: TeamService
+    private teamService: TeamService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -81,9 +83,8 @@ export class EventFormComponent implements OnInit {
           this.selectedTeamId = teams[0].teamId || '';
         }
       },
-      error: (err) => {
-        console.log('Erreur chargement teams:', err);
-      }
+      error: () => {}
+
     });
   }
 
@@ -132,9 +133,6 @@ export class EventFormComponent implements OnInit {
   }
 
  private patchForm(event: CoplayEvent): void {
-  console.log('=== patchForm appelé ===');
-  console.log('Event complet:', event);
-
   this.form.patchValue({
     title: event.title,
     startDate: event.startDate?.slice(0, 16) ?? '',
@@ -158,7 +156,6 @@ export class EventFormComponent implements OnInit {
   const locationData = (event as any).locationId || (event as any).location;
 
   if (locationData) {
-    console.log('✅ Location trouvée dans la réponse API:', locationData);
 
     this.selectedLocation = {
       locationId: locationData.locationId || locationData.id,
@@ -174,7 +171,6 @@ export class EventFormComponent implements OnInit {
 
     this.showMap = false;
   } else {
-    console.log('❌ Aucune location dans l\'event');
     this.selectedLocation = null;
     this.locationQuery = '';
   }
@@ -271,11 +267,8 @@ export class EventFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    console.log('=== onSubmit appelé ===');
-
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      console.log('Formulaire invalide');
       return;
     }
 
@@ -288,6 +281,7 @@ export class EventFormComponent implements OnInit {
 
     const payload = {
       teamId: this.selectedTeamId,
+      organizerId: this.authService.getUserId() || undefined,
       title: v.title,
       startDate: v.startDate,
       endDate: v.endDate || null,
@@ -299,10 +293,6 @@ export class EventFormComponent implements OnInit {
       paymentDeadlineHours: v.isPaid ? v.paymentDeadlineHours : null
     };
 
-    console.log('Mode édition:', this.isEditMode);
-    console.log('Event ID:', this.eventId);
-    console.log('Payload envoyé:', JSON.stringify(payload, null, 2));
-
     this.isSubmitting = true;
     this.errorMessage = '';
 
@@ -311,14 +301,11 @@ export class EventFormComponent implements OnInit {
       : this.eventService.createEvent(payload);
 
     req$.subscribe({
-      next: (response) => {
-        console.log('Succès:', response);
+      next: () => {
         this.isSubmitting = false;
         this.router.navigate(['/events']);
       },
-      error: (err) => {
-        console.log('Erreur:', err);
-        console.log('Erreur body:', err.error);
+      error: () => {
         this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
         this.isSubmitting = false;
       }

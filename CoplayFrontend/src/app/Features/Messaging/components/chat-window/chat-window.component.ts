@@ -13,6 +13,7 @@ export class ChatWindowComponent {
   @Input() selectedConversation: ConversationListItem | null = null;
   @Input() messages: Message[] = [];
   @Input() currentUserId: string = '';
+  @Input() currentUserEmail: string = '';
 
   // Inputs pour les appels
   @Input() activeCall: any = null;
@@ -94,7 +95,6 @@ export class ChatWindowComponent {
     if (this.selectedConversation?.conversationId) {
       this.callService.startCall(this.selectedConversation.conversationId, type).subscribe({
         next: (call) => {
-          console.log('Call started:', call);
           this.callStarted.emit({ callId: call.callId, roomId: call.roomId, type });
         },
         error: (err) => {

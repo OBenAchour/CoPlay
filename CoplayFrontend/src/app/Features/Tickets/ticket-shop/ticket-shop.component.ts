@@ -77,11 +77,6 @@ export class TicketShopComponent implements OnInit {
 
  confirmBuy(): void {
     if (!this.selectedTicket) return;
-    
-    // DEBUG - vérifiez dans la console ce que ça affiche
-    console.log('Email utilisateur:', this.currentUserEmail);
-    console.log('localStorage user_email:', localStorage.getItem('user_email'));
-
     this.buying = true;
     this.successMessage = '';
     this.errorMessage = '';

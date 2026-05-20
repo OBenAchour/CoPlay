@@ -116,7 +116,7 @@ export class CompetitionDetailComponent implements OnInit, OnDestroy {
   ];
 
   // Stats counters
-  animCounters: { [k: string]: number } = {};
+  animCounters: { [k: string]: number | undefined } = {};
   private _intervals: any[] = [];
 
   // Bracket
@@ -165,23 +165,13 @@ export class CompetitionDetailComponent implements OnInit, OnDestroy {
   }
 
   checkRole(): void {
-
-    const role = (localStorage.getItem('user_role') || '').toUpperCase();
+    const role = (this.authService.getUserRole() || '').toUpperCase();
     const email = localStorage.getItem('user_email') || '';
-    const name = localStorage.getItem('user_name') || '';
+    const name  = localStorage.getItem('user_name')  || '';
 
     this.currentUser = { email, name, role };
-
-    // Primary: check localStorage key directly
-    this.isAdmin = role === 'ADMIN';
+    this.isAdmin   = this.authService.isAdmin();
     this.isCaptain = role === 'CAPTAIN' || role === 'COACH';
-
-    // Fallback: AuthService decodes JWT and checks role from token payload
-    if (!this.isAdmin && this.authService) {
-      this.isAdmin = this.authService.isAdmin();
-    }
-
-    console.log('ROLE CHECK:', { role, email, name, isAdmin: this.isAdmin, isCaptain: this.isCaptain });
   }
 
   // Helper for template logic
@@ -499,7 +489,6 @@ export class CompetitionDetailComponent implements OnInit, OnDestroy {
               mlSummaryJson: JSON.stringify(res)
             };
 
-            console.log('ML RESULT:', { possA, possB, downloadUrl, res });
 
             this.statistiqueService.saveMatchStatistics(matchId, statsPayload).subscribe({
               next: () => {
@@ -556,14 +545,6 @@ export class CompetitionDetailComponent implements OnInit, OnDestroy {
       match: m
     };
     
-    console.log("VIEW ANALYSIS:", {
-      matchId: m.id,
-      mlStatus: this.viewData.mlStatus,
-      isAdmin: this.isAdmin,
-      isCaptain: this.isCaptain,
-      canAnalyze: this.canAnalyzeMatch(m)
-    });
-
     this.selectedMatch = m;
 
     // Parse ML summary if available

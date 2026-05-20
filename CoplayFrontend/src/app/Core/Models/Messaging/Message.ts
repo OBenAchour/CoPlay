@@ -5,7 +5,7 @@ import { MessageReaction } from "./MessageReaction";
 
 export interface Message {
   messageId?:      string;
-  sender:          User;
+  sender?:         User;
   conversation:    Conversation;
   content:         string;
   status?:         MessageStatus;

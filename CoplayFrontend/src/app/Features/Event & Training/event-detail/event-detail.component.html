@@ -19,8 +19,8 @@
       <div class="hero-nav">
         <button class="btn-back" (click)="goBack()">← Retour</button>
 
-        <!-- Actions admin uniquement -->
-        <div class="hero-actions" *ngIf="isAdmin">
+        <!-- Actions organisateur / admin -->
+        <div class="hero-actions" *ngIf="canManageEvent">
           <button class="btn-edit" (click)="goToEdit()">✏️ Modifier</button>
 
           <div class="status-dropdown" *ngIf="!isCompleted" [class.is-loading]="isChangingStatus">
@@ -84,8 +84,8 @@
       <!-- Colonne principale -->
       <div class="main-col">
 
-        <!-- RSVP -->
-        <div class="card rsvp-card" *ngIf="!isCancelled && !isCompleted">
+        <!-- RSVP (masqué pour l'organisateur) -->
+        <div class="card rsvp-card" *ngIf="!isCancelled && !isCompleted && !canManageEvent">
           <div class="card-title-row">
             <span class="card-icon rsvp">🙋</span>
             <h2 class="card-title">Votre réponse</h2>
@@ -235,14 +235,86 @@
 
       <!-- Colonne latérale -->
       <div class="side-col">
-        <!-- Participants confirmés, liste d'attente, score... (je garde ton code original ici) -->
-        <!-- ... (le reste de ta colonne latérale reste inchangé) -->
+
+        <!-- Score d'assiduité utilisateur -->
+        <div class="card score-card" *ngIf="userAttendanceRate !== null && isLoggedIn">
+          <div class="card-title-row">
+            <span class="card-icon score">🏅</span>
+            <h2 class="card-title">Votre assiduité</h2>
+          </div>
+          <div class="score-display" [ngClass]="getScoreClass(userAttendanceRate)">
+            {{ userAttendanceRate }}%
+          </div>
+          <p class="score-hint">Basé sur vos participations passées</p>
+        </div>
+
+        <!-- Participants confirmés -->
+        <div class="card participants-card">
+          <div class="card-title-row">
+            <span class="card-icon part">✅</span>
+            <h2 class="card-title">
+              Confirmés
+              <span class="part-count">{{ confirmedParticipants.length }}
+                <ng-container *ngIf="event.maxParticipants"> / {{ event.maxParticipants }}</ng-container>
+              </span>
+            </h2>
+          </div>
+
+          <div class="part-empty" *ngIf="confirmedParticipants.length === 0">
+            Aucun participant confirmé pour l'instant.
+          </div>
+
+          <ul class="part-list" *ngIf="confirmedParticipants.length > 0">
+            <li *ngFor="let p of confirmedParticipants" class="part-item">
+              <div class="part-avatar">{{ getParticipantInitials(p) }}</div>
+              <div class="part-info">
+                <span class="part-name">{{ getParticipantName(p) }}</span>
+                <span class="pay-pill small" *ngIf="event.isPaid"
+                      [ngClass]="getPaymentStatusClass(p.paymentStatus)">
+                  {{ getPaymentStatusLabel(p.paymentStatus) }}
+                </span>
+              </div>
+              <!-- Validation présence (admin/terminé) -->
+              <div class="presence-toggle" *ngIf="canValidatePresences">
+                <button class="btn-present" [class.active]="p.isPresent === true"
+                        (click)="togglePresence(p, true)">✓</button>
+                <button class="btn-absent"  [class.active]="p.isPresent === false"
+                        (click)="togglePresence(p, false)">✗</button>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Liste d'attente -->
+        <div class="card waiting-card" *ngIf="waitingParticipants.length > 0">
+          <div class="card-title-row">
+            <span class="card-icon wait">⏳</span>
+            <h2 class="card-title">
+              File d'attente
+              <span class="part-count">{{ waitingParticipants.length }}</span>
+            </h2>
+          </div>
+          <ul class="part-list">
+            <li *ngFor="let p of waitingParticipants" class="part-item">
+              <div class="part-avatar wait-avatar">{{ getParticipantInitials(p) }}</div>
+              <span class="part-name">{{ getParticipantName(p) }}</span>
+            </li>
+          </ul>
+        </div>
+
       </div>
     </div>
 
-    <!-- VALIDATION DES PRÉSENCES -->
+    <!-- VALIDATION DES PRÉSENCES (banner informatif quand terminé) -->
     <div class="card attendance-card" *ngIf="canValidatePresences">
-      <!-- ton code de validation reste identique -->
+      <div class="card-title-row">
+        <span class="card-icon">📋</span>
+        <h2 class="card-title">Validation des présences</h2>
+      </div>
+      <p class="attendance-hint">
+        Utilisez les boutons ✓ / ✗ sur chaque participant pour valider ou marquer une absence.
+        Les scores d'assiduité seront mis à jour automatiquement.
+      </p>
     </div>
 
   </ng-container>

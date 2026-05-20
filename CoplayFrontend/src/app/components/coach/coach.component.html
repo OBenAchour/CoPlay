@@ -1,1 +1,56 @@
-<p>coach works!</p>
+<div class="coach-page">
+
+  <div class="coach-header">
+    <div>
+      <h1 class="coach-title">📋 Coachs de mes équipes</h1>
+      <p class="coach-sub">Retrouvez les coachs assignés dans vos équipes</p>
+    </div>
+    <button class="btn-find" (click)="goToCoachingModule()">
+      🔍 Trouver un coach
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="coach-loading">
+    <div class="spinner"></div>
+    <p>Chargement…</p>
+  </div>
+
+  <!-- Vide -->
+  <div *ngIf="!loading && coaches.length === 0" class="coach-empty">
+    <div class="empty-icon">📋</div>
+    <h3>Aucun coach assigné</h3>
+    <p>Vos équipes n'ont pas encore de coach. Rejoignez ou créez une équipe, puis assignez un membre avec le rôle Coach.</p>
+    <div class="empty-actions">
+      <button class="btn-primary" routerLink="/team">Voir mes équipes</button>
+      <button class="btn-secondary" (click)="goToCoachingModule()">Trouver un coach</button>
+    </div>
+  </div>
+
+  <!-- Liste des coachs -->
+  <div *ngIf="!loading && coaches.length > 0" class="coaches-grid">
+    <div *ngFor="let c of coaches" class="coach-card">
+      <div class="coach-avatar">
+        {{ (c.member.userId || '?').substring(0, 2).toUpperCase() }}
+      </div>
+      <div class="coach-info">
+        <span class="coach-role-badge">📋 Coach</span>
+        <p class="coach-id">ID : {{ c.member.userId }}</p>
+        <p class="coach-team">
+          <span class="team-chip">{{ c.team.name }}</span>
+          <span class="sport-chip">{{ c.team.sport }}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA module coaching -->
+  <div class="coaching-cta">
+    <div class="cta-content">
+      <h3>🏋️ Module Coaching complet</h3>
+      <p>Programmes, exercices, suivi des blessures, nutrition, coach IA — tout est dans le module Coaching.</p>
+      <button class="btn-primary" routerLink="/coaching">Accéder au coaching →</button>
+    </div>
+  </div>
+
+</div>

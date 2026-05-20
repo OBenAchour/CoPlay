@@ -66,9 +66,10 @@
 
     <!-- Messages -->
     <div *ngIf="selectedConversation" class="message-area">
-      <app-message-list 
+      <app-message-list
         [messages]="messages"
-        [currentUserId]="currentUserId">
+        [currentUserId]="currentUserId"
+        [currentUserEmail]="currentUserEmail">
       </app-message-list>
       <app-message-input 
         [messages]="messages"

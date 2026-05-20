@@ -252,8 +252,9 @@ export class PlanningComponent implements OnInit {
     forkJoin({
       programs: this.cs.programsAsClient().pipe(catchError(() => of([] as any[]))),
       bookings: this.mp.myBookings().pipe(catchError(() => of({ content: [] } as any))),
-      events: this.http.get<any[]>('http://localhost:8080/api/events/all').pipe(catchError(() => of([] as any[]))),
-    }).subscribe(({ programs, bookings, events }) => {
+      events:   this.http.get<any[]>('http://localhost:8080/api/events/all').pipe(catchError(() => of([] as any[]))),
+      matches:  this.http.get<any[]>('http://localhost:8080/api/matches').pipe(catchError(() => of([] as any[]))),
+    }).subscribe(({ programs, bookings, events, matches }) => {
       this.allEvents = [];
 
       // 1) Programmes → on génère N jours d'entraînement à partir de createdAt
@@ -302,6 +303,23 @@ export class PlanningComponent implements OnInit {
           color: '#10b981',
           link: `/events/${e.eventId || e.id}`,
           meta: e.location,
+        });
+      });
+
+      // 4) Matchs compétition
+      (matches || []).forEach((m: any) => {
+        const d = new Date(m.matchDate || m.scheduledAt || m.date || m.createdAt);
+        if (isNaN(d.getTime())) return;
+        const teamA = m.teamA?.name || m.homeTeam?.name || m.team1 || 'Équipe A';
+        const teamB = m.teamB?.name || m.awayTeam?.name || m.team2 || 'Équipe B';
+        this.allEvents.push({
+          id: `match-${m.matchId || m.id}`,
+          date: d,
+          title: `⚽ ${teamA} vs ${teamB}`,
+          type: 'MATCH',
+          color: '#f59e0b',
+          link: `/matchs/${m.matchId || m.id}`,
+          meta: m.status,
         });
       });
 

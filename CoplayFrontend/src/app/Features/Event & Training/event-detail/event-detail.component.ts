@@ -59,12 +59,13 @@ export class EventDetailComponent implements OnInit {
 
   // ─── Getters Auth ───────────────────────────────────────────────────────────
 
-  get isAdmin(): boolean {
-    return this.authService.isAdmin();
-  }
+  get isAdmin(): boolean      { return this.authService.isAdmin(); }
+  get userId():  string       { return this.authService.getUserId(); }
 
-  get userId(): string {
-    return this.authService.getUserId() || '';
+  /** True if current user can manage this event (organizer or admin) */
+  get canManageEvent(): boolean {
+    const uid = this.userId;
+    return this.isAdmin || (!!uid && !!this.event?.organizerId && this.event.organizerId === uid);
   }
 
   get userRole(): string | null {
@@ -192,14 +193,6 @@ export class EventDetailComponent implements OnInit {
   if (!this.event?.eventId) return;
   if (!this.userId) {
     this.rsvpError = 'Vous devez être connecté pour participer.';
-    return;
-  }
-
-  console.log('🔍 Envoi RSVP → userId envoyé =', this.userId);   // ← AJOUTE ÇA
-
-  if (this.userId.includes('@')) {
-    this.rsvpError = 'Erreur : userId est un email au lieu d’un ID MongoDB !';
-    console.error('❌ userId est un email ! Vérifie AuthService.getUserId()');
     return;
   }
 

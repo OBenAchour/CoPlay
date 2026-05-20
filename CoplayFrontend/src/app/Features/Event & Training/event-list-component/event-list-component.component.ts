@@ -38,14 +38,13 @@ export class EventListComponent implements OnInit {
     this.loadEvents();
   }
 
-  // ✅ NOUVEAU : Vérifier si l'utilisateur est admin
-  get isAdmin(): boolean {
-    return this.authService.isAdmin();
-  }
+  get isAdmin(): boolean      { return this.authService.isAdmin(); }
+  get currentUserId(): string { return this.authService.getUserId(); }
 
-  // ✅ NOUVEAU : Récupérer le rôle de l'utilisateur
-  get userRole(): string | null {
-    return this.authService.getUserRole();
+  /** Returns true if the current user can manage (edit/delete) a given event */
+  canManage(event: CoplayEvent): boolean {
+    const uid = this.currentUserId;
+    return this.isAdmin || (!!uid && event.organizerId === uid);
   }
 
   loadEvents(): void {
@@ -83,9 +82,8 @@ export class EventListComponent implements OnInit {
   }
 
   deleteEvent(event: CoplayEvent): void {
-    // ✅ AJOUTÉ : Vérifier si l'utilisateur est admin
-    if (!this.isAdmin) {
-      alert('Seul un administrateur peut supprimer un événement.');
+    if (!this.canManage(event)) {
+      alert('Vous ne pouvez supprimer que vos propres événements.');
       return;
     }
 
@@ -113,13 +111,12 @@ export class EventListComponent implements OnInit {
     });
   }
 
-  goToEdit(eventId: string): void {
-    // ✅ AJOUTÉ : Vérifier si l'utilisateur est admin
-    if (!this.isAdmin) {
-      alert('Seul un administrateur peut modifier un événement.');
+  goToEdit(event: CoplayEvent): void {
+    if (!this.canManage(event)) {
+      alert('Vous ne pouvez modifier que vos propres événements.');
       return;
     }
-    this.router.navigate(['/events/edit', eventId]);
+    this.router.navigate(['/events/edit', event.eventId]);
   }
 
   goToDetail(eventId: string): void {
@@ -127,11 +124,7 @@ export class EventListComponent implements OnInit {
   }
 
   goToCreate(): void {
-    // ✅ AJOUTÉ : Vérifier si l'utilisateur est admin
-    if (!this.isAdmin) {
-      alert('Seul un administrateur peut créer un événement.');
-      return;
-    }
+    // Any authenticated user can create an event
     this.router.navigate(['/events/create']);
   }
 

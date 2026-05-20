@@ -19,10 +19,10 @@
   </div>
 
   <div class="message-input-container" [class.with-suggestions]="showSuggestions">
-    <textarea 
+    <textarea
       [(ngModel)]="message"
       (input)="onInput($event)"
-      (keypress)="onKeyPress($event)"
+      (keydown)="onKeyDown($event)"
       (blur)="hideSuggestions()"
       placeholder="Écrire un message..."
       rows="1">

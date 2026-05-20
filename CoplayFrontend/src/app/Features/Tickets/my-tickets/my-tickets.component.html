@@ -82,6 +82,16 @@
 
             <div class="ticket-divider my-3"></div>
 
+            <!-- QR Code -->
+            <div class="text-center mb-3">
+              <img
+                [src]="'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + ticket.ticketNumber + '&bgcolor=ffffff&color=0E1A2B&margin=6'"
+                alt="QR"
+                style="border-radius:8px;border:2px solid rgba(0,0,0,0.08);"
+                width="120" height="120"
+              >
+            </div>
+
             <button class="btn btn-print w-100"
                     (click)="printTicket(ticket)">
               🖨️ Imprimer ce billet
@@ -155,9 +165,14 @@
     <div class="print-dashed"></div>
 
     <div class="print-qr">
-      <div class="qr-box">
-        <div class="qr-inner">{{ ticketToPrint.ticketNumber }}</div>
-      </div>
+      <img
+        [src]="'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + ticketToPrint.ticketNumber + '&bgcolor=ffffff&color=0E1A2B&margin=8'"
+        alt="QR Code billet"
+        class="qr-img"
+        width="160"
+        height="160"
+      >
+      <p class="qr-label">{{ ticketToPrint.ticketNumber }}</p>
       <p class="qr-label">Présentez ce billet à l'entrée</p>
     </div>
 

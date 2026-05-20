@@ -7,6 +7,9 @@ import { LoginComponent } from './Auth/login/login.component';
 import { AuthGuard } from './Core/Guards/auth.guard';
 import { AdminGuard } from './Core/Guards/admin.guard';
 
+// Shell
+import { ShellComponent } from './Shared/Components/shell/shell.component';
+
 // Features Common
 import { HomeComponent } from './Features/home/home.component';
 import { DashboardComponent } from './Features/dashboard/dashboard.component';
@@ -16,8 +19,16 @@ import { UserListComponent } from './Features/Admin/user-list/user-list.componen
 // Team Components
 import { TeamComponent } from './components/team/team.component';
 import { TeamMemberComponent } from './components/team-member/team-member.component';
+import { DemandeAdhesionComponent } from './components/demande-adhesion/demande-adhesion.component';
+import { InvitationComponent } from './components/invitation/invitation.component';
+import { CoachComponent } from './components/coach/coach.component';
+import { EquipeSponsorComponent } from './components/equipe-sponsor/equipe-sponsor.component';
+import { HistoriqueActionComponent } from './components/historique-action/historique-action.component';
 
-// Planning (cross-module calendar)
+// Messaging
+import { MessagingComponent } from './Features/Messaging/messaging.component';
+
+// Planning
 import { PlanningComponent } from './Features/planning/planning.component';
 
 // Event & Training Components
@@ -46,74 +57,85 @@ import { MyTicketsComponent } from './Features/Tickets/my-tickets/my-tickets.com
 import { FeedComponent } from './Features/Social/feed/feed.component';
 
 const routes: Routes = [
-  // Route principale (Accueil)
-  { path: '', component: HomeComponent },
-
-  // Auth
+  // ─── Pages publiques (pas de shell) ───
+  { path: '',         component: HomeComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'login', component: LoginComponent },
+  { path: 'login',    component: LoginComponent },
 
-  // Dashboard & Admin
-  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'admin/users', component: UserListComponent, canActivate: [AdminGuard] },
-  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
-
-  // Events
-  { path: 'events', component: EventListComponent, canActivate: [AuthGuard] },
-  { path: 'events/create', component: EventFormComponent, canActivate: [AuthGuard] },
-  { path: 'events/edit/:id', component: EventFormComponent, canActivate: [AuthGuard] },
-  { path: 'events/:id', component: EventDetailComponent, canActivate: [AuthGuard] },
-
-  // Training Programs
-  { path: 'training-programs', component: TrainingProgramListComponent, canActivate: [AuthGuard] },
-  { path: 'training-programs/new', component: TrainingProgramFormComponent, canActivate: [AuthGuard] },
-  { path: 'training-programs/:id', component: TrainingProgramDetailComponent, canActivate: [AuthGuard] },
-
-  // Training Sessions
-  { path: 'training-sessions', component: TrainingListComponent, canActivate: [AuthGuard] },
-  { path: 'training-sessions/new', component: TrainingSessionFormComponent, canActivate: [AuthGuard] },
-  { path: 'training-sessions/:id/edit', component: TrainingSessionFormComponent, canActivate: [AuthGuard] },
-  { path: 'training-sessions/:id', component: TrainingSessionDetailComponent, canActivate: [AuthGuard] },
-
-  // Équipes
-  { path: 'team', component: TeamComponent, canActivate: [AuthGuard] },
-  { path: 'teammember', component: TeamMemberComponent, canActivate: [AuthGuard] },
-
-  // Compétitions
-  { path: 'competitions', component: CompetitionListComponent, canActivate: [AuthGuard] },
-  { path: 'competitions/:id', component: CompetitionDetailComponent, canActivate: [AuthGuard] },
-  { path: 'classement', component: ClassementComponent, canActivate: [AuthGuard] },
-  { path: 'matchs', component: MatchListComponent, canActivate: [AuthGuard] },
-  { path: 'matchs/:id', component: MatchDetailComponent, canActivate: [AuthGuard] },
-
-
-  // Marketplace (lazy-loaded feature module)
+  // ─── Shell : toutes les routes authentifiées ───
   {
-    path: 'marketplace',
+    path: '',
+    component: ShellComponent,
     canActivate: [AuthGuard],
-    loadChildren: () => import('./Features/Marketplace/marketplace.module').then(m => m.MarketplaceModule),
+    children: [
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'profile',   component: ProfileComponent },
+
+      // Events
+      { path: 'events',              component: EventListComponent },
+      { path: 'events/create',       component: EventFormComponent },
+      { path: 'events/edit/:id',     component: EventFormComponent },
+      { path: 'events/:id',          component: EventDetailComponent },
+
+      // Training Programs
+      { path: 'training-programs',        component: TrainingProgramListComponent },
+      { path: 'training-programs/new',    component: TrainingProgramFormComponent },
+      { path: 'training-programs/:id',    component: TrainingProgramDetailComponent },
+
+      // Training Sessions
+      { path: 'training-sessions',          component: TrainingListComponent },
+      { path: 'training-sessions/new',      component: TrainingSessionFormComponent },
+      { path: 'training-sessions/:id/edit', component: TrainingSessionFormComponent },
+      { path: 'training-sessions/:id',      component: TrainingSessionDetailComponent },
+
+      // Équipes
+      { path: 'team',                component: TeamComponent },
+      { path: 'team/demandes',       component: DemandeAdhesionComponent },
+      { path: 'team/invitations',    component: InvitationComponent },
+      { path: 'team/coach',          component: CoachComponent },
+      { path: 'team/sponsors',       component: EquipeSponsorComponent },
+      { path: 'team/historique',     component: HistoriqueActionComponent },
+      { path: 'teammember',          component: TeamMemberComponent },
+
+      // Compétitions — route statique AVANT la route paramétrée /:id
+      { path: 'competitions',            component: CompetitionListComponent },
+      { path: 'competitions/statistics', component: StatisticsComponent },
+      { path: 'competitions/:id',        component: CompetitionDetailComponent },
+      { path: 'classement',              component: ClassementComponent },
+      { path: 'matchs',                  component: MatchListComponent },
+      { path: 'matchs/:id',              component: MatchDetailComponent },
+
+      // Social
+      { path: 'feed', component: FeedComponent },
+
+      // Messagerie
+      { path: 'messaging', component: MessagingComponent },
+
+      // Planning
+      { path: 'planning', component: PlanningComponent },
+
+      // Tickets
+      { path: 'tickets/:matchId', component: TicketShopComponent },
+      { path: 'my-tickets',       component: MyTicketsComponent },
+
+      // Admin (inside shell, guards at route level)
+      { path: 'admin/users',        component: UserListComponent,        canActivate: [AdminGuard] },
+      { path: 'admin/reclamations', component: AdminReclamationComponent, canActivate: [AdminGuard] },
+
+      // Marketplace (lazy)
+      {
+        path: 'marketplace',
+        loadChildren: () => import('./Features/Marketplace/marketplace.module').then(m => m.MarketplaceModule),
+      },
+      // Coaching (lazy)
+      {
+        path: 'coaching',
+        loadChildren: () => import('./Features/Coaching/coaching.module').then(m => m.CoachingModule),
+      },
+    ]
   },
 
-  // Coaching & Suivi Santé (lazy-loaded feature module)
-  {
-    path: 'coaching',
-    canActivate: [AuthGuard],
-    loadChildren: () => import('./Features/Coaching/coaching.module').then(m => m.CoachingModule),
-  },
-
-  // Planning unifié (cross-module: coaching sessions + marketplace bookings + events + matches)
-  { path: 'planning', component: PlanningComponent, canActivate: [AuthGuard] },
-  // Réclamations admin
-  { path: 'admin/reclamations', component: AdminReclamationComponent, canActivate: [AdminGuard] },
-
-  // Social Media
-  { path: 'feed', component: FeedComponent, canActivate: [AuthGuard] },
-
-  // Tickets
-  { path: 'tickets/:matchId', component: TicketShopComponent, canActivate: [AuthGuard] },
-  { path: 'my-tickets', component: MyTicketsComponent, canActivate: [AuthGuard] },
-
-  // Redirection par défaut pour les routes inconnues
+  // Catch-all
   { path: '**', redirectTo: '' },
 ];
 

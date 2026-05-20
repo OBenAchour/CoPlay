@@ -7,7 +7,7 @@ export interface User {
     role: Role;
     isActive: boolean;
     isEmailVerified: boolean;
-    profile: UserProfile; // L'objet profile est ICI
+    profile?: UserProfile; // L'objet profile est ICI
     createdAt: Date;
     updatedAt: Date;
     lastLoginAt?: Date;

@@ -27,6 +27,10 @@ export class AuthService {
           localStorage.setItem('user_email', response.email);
           localStorage.setItem('user_name', response.displayName);
           localStorage.setItem('user_role', response.role);
+          // Store userId explicitly so components can use it without JWT decoding
+          if (response.userId) {
+            localStorage.setItem('userId', response.userId);
+          }
         }
       })
     );
@@ -44,12 +48,16 @@ export class AuthService {
     return !this.jwtHelper.isTokenExpired(token);
   }
 
-  // Récupère le nom de l'utilisateur en décodant la charge utile (payload) du token JWT
+  // Récupère le nom de l'utilisateur (localStorage en priorité, puis JWT)
   getUserName(): string {
+    const stored = localStorage.getItem('user_name');
+    if (stored) return stored;
     const token = localStorage.getItem('token');
     if (!token) return '';
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.name || 'Utilisateur';
+    try {
+      const p = JSON.parse(atob(token.split('.')[1]));
+      return p.name || p.displayName || p.sub || 'Utilisateur';
+    } catch (_) { return 'Utilisateur'; }
   }
 
   // Récupère l'adresse email de l'utilisateur stockée localement lors de la connexion
@@ -57,27 +65,40 @@ export class AuthService {
     return localStorage.getItem('user_email');
   }
 
-  // Extrait le rôle de l'utilisateur depuis le token JWT ou le stockage local en dernier recours
+  // Extrait le rôle : localStorage en priorité (mis à jour par saveProfile),
+  // puis JWT comme fallback (rôle au moment du login)
   getUserRole(): string | null {
+    const stored = localStorage.getItem('user_role');
+    if (stored) return stored;
     const token = localStorage.getItem('token');
     if (token) {
-      const decodedToken = this.jwtHelper.decodeToken(token);
-      return decodedToken.role || localStorage.getItem('user_role');
+      try {
+        const decoded = this.jwtHelper.decodeToken(token);
+        return decoded.role || null;
+      } catch (_) {}
     }
-    return localStorage.getItem('user_role');
+    return null;
   }
 
-  // Récupère l'identifiant unique de l'utilisateur à partir du payload du token
+  // Récupère l'identifiant unique de l'utilisateur (MongoDB ObjectId, jamais l'email)
   getUserId(): string {
+    // 1. Source la plus fiable : stocké explicitement au login si le backend le renvoie
+    const stored = localStorage.getItem('userId');
+    if (stored && !stored.includes('@')) return stored;
+
+    // 2. Décoder le JWT — chercher un claim userId ou id avant sub
     const token = localStorage.getItem('token');
     if (!token) return '';
-    
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.userId || payload.sub || '';
-    } catch (e) {
-      return '';
-    }
+      // Prefer explicit userId/id claim over sub (sub is often the email in Spring Boot)
+      const id = payload.userId || payload.id || payload.user_id;
+      if (id && !String(id).includes('@')) return String(id);
+      // sub fallback only if it looks like a MongoDB ObjectId (24 hex chars) not an email
+      const sub = payload.sub || '';
+      if (sub && !sub.includes('@')) return sub;
+    } catch (_) {}
+    return '';
   }
 
   // Renvoie la date d'expiration du token sous forme de timestamp (millisecondes)
@@ -90,16 +111,9 @@ export class AuthService {
     return null;
   }
 
-  // Vérifie rapidement si l'utilisateur possède les privilèges d'administrateur via le token
+  // Vérifie si l'utilisateur est admin (localStorage prioritaire sur JWT)
   isAdmin(): boolean {
-    const token = localStorage.getItem('token');
-    if (!token) return false;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role === 'ADMIN';
-    } catch (e) {
-      return false;
-    }
+    return this.getUserRole() === 'ADMIN';
   }
 
   // Envoie une demande de réinitialisation de mot de passe pour l'adresse email fournie

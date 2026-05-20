@@ -56,27 +56,30 @@ export class MatchDetailComponent implements OnInit {
   }
 
   private generateFieldLayout(): void {
-    // Mocking positions for 4-4-2 formation
     const formation = [
       { x: 50, y: 15 }, // GK
       { x: 20, y: 35 }, { x: 40, y: 35 }, { x: 60, y: 35 }, { x: 80, y: 35 }, // DEF
       { x: 20, y: 60 }, { x: 40, y: 60 }, { x: 60, y: 60 }, { x: 80, y: 60 }, // MID
-      { x: 40, y: 85 }, { x: 60, y: 85 } // ATT
+      { x: 40, y: 85 }, { x: 60, y: 85 }  // ATT
     ];
 
-    // Map players to positions (In real app, fetch from team roster)
+    const nameA = this.getTeamName(this.match?.equipeA).slice(0, 3).toUpperCase();
+    const nameB = this.getTeamName(this.match?.equipeB).slice(0, 3).toUpperCase();
+
+    const roles = ['GK', 'DD', 'DC', 'DC', 'DG', 'MD', 'MC', 'MC', 'MG', 'AT', 'AT'];
+
     this.playersA = formation.map((pos, i) => ({
-       id: i,
-       name: `Joueur A${i+1}`,
-       pos,
-       cards: i % 5 === 0 ? '🟨' : ''
+      id: i,
+      name: `${nameA} ${roles[i]}`,
+      pos,
+      cards: ''
     }));
 
     this.playersB = formation.map((pos, i) => ({
       id: i,
-      name: `Joueur B${i+1}`,
-      pos: { x: pos.x, y: 100 - pos.y }, // Opposite side
-      cards: i % 7 === 0 ? '🟥' : ''
+      name: `${nameB} ${roles[i]}`,
+      pos: { x: pos.x, y: 100 - pos.y },
+      cards: ''
     }));
   }
 

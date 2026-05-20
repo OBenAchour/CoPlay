@@ -4,6 +4,7 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MarketplaceService } from '../services/marketplace.service';
 import { CoachingService } from '../../Coaching/services/coaching.service';
+import { AuthService } from '../../../Core/Services/Auth/auth.service';
 import { Equipment } from '../../../Core/Models/Marketplace/Equipment';
 
 @Component({
@@ -153,9 +154,12 @@ import { Equipment } from '../../../Core/Models/Marketplace/Equipment';
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px">
                   <div class="prod-meta" style="padding:0"><div class="price">{{ r0.price }} €</div></div>
-                  <button class="btn-cp btn-primary-cp" (click)="addToCart(r0)">
+                  <button *ngIf="!isOwner(r0)" class="btn-cp btn-primary-cp" (click)="addToCart(r0)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h2l3 12h12l2-9H6"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
                     Ajouter
+                  </button>
+                  <button *ngIf="isOwner(r0)" class="btn-cp btn-ghost-cp" (click)="editListing(r0)">
+                    ✏️ Modifier
                   </button>
                 </div>
               </div>
@@ -317,10 +321,16 @@ import { Equipment } from '../../../Core/Models/Marketplace/Equipment';
               </div>
               <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
                 <div style="font-family:var(--font-display);font-size:30px">{{ p.price }} €</div>
-                <button class="btn-cp btn-dark-cp" style="padding:10px 14px" (click)="addToCart(p);$event.stopPropagation()">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h2l3 12h12l2-9H6"/></svg>
-                  Ajouter
-                </button>
+                <ng-container *ngIf="!isOwner(p)">
+                  <button class="btn-cp btn-dark-cp" style="padding:10px 14px" (click)="addToCart(p);$event.stopPropagation()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h2l3 12h12l2-9H6"/></svg>
+                    Ajouter
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="isOwner(p)">
+                  <span style="font-size:11px;color:var(--muted);font-family:var(--font-mono)">Mon annonce</span>
+                  <button class="btn-cp btn-ghost-cp" style="padding:8px 12px;font-size:12px" (click)="editListing(p);$event.stopPropagation()">Modifier</button>
+                </ng-container>
               </div>
             </div>
           </div>
@@ -340,8 +350,11 @@ import { Equipment } from '../../../Core/Models/Marketplace/Equipment';
           <div *ngIf="!p.images?.length" style="height:100%;display:grid;place-items:center;color:var(--line-strong)">
             <i class="bi bi-image" style="font-size:2.5rem"></i>
           </div>
-          <button class="quick-add" title="Ajouter au panier" (click)="addToCart(p);$event.stopPropagation()">
+          <button *ngIf="!isOwner(p)" class="quick-add" title="Ajouter au panier" (click)="addToCart(p);$event.stopPropagation()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button *ngIf="isOwner(p)" class="quick-add" title="Modifier" style="background:var(--secondary,#F47920)" (click)="editListing(p);$event.stopPropagation()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
         </div>
         <div class="prod-meta">
@@ -430,6 +443,7 @@ export class MarketplaceHomeComponent implements OnInit {
   constructor(
     private mp: MarketplaceService,
     private cs: CoachingService,
+    private auth: AuthService,
     private router: Router,
   ) {}
 
@@ -482,9 +496,27 @@ export class MarketplaceHomeComponent implements OnInit {
 
   open(e: Equipment) { this.router.navigate(['/marketplace/equipment', e.equipmentId]); }
 
+  isOwner(e: Equipment): boolean {
+    const uid = this.auth.getUserId();
+    return !!uid && !!e.sellerId && e.sellerId === uid;
+  }
+
   addToCart(e: Equipment) {
     if (!e.equipmentId) return;
+    if (this.isOwner(e)) return;  // cannot buy own listing
     this.mp.addToCart(e.equipmentId, 'EQUIPMENT', 1).subscribe(() => this.router.navigate(['/marketplace/cart']));
+  }
+
+  editListing(e: Equipment) {
+    this.router.navigate(['/marketplace/equipment', e.equipmentId, 'edit']);
+  }
+
+  deleteListing(e: Equipment) {
+    if (!confirm(`Supprimer l'annonce "${e.name}" ?`)) return;
+    this.mp.deleteEquipment(e.equipmentId!).subscribe({
+      next: () => { this.items = this.items.filter(i => i.equipmentId !== e.equipmentId); },
+      error: () => alert('Erreur lors de la suppression.')
+    });
   }
 
   labelCondition(c?: string) { return c === 'NEW' ? 'Neuf' : c === 'USED' ? 'Occasion' : c === 'REFURBISHED' ? 'Reconditionné' : (c || ''); }

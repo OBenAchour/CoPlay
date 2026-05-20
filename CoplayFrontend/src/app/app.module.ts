@@ -18,6 +18,7 @@ import { HomeComponent } from './Features/home/home.component';
 import { DashboardComponent } from './Features/dashboard/dashboard.component';
 import { UserListComponent } from './Features/Admin/user-list/user-list.component';
 import { NavbarComponent } from './Shared/Components/navbar/navbar.component';
+import { ShellComponent } from './Shared/Components/shell/shell.component';
 import { NotificationsBellComponent } from './Shared/Components/notifications-bell/notifications-bell.component';
 import { PlanningComponent } from './Features/planning/planning.component';
 
@@ -60,6 +61,7 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     LoginComponent,
     DashboardComponent,
     NavbarComponent,
+    ShellComponent,
     NotificationsBellComponent,
     PlanningComponent,
     UserListComponent,
@@ -106,9 +108,8 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     FormsModule,           // Fournit ngModel
     ReactiveFormsModule,   // Fournit formGroup
     MessagingModule,
-     MapComponent,
-        SocialModule,           // Social media module
-
+    SocialModule,
+    MapComponent,   // standalone — doit rester dans imports[] pour EventDetail/EventForm
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

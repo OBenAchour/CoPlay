@@ -1,49 +1,243 @@
-<div class="login-wrapper">
-  <div class="login-card">
-    <div class="login-header">
-      <span class="header-icon">🔑</span>
-      <h2>Connexion CoPlay</h2>
-      <p>Ravi de vous revoir !</p>
-    </div>
+<div class="auth-page">
 
-    <div class="error-banner" *ngIf="errorMessage">
-      <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
-    </div>
+  <!-- ====== LEFT PANEL ====== -->
+  <div class="auth-left">
+    <div class="blob blob-a"></div>
+    <div class="blob blob-b"></div>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
-      
-      <div class="input-group">
-        <label class="field-label"><i class="fas fa-envelope"></i> Email professionnel</label>
-        <input type="email" formControlName="email" placeholder="votre.email@exemple.com" class="form-input">
+    <!-- Logo -->
+    <div class="left-logo">
+      <div class="logo-mark">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+          <circle cx="14" cy="5.5" r="2.2" fill="white"/>
+          <path d="M7 20c1.5-3 3-5 5-6 1.5-.7 3-.5 4 1l2 3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <path d="M10 11l3.5-3 3 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <path d="M3 17c3 .5 6 .8 9 .5" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
       </div>
-      
-      <div class="input-group">
-        <label class="field-label"><i class="fas fa-lock"></i> Mot de passe</label>
-        <div class="password-wrapper">
-          <input [type]="passwordVisible ? 'text' : 'password'" 
-                 formControlName="password"
-                 placeholder="Entrez votre mot de passe"
-                 class="form-input">
-          
-          <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()">
-            <i [class]="passwordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-          </button>
+      <div class="logo-text">
+        <span class="logo-name">CoPlay</span>
+        <span class="logo-sub">SPORT · TEAM · CONNECT</span>
+      </div>
+    </div>
+
+    <!-- 3D Sphere Scene -->
+    <div class="sphere-scene">
+
+      <!-- Orbital ring -->
+      <div class="orbit-ring"></div>
+
+      <!-- Sport cards — driven by RAF in TS -->
+      <div
+        class="sport-card"
+        *ngFor="let card of orbitCards; let i = index"
+        #cardRef
+        [class.card-active]="hoveredCard === i"
+        (mouseenter)="onCardHover(i)"
+        (mouseleave)="onCardLeave()"
+      >
+        <div class="sport-icon" [style.background]="card.bg" [style.color]="card.color">
+          <svg *ngIf="card.label === 'Basket'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M4.9 4.9c2.5 1.6 4.1 3.8 4.1 7.1s-1.6 5.5-4.1 7.1"/>
+            <path d="M19.1 4.9c-2.5 1.6-4.1 3.8-4.1 7.1s1.6 5.5 4.1 7.1"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+          </svg>
+          <svg *ngIf="card.label === 'Padel'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <rect x="3" y="3" width="12" height="14" rx="6" transform="rotate(-30 9 10)"/>
+            <line x1="16" y1="16" x2="21" y2="21"/>
+          </svg>
+          <svg *ngIf="card.label === 'Foot'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polygon points="12,7 15,11 13,15 11,15 9,11" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <span>{{ card.label }}</span>
+      </div>
+
+      <!-- Sphere -->
+      <div class="sphere">
+        <svg class="sphere-hex" viewBox="0 0 260 260">
+          <defs>
+            <pattern id="hexP" width="30" height="52" patternUnits="userSpaceOnUse">
+              <polygon points="15,1 29,9 29,25 15,33 1,25 1,9" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="0.8"/>
+              <polygon points="15,27 29,35 29,51 15,59 1,51 1,35" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="0.8"/>
+              <polygon points="0,9 -14,17 -14,33 0,41" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="0.8"/>
+              <polygon points="30,9 44,17 44,33 30,41" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="0.8"/>
+            </pattern>
+            <clipPath id="sClip"><circle cx="130" cy="130" r="126"/></clipPath>
+          </defs>
+          <rect width="260" height="260" fill="url(#hexP)" clip-path="url(#sClip)"/>
+        </svg>
+        <div class="sphere-spec"></div>
+        <div class="sphere-center-icon">
+          <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M4.9 4.9c2.5 1.6 4.1 3.8 4.1 7.1s-1.6 5.5-4.1 7.1"/>
+            <path d="M19.1 4.9c-2.5 1.6-4.1 3.8-4.1 7.1s1.6 5.5 4.1 7.1"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+          </svg>
         </div>
       </div>
 
-      <div class="form-options">
-        <button type="button" (click)="openForgotPasswordModal()" class="forgot-link">
-          Mot de passe oublié ?
-        </button>
+    </div>
+
+    <!-- Bottom text -->
+    <div class="left-bottom">
+      <h2>Rejoignez la<br/><span class="accent">communauté sportive</span></h2>
+      <ul class="features-list">
+        <li>
+          <div class="feat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5v2a3 3 0 0 0 3 3M16 6h3v2a3 3 0 0 1-3 3"/>
+              <path d="M10 14h4l-.5 4h-3z"/><path d="M8 20h8"/>
+            </svg>
+          </div>
+          Compétitions et tournois organisés
+        </li>
+        <li>
+          <div class="feat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="8" r="3.6"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"/>
+            </svg>
+          </div>
+          Trouvez vos partenaires de jeu
+        </li>
+        <li>
+          <div class="feat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 4v16h16"/><path d="M8 14l3-3 3 2 4-6"/>
+            </svg>
+          </div>
+          Suivez votre progression en temps réel
+        </li>
+      </ul>
+      <div class="testimonial">
+        <div class="testi-avatar">A</div>
+        <div class="testi-body">
+          <p>« CoPlay a transformé ma façon de jouer au sport. Je trouve des partenaires en quelques minutes ! »</p>
+          <span>Ahmed · Tunis</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ====== RIGHT PANEL ====== -->
+  <div class="auth-right">
+
+    <div class="right-topbar">
+      <span>Nouveau sur CoPlay ?</span>
+      <a routerLink="/register" class="btn-outline">Inscription</a>
+    </div>
+
+    <div class="form-wrap">
+
+      <div class="error-banner" *ngIf="errorMessage">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>
+        </svg>
+        {{ errorMessage }}
       </div>
 
-      <button type="submit" class="btn-primary" [disabled]="loginForm.invalid">
-        Se connecter
-      </button>
-    </form>
-    
-    <div class="login-footer">
-      <p>Pas encore de compte ? <a routerLink="/register">Inscrivez-vous ici</a></p>
+      <h1>Bon retour !</h1>
+      <p class="form-sub">Connectez-vous pour accéder à votre tableau de bord</p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
+            </svg>
+          </span>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Adresse email"
+            [class.invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+          />
+        </div>
+
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </span>
+          <input
+            [type]="passwordVisible ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Mot de passe"
+            [class.invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          />
+          <button type="button" class="eye-btn" (click)="togglePasswordVisibility()" tabindex="-1">
+            <svg *ngIf="!passwordVisible" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg *ngIf="passwordVisible" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="form-options-row">
+          <label class="remember-me">
+            <input type="checkbox" class="checkbox-input"/>
+            <span class="checkbox-custom"></span>
+            Se souvenir de moi
+          </label>
+          <button type="button" class="forgot-link" (click)="openForgotPasswordModal()">
+            Mot de passe oublié ?
+          </button>
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="loginForm.invalid || isLoading">
+          <span *ngIf="!isLoading">Se connecter</span>
+          <div *ngIf="isLoading" class="loader"></div>
+        </button>
+
+      </form>
+
+      <div class="switch-link">
+        Pas encore de compte ? <a routerLink="/register">Créer un compte</a>
+      </div>
+
+    </div>
+
+    <div class="right-footer">© 2025 CoPlay — Tous droits réservés</div>
+
+  </div>
+
+</div>
+
+<!-- ======= FORGOT PASSWORD MODAL ======= -->
+<div class="modal-backdrop" *ngIf="showForgotModal" (click)="closeForgotPasswordModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div>
+        <h3>Réinitialiser le mot de passe</h3>
+        <p>Entrez votre email pour recevoir un lien de réinitialisation.</p>
+      </div>
+    </div>
+    <div class="input-wrap" style="margin-bottom:0">
+      <span class="input-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
+        </svg>
+      </span>
+      <input type="email" [(ngModel)]="forgotEmail" placeholder="votre@email.com"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="closeForgotPasswordModal()">Annuler</button>
+      <button class="btn-submit" style="flex:1;height:44px;margin-top:0" (click)="sendForgotPassword()" [disabled]="!forgotEmail">Envoyer</button>
     </div>
   </div>
 </div>

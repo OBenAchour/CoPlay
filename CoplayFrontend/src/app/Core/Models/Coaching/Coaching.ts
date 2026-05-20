@@ -1,9 +1,20 @@
-export interface Certification { name: string; issuer: string; year: number; documentUrl?: string; verified?: boolean; }
+export interface Certification {
+  name: string;
+  issuer: string;
+  year: number;
+  licenseNumber?: string;
+  sport?: string;
+  documentUrl?: string;
+  verified?: boolean;
+}
 export interface Availability { dayOfWeek: string; startTime: string; endTime: string; }
+
+export type CoachStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface CoachProfile {
   coachProfileId?: string;
   userId?: string;
+  displayName?: string;
   bio?: string;
   specialties?: string[];
   certifications?: Certification[];
@@ -12,8 +23,11 @@ export interface CoachProfile {
   rating?: number;
   reviewCount?: number;
   verified?: boolean;
+  status?: CoachStatus;
+  rejectionReason?: string;
   availability?: Availability[];
   city?: string;
+  sportMain?: string;
 }
 
 export interface Injury {

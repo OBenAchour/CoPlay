@@ -1108,3 +1108,112 @@ a:focus-visible {
     align-self: center;
   }
 }
+
+/* ══ SIDE-COL : Participants & Score ══ */
+
+.detail-body {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .detail-body { grid-template-columns: 1fr; }
+}
+
+/* Score d'assiduité */
+.score-display {
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  padding: 12px 0 4px;
+}
+.score-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+}
+.score-excellent { color: #10b981; }
+.score-good      { color: #3b82f6; }
+.score-average   { color: #f59e0b; }
+.score-low       { color: #ef4444; }
+
+/* Participants */
+.part-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+.part-empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+.part-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.part-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.part-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.wait-avatar { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.part-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.part-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.pay-pill.small { font-size: 10px; padding: 1px 6px; }
+
+/* Boutons présence */
+.presence-toggle {
+  display: flex;
+  gap: 4px;
+}
+.btn-present, .btn-absent {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  border: 1.5px solid var(--card-border);
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-present:hover, .btn-present.active { background: #d1fae5; border-color: #10b981; color: #065f46; }
+.btn-absent:hover,  .btn-absent.active  { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+
+/* Attendance card */
+.attendance-card {
+  margin-top: 24px;
+}
+.attendance-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 8px 0 0;
+  line-height: 1.6;
+}

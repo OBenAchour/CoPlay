@@ -1,0 +1,49 @@
+name: ML CI
+
+on:
+  push:
+    paths:
+      - 'CoplayMachineLearning/**'
+      - '.github/workflows/ml-ci.yml'
+  pull_request:
+    paths:
+      - 'CoplayMachineLearning/**'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: CoplayMachineLearning/requirements.txt
+
+      - name: Install lightweight deps (skip heavy ML libs for CI)
+        working-directory: CoplayMachineLearning
+        run: pip install flask pytest
+
+      - name: Run tests
+        working-directory: CoplayMachineLearning
+        run: |
+          if [ -d "tests" ]; then
+            pytest tests/ -v
+          else
+            echo "No tests directory found — skipping"
+          fi
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/coplay-ml:${{ github.sha }} ./CoplayMachineLearning
+
+      - name: Push to Docker Hub
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/coplay-ml:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/coplay-ml:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/coplay-ml:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/coplay-ml:latest

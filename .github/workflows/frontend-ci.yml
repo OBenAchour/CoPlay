@@ -1,0 +1,48 @@
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - 'CoplayFrontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    paths:
+      - 'CoplayFrontend/**'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: npm
+          cache-dependency-path: CoplayFrontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: CoplayFrontend
+        run: npm ci
+
+      - name: Run tests (headless)
+        working-directory: CoplayFrontend
+        run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage
+
+      - name: Build production
+        working-directory: CoplayFrontend
+        run: npm run build -- --configuration production
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/coplay-frontend:${{ github.sha }} ./CoplayFrontend
+
+      - name: Push to Docker Hub
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/coplay-frontend:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/coplay-frontend:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/coplay-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/coplay-frontend:latest

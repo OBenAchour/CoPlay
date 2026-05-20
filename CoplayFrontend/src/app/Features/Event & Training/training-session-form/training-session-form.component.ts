@@ -66,7 +66,6 @@ ngOnInit(): void {
     this.teamService.getAllTeams().subscribe({
       next: (data: Team[]) => {
         this.teams = data;
-        console.log('Équipes chargées:', data.length);
       },
       error: err => {
         console.error('Erreur chargement équipes:', err);

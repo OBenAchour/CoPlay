@@ -8,7 +8,7 @@ import { RoleEquipe } from '../../Core/Models/Teams/RoleEquipe';
 })
 export class TeamMemberService {
 
-  private apiUrl = 'http://localhost:8081/api/teams';
+  private apiUrl = 'http://localhost:8080/api/teams';
 
   constructor(private http: HttpClient) {}
 

@@ -1,1 +1,103 @@
-<p>demande-adhesion works!</p>
+<div class="page">
+
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <button class="back-btn" routerLink="/team">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour aux équipes
+    </button>
+    <div class="header-info">
+      <div class="header-eyebrow">ÉQUIPES</div>
+      <h1 class="header-title">Demandes d'adhésion</h1>
+      <p class="header-sub">Rejoignez une équipe en envoyant une demande au capitaine.</p>
+    </div>
+  </div>
+
+  <!-- ── Toast ── -->
+  <div class="toast" *ngIf="toast" [class.toast-success]="toastType==='success'" [class.toast-error]="toastType==='error'">
+    <svg *ngIf="toastType==='success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <svg *ngIf="toastType==='error'"   width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    {{ toast }}
+  </div>
+
+  <!-- ── Demandes envoyées ── -->
+  <div class="sent-section" *ngIf="sentRequests.length > 0">
+    <div class="section-title">Demandes envoyées ({{ sentRequests.length }})</div>
+    <div class="sent-list">
+      <div class="sent-item" *ngFor="let req of sentRequests">
+        <div class="sent-avatar">{{ teamInitial(req.teamName) }}</div>
+        <div class="sent-body">
+          <strong>{{ req.teamName }}</strong>
+          <span>Envoyée le {{ formatDate(req.sentAt) }}</span>
+        </div>
+        <div class="status-badge pending">En attente</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Skeleton ── -->
+  <div class="skeleton-grid" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <!-- ── Équipes disponibles ── -->
+  <div class="section-title" *ngIf="!loading && teams.length > 0">
+    Équipes disponibles ({{ teams.length }})
+  </div>
+
+  <div class="teams-grid" *ngIf="!loading">
+
+    <div class="team-card" *ngFor="let team of teams" [class.already-sent]="alreadySent(team.teamId!)">
+
+      <div class="card-top">
+        <div class="team-avatar">{{ teamInitial(team.name) }}</div>
+        <span class="sport-tag">{{ sportIcon(team.sport) }} {{ team.sport }}</span>
+      </div>
+
+      <div class="card-body">
+        <h3>{{ team.name }}</h3>
+        <div class="team-meta">
+          <span *ngIf="team.city">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            {{ team.city }}
+          </span>
+          <span *ngIf="team.capacityMax">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            {{ team.capacityMax }} max
+          </span>
+        </div>
+        <p class="desc" *ngIf="team.description">{{ team.description }}</p>
+      </div>
+
+      <div class="card-footer">
+        <!-- Déjà envoyé -->
+        <div class="sent-status" *ngIf="alreadySent(team.teamId!)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Demande envoyée
+        </div>
+        <!-- Bouton rejoindre -->
+        <button
+          class="btn-join"
+          *ngIf="!alreadySent(team.teamId!)"
+          [disabled]="sending === team.teamId"
+          (click)="rejoindre(team)">
+          <div class="btn-loader" *ngIf="sending === team.teamId"></div>
+          <ng-container *ngIf="sending !== team.teamId">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            Demander à rejoindre
+          </ng-container>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── État vide ── -->
+  <div class="empty-state" *ngIf="!loading && teams.length === 0">
+    <div class="empty-icon">🏆</div>
+    <h3>Aucune équipe disponible</h3>
+    <p>Revenez plus tard ou créez votre propre équipe.</p>
+    <button class="btn-primary" routerLink="/team">Créer une équipe</button>
+  </div>
+
+</div>

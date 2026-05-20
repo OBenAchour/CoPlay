@@ -11,6 +11,7 @@ import { User } from 'src/app/Core/Models/Auth/User';
 import { MessagingService } from 'src/app/Core/Services/Messaging/messaging.service';
 import { WebSocketService } from 'src/app/Core/Services/Messaging/websocket.service';
 import { CallService } from 'src/app/Core/Services/Call/call.service';
+import { AuthService } from 'src/app/Core/Services/Auth/auth.service';
 
 @Component({
   selector: 'app-messaging',
@@ -51,21 +52,17 @@ export class MessagingComponent implements OnInit, OnDestroy {
     private messagingService: MessagingService,
     private webSocketService: WebSocketService,
     private callService: CallService,
-    private http: HttpClient
+    private http: HttpClient,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.http.get<any>('http://localhost:8080/api/users/me').subscribe({
-      next: (user) => {
-        this.currentUserId = user.userId;
-        this.currentUserEmail = user.email;
-        this.incomingCall = null;
-        this.activeCall = null;
-        this.loadConversations();
-        this.initWebSocket();
-      },
-      error: (err) => console.error('Error getting user:', err)
-    });
+    this.currentUserId    = this.authService.getUserId();
+    this.currentUserEmail = this.authService.getUserEmail() || '';
+    this.incomingCall = null;
+    this.activeCall   = null;
+    this.initWebSocket();
+    this.loadConversations();
   }
 
   ngOnDestroy(): void {
@@ -94,12 +91,21 @@ export class MessagingComponent implements OnInit, OnDestroy {
   }
 
   initWebSocket(): void {
-    this.webSocketService.connect(this.currentUserId);
+    // Use email as the STOMP principal (Spring Boot JWT sub = email, not ObjectId)
+    const principal = this.currentUserEmail || this.currentUserId;
+    this.webSocketService.connect(principal);
 
     const connSub = this.webSocketService.onConnection().subscribe((connected) => {
       if (connected) {
-        console.log('[MESSAGING] WebSocket connected');
+        this.reconnectAttempts = 0;
         this.webSocketService.subscribeToAvailableCalls();
+        // Re-subscribe to active conversation if the WS reconnected
+        if (this.selectedConversation?.conversationId) {
+          this.webSocketService.subscribeToConversation(this.selectedConversation.conversationId);
+        }
+      } else {
+        // Auto-reconnect after 3 s (max 5 attempts)
+        this.scheduleReconnect();
       }
     });
     this.subscriptions.push(connSub);
@@ -115,6 +121,22 @@ export class MessagingComponent implements OnInit, OnDestroy {
     this.subscriptions.push(callSub);
   }
 
+  private reconnectAttempts = 0;
+  private readonly MAX_RECONNECT = 5;
+
+  private scheduleReconnect(): void {
+    if (this.reconnectAttempts >= this.MAX_RECONNECT) return;
+    this.reconnectAttempts++;
+    setTimeout(() => {
+      if (!this.webSocketService.isConnected()) {
+        const principal = this.currentUserEmail || this.currentUserId;
+        this.webSocketService.connect(principal);
+      } else {
+        this.reconnectAttempts = 0;
+      }
+    }, 3000);
+  }
+
   onCallStarted(call: { callId: string; roomId: string; type: 'AUDIO' | 'VIDEO' }): void {
     this.activeCall = {
       conversationId: this.selectedConversation?.conversationId || '',
@@ -126,32 +148,12 @@ export class MessagingComponent implements OnInit, OnDestroy {
   }
 
   handleIncomingCall(event: any): void {
-    console.log('[MESSAGING] handleIncomingCall:', JSON.stringify(event));
-    console.log('[MESSAGING] currentUserEmail:', this.currentUserEmail, 'currentUserId:', this.currentUserId);
-    
     if (event.type === 'call-initiated') {
-      if (!event.toUserIds || !Array.isArray(event.toUserIds)) {
-        console.log('[MESSAGING] Ignoring - no toUserIds');
-        return;
-      }
+      if (!event.toUserIds || !Array.isArray(event.toUserIds)) return;
+      if (!event.toUserIds.includes(this.currentUserId)) return;
+      if (event.fromUserId === this.currentUserEmail) return;
       
-      if (!event.toUserIds.includes(this.currentUserId)) {
-        console.log('[MESSAGING] Ignoring - not for this user (userId not in toUserIds)');
-        console.log('[MESSAGING] toUserIds:', event.toUserIds, 'currentUserId:', this.currentUserId);
-        return;
-      }
-      
-      if (event.fromUserId === this.currentUserEmail) {
-        console.log('[MESSAGING] Ignoring own call');
-        return;
-      }
-      
-      if (this.activeCall || this.incomingCall) {
-        console.log('[MESSAGING] Ignoring - already in call');
-        return;
-      }
-
-      console.log('[MESSAGING] Showing incoming call notification');
+      if (this.activeCall || this.incomingCall) return;
       this.incomingCall = {
         callId: event.callId,
         roomId: event.roomId,
@@ -189,7 +191,13 @@ export class MessagingComponent implements OnInit, OnDestroy {
 
   handleNewMessage(message: Message): void {
     if (this.selectedConversation?.conversationId === message.conversation?.conversationId) {
-      this.messages.push(message);
+      // Avoid duplicate: the sender already has the message from the REST response
+      if (message.messageId && this.messages.some(m => m.messageId === message.messageId)) return;
+      // Create a NEW array reference so ngOnChanges fires in message-list
+      this.messages = [...this.messages, message];
+    } else {
+      // Message arrived for a conversation not currently open → refresh unread counts
+      this.loadConversations();
     }
   }
 
@@ -228,7 +236,8 @@ export class MessagingComponent implements OnInit, OnDestroy {
       content
     ).subscribe({
       next: (msg) => {
-        this.messages.push(msg);
+        // Create a NEW array reference so ngOnChanges fires in message-list
+        this.messages = [...this.messages, msg];
       },
       error: (err) => console.error('Error sending message:', err)
     });
@@ -243,7 +252,6 @@ export class MessagingComponent implements OnInit, OnDestroy {
 
     const sub = this.messagingService.searchMessages(query).subscribe({
       next: (results) => {
-        console.log('Search results:', results);
       },
       error: (err) => console.error('Error searching messages:', err)
     });
@@ -278,19 +286,43 @@ export class MessagingComponent implements OnInit, OnDestroy {
   }
 
   startConversation(user: User): void {
-    const sub = this.messagingService.createConversation({
-      type: 'DIRECT',
-      name: user.profile.displayName || 'Direct Message',
-      participantIds: [this.currentUserId, user.userId]
-    }).subscribe({
-      next: (conv) => {
-        console.log('Conversation created:', conv);
-        this.selectConversation(conv);
-        this.closeNewMessage();
-        this.loadConversations();
+    // On récupère d'abord l'ObjectId MongoDB de l'utilisateur courant
+    // (le JWT contient l'email dans sub, pas l'ID — getUserId() retourne "")
+    this.http.get<any>('http://localhost:8080/api/users/me').subscribe({
+      next: (me) => {
+        const myId = me.id || me.userId || me._id || '';
+        const participantIds = myId ? [myId, user.userId] : [user.userId];
+
+        const sub = this.messagingService.createConversation({
+          type: 'DIRECT',
+          name: user.profile?.displayName || user.email || 'Direct Message',
+          participantIds
+        }).subscribe({
+          next: (conv) => {
+            this.selectConversation(conv);
+            this.closeNewMessage();
+            this.loadConversations();
+          },
+          error: (err) => console.error('Error creating conversation:', err)
+        });
+        this.subscriptions.push(sub);
       },
-      error: (err) => console.error('Error creating conversation:', err)
+      error: () => {
+        // Fallback : essayer avec uniquement l'ID de la cible
+        const sub = this.messagingService.createConversation({
+          type: 'DIRECT',
+          name: user.profile?.displayName || user.email || 'Direct Message',
+          participantIds: [user.userId]
+        }).subscribe({
+          next: (conv) => {
+            this.selectConversation(conv);
+            this.closeNewMessage();
+            this.loadConversations();
+          },
+          error: (err) => console.error('Error creating conversation:', err)
+        });
+        this.subscriptions.push(sub);
+      }
     });
-    this.subscriptions.push(sub);
   }
 }

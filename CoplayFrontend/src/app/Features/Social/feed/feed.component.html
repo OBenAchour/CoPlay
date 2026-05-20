@@ -1,112 +1,180 @@
-<div class="feed-container">
-  <div class="feed-header">
-    <h2>Feed</h2>
-  </div>
+<div class="fd-page">
 
-  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <div class="fd-layout">
 
-  <div class="create-post-card">
-    <div class="create-post-header">
-      <div class="avatar-sm">{{ getInitials('You') }}</div>
-      <span class="create-post-label">Create a post</span>
-    </div>
-    <form [formGroup]="createPostForm" (ngSubmit)="onSubmit()">
-      <textarea
-        formControlName="content"
-        class="post-textarea"
-        rows="3"
-        placeholder="What's on your mind?"
-      ></textarea>
+    <!-- ─── COLONNE PRINCIPALE ─── -->
+    <div class="fd-main">
 
-      <div class="create-post-actions">
-        <label class="photo-btn" for="photoUpload">
-          <i class="bi bi-image"></i>
-          <span>Photo</span>
-        </label>
-        <input type="file" id="photoUpload" accept="image/*" (change)="onPhotoSelected($event)" hidden>
+      <!-- Créer un post -->
+      <div class="fd-create-card">
+        <div class="fd-create-top">
+          <div class="fd-create-avatar" [style.background]="getAvatarColor(currentUserId)">{{ getInitials(currentUserName) }}</div>
+          <form class="fd-create-form" [formGroup]="createPostForm" (ngSubmit)="onSubmit()">
+            <textarea
+              formControlName="content"
+              class="fd-create-input"
+              placeholder="Quoi de neuf ? Partagez avec la communauté…"
+              rows="3"
+            ></textarea>
 
-        <button type="submit" class="post-btn" [disabled]="createPostForm.invalid || loading">
-          <span *ngIf="loading" class="spinner"></span>
-          <span *ngIf="!loading">Post</span>
-        </button>
-      </div>
-
-      <div *ngIf="photoPreview" class="photo-preview">
-        <img [src]="photoPreview" alt="Preview">
-        <button type="button" class="remove-photo" (click)="clearPhoto()">&times;</button>
-      </div>
-    </form>
-  </div>
-
-  <div *ngIf="loading && posts.length === 0" class="text-center py-5">
-    <div class="spinner-border text-primary"></div>
-  </div>
-
-  <div *ngIf="!loading && posts.length === 0" class="empty-state">
-    <i class="bi bi-journal-text"></i>
-    <p>No posts yet. Be the first to post!</p>
-  </div>
-
-  <div class="post-card" *ngFor="let post of posts">
-    <div class="post-header">
-      <div class="post-author">
-        <div class="avatar" [style.background]="getAvatarColor(post.author?.userId || '')">
-          {{ getInitials(post.author?.profile?.displayName || 'A') }}
-        </div>
-        <div class="author-info">
-          <span class="author-name">{{ post.author?.profile?.displayName || 'Anonymous' }}</span>
-          <span class="post-time">{{ getRelativeTime(post.createdAt || '') }}</span>
-        </div>
-      </div>
-      <button class="delete-btn" (click)="onDelete(post.postId!)" title="Delete">&times;</button>
-    </div>
-
-    <div class="post-content">
-      <p>{{ post.content }}</p>
-      <img *ngIf="post.photoUrl" [src]="post.photoUrl" (error)="onImageError($event)" class="post-image" alt="Post photo">
-    </div>
-
-    <div class="post-stats">
-      <span>{{ post.likeCount || 0 }} likes</span>
-      <span>{{ post.commentCount || 0 }} comments</span>
-    </div>
-
-    <div class="post-actions">
-      <button class="action-btn" [class.liked]="likedPosts.has(post.postId!)" (click)="onToggleLike(post.postId!)">
-        <i class="bi" [class.bi-heart-fill]="likedPosts.has(post.postId!)" [class.bi-heart]="!likedPosts.has(post.postId!)"></i>
-        Like
-      </button>
-      <button class="action-btn" (click)="toggleComments(post.postId!)">
-        <i class="bi bi-chat"></i>
-        Comment
-      </button>
-    </div>
-
-    <div *ngIf="expandedComments.has(post.postId!)" class="comments-section">
-      <form [formGroup]="getCommentForm(post.postId!)" (ngSubmit)="onSubmitComment(post.postId!)" class="comment-form">
-        <input type="text" formControlName="content" placeholder="Write a comment..." maxlength="1000">
-        <button type="submit" [disabled]="getCommentForm(post.postId!).invalid">
-          <i class="bi bi-send"></i>
-        </button>
-      </form>
-
-      <div *ngIf="postComments.has(post.postId!)" class="comments-list">
-        <div *ngFor="let comment of postComments.get(post.postId!)" class="comment-item">
-          <div class="comment-avatar-sm">{{ getInitials(comment.author?.profile?.displayName || '?') }}</div>
-          <div class="comment-body">
-            <div class="comment-header">
-              <strong>{{ comment.author?.profile?.displayName || 'Anonymous' }}</strong>
-              <small>{{ getRelativeTime(comment.createdAt) }}</small>
+            <div *ngIf="photoPreview" class="fd-photo-preview">
+              <img [src]="photoPreview" alt="Aperçu">
+              <button type="button" class="fd-photo-remove" (click)="clearPhoto()">✕</button>
             </div>
-            <p>{{ comment.content }}</p>
-          </div>
-          <button class="comment-delete" (click)="onDeleteComment(post.postId!, comment.commentId)" title="Delete">&times;</button>
+
+            <div class="fd-create-actions">
+              <label class="fd-attach-btn" title="Ajouter une photo">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Photo
+                <input type="file" accept="image/*" (change)="onPhotoSelected($event)" style="display:none">
+              </label>
+              <button
+                type="submit"
+                class="fd-post-btn"
+                [disabled]="createPostForm.invalid || loading"
+              >
+                {{ loading ? 'Publication…' : 'Publier' }}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 
-      <div *ngIf="!postComments.has(post.postId!)" class="text-center text-muted small py-2">
-        Loading comments...
+      <!-- Erreur -->
+      <div *ngIf="error" class="fd-alert">{{ error }}</div>
+
+      <!-- Loading -->
+      <div *ngIf="loading && posts.length === 0" class="fd-skeletons">
+        <div class="fd-skeleton-post" *ngFor="let i of [1,2,3]"></div>
       </div>
+
+      <!-- Posts -->
+      <div *ngFor="let post of posts" class="fd-post">
+
+        <!-- Post header -->
+        <div class="fd-post-head">
+          <div
+            class="fd-post-avatar"
+            [style.background]="getAvatarColor(post.author?.userId)"
+          >{{ getInitials(post.author?.profile?.displayName || post.author?.email) }}</div>
+          <div class="fd-post-meta">
+            <span class="fd-post-author">{{ post.author?.profile?.displayName || post.author?.email }}</span>
+            <span class="fd-post-time">{{ getRelativeTime(post.createdAt || '') }}</span>
+          </div>
+          <ng-container *ngIf="post.author?.userId === currentUserId">
+            <button
+              class="fd-post-edit"
+              (click)="startEditPost(post)"
+              title="Modifier"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button
+              class="fd-post-delete"
+              (click)="onDelete(post.postId!)"
+              title="Supprimer"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+            </button>
+          </ng-container>
+        </div>
+
+        <!-- Contenu normal -->
+        <p class="fd-post-content" *ngIf="post.content && editingPostId !== post.postId">{{ post.content }}</p>
+
+        <!-- Form d'édition inline (visible uniquement pour l'auteur lors de l'édition) -->
+        <div *ngIf="editingPostId === post.postId" class="fd-edit-wrap">
+          <textarea
+            class="fd-edit-input"
+            [(ngModel)]="editingContent"
+            rows="3"
+            placeholder="Modifier le contenu…"
+          ></textarea>
+          <div class="fd-edit-actions">
+            <button class="fd-edit-save"   (click)="saveEditPost(post)">Enregistrer</button>
+            <button class="fd-edit-cancel" (click)="cancelEdit()">Annuler</button>
+          </div>
+        </div>
+
+        <!-- Photo -->
+        <div *ngIf="post.photoUrl" class="fd-post-img-wrap">
+          <img [src]="post.photoUrl" class="fd-post-img" alt="Post image" (error)="onImageError($event)">
+        </div>
+
+        <!-- Actions -->
+        <div class="fd-post-actions">
+          <button
+            class="fd-action-btn"
+            [class.liked]="likedPosts.has(post.postId!)"
+            (click)="onToggleLike(post.postId!)"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" [attr.fill]="likedPosts.has(post.postId!) ? '#EF4444' : 'none'" stroke="#EF4444" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            {{ post.likeCount || 0 }}
+          </button>
+          <button class="fd-action-btn fd-comment-btn" (click)="toggleComments(post.postId!)">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            {{ post.commentCount || 0 }} commentaires
+          </button>
+        </div>
+
+        <!-- Commentaires -->
+        <div *ngIf="expandedComments.has(post.postId!)" class="fd-comments">
+          <div *ngFor="let comment of postComments.get(post.postId!) || []" class="fd-comment">
+            <div class="fd-comment-avatar" [style.background]="getAvatarColor(comment.author?.userId)">
+              {{ getInitials(comment.author?.profile?.displayName || comment.author?.email) }}
+            </div>
+            <div class="fd-comment-body">
+              <span class="fd-comment-author">{{ comment.author?.profile?.displayName || comment.author?.email }}</span>
+              <span class="fd-comment-text">{{ comment.content }}</span>
+            </div>
+            <button
+              *ngIf="comment.author?.userId === currentUserId"
+              class="fd-comment-delete"
+              (click)="onDeleteComment(post.postId!, comment.commentId!)"
+            >✕</button>
+          </div>
+
+          <!-- Ajouter un commentaire -->
+          <form class="fd-comment-form" [formGroup]="getCommentForm(post.postId!)" (ngSubmit)="onSubmitComment(post.postId!)">
+            <input
+              formControlName="content"
+              class="fd-comment-input"
+              placeholder="Ajouter un commentaire…"
+            >
+            <button type="submit" class="fd-comment-submit">Envoyer</button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Vide -->
+      <div *ngIf="!loading && posts.length === 0" class="fd-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(14,26,43,0.2)" stroke-width="1.5"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1" fill="rgba(14,26,43,0.2)"/></svg>
+        <p>Aucune publication pour l'instant</p>
+        <span>Soyez le premier à partager quelque chose !</span>
+      </div>
+
     </div>
+
+    <!-- ─── SIDEBAR DROITE ─── -->
+    <aside class="fd-sidebar">
+      <div class="fd-sidebar-card">
+        <h3 class="fd-sidebar-title">À propos du Feed</h3>
+        <p class="fd-sidebar-text">Partagez vos performances, résultats de matchs, actualités sportives et plus encore avec la communauté CoPlay.</p>
+      </div>
+      <div class="fd-sidebar-card">
+        <h3 class="fd-sidebar-title">Statistiques</h3>
+        <div class="fd-stat-row">
+          <span>Publications</span>
+          <strong>{{ posts.length }}</strong>
+        </div>
+        <div class="fd-stat-row">
+          <span>Total likes</span>
+          <strong>{{ getTotalLikes() }}</strong>
+        </div>
+      </div>
+    </aside>
+
   </div>
+
 </div>

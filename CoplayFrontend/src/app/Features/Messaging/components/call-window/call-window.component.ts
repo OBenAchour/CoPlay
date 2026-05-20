@@ -36,8 +36,6 @@ export class CallWindowComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    console.log('[CALL-WINDOW] ngOnInit - isIncoming:', this.isIncoming, 'callId:', this.callId, 'roomId:', this.roomId);
-
     try {
       await this.webrtcService.initialize(this.callType === 'VIDEO');
       this.webrtcService.createPeerConnection();
@@ -84,22 +82,18 @@ export class CallWindowComponent implements OnInit, OnDestroy {
 
   private async initiateWebRTC(): Promise<void> {
     if (this.offerSent || !this.roomId) return;
-    console.log('[CALL-WINDOW] Creating offer...');
     this.offerSent = true;
 
     const offer = await this.webrtcService.createOffer();
     if (offer && this.callId) {
-      console.log('[CALL-WINDOW] Offer created, sending to backend');
       this.callService.sendOffer(this.callId, JSON.stringify(offer)).subscribe({
-        next: () => console.log('[CALL-WINDOW] Offer sent successfully'),
         error: (err) => { console.error('[CALL-WINDOW] Failed to send offer:', err); this.offerSent = false; }
       });
     }
   }
 
   private subscribeToCallEvents(): void {
-    if (!this.roomId) { console.warn('[CALL-WINDOW] No roomId'); return; }
-    console.log('[CALL-WINDOW] Subscribing to room:', this.roomId);
+    if (!this.roomId) return;
 
     this.unsubscribe = this.callService.subscribeToCallRoom(this.roomId, {
       onCallInitiated: () => {},
@@ -124,7 +118,6 @@ export class CallWindowComponent implements OnInit, OnDestroy {
           const answer = JSON.parse(data.sdp);
           await this.webrtcService.handleAnswer(answer);
           this.callStatus = 'connected';
-          console.log('[CALL-WINDOW] Call connected!');
         } catch (error) { console.error('[CALL-WINDOW] Error handling answer:', error); }
       },
       onIceCandidate: async (data) => {
@@ -143,7 +136,6 @@ export class CallWindowComponent implements OnInit, OnDestroy {
   toggleVideo(): void { this.webrtcService.toggleVideo(); this.isVideoOff = !this.isVideoOff; }
 
   endCallEvent(): void {
-    console.log('[CALL-WINDOW] Ending call');
     this.webrtcService.endCall();
     if (this.callId) this.callService.endCall(this.callId).subscribe();
     this.endCall.emit();

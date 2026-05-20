@@ -7,7 +7,7 @@
   
   <!-- Si pas supprimé -->
   <ng-container *ngIf="!message.isDeleted">
-    <div class="sender-name" *ngIf="!isOwn">{{ message.sender.profile.displayName || 'User' }}</div>
+    <div class="sender-name" *ngIf="!isOwn">{{ message.sender?.profile?.displayName || 'User' }}</div>
     
     <!-- Mode édition -->
     <div *ngIf="isEditing" class="edit-mode">

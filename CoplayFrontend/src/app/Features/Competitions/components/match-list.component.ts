@@ -3,21 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-// --- Branche "competition" (ton travail) ---
-import {
-  StatistiqueService,
-  JobStatusResponse,
-  JobResultResponse
-} from '../services/statistique.service';
-
-// --- Branche "main" (travail de l'équipe) ---
+import { StatistiqueService, JobStatusResponse, JobResultResponse } from '../services/statistique.service';
 import { CompetitionService } from '../services/competition.service';
 import { MatchService } from '../services/match.service';
 import { TicketService } from '../../../services/ticket.service';
 import { AuthService } from '../../../Core/Services/Auth/auth.service';
 import { CreateTicketsRequest } from '../../../Core/Models/Competitions/Ticket';
 
-// --- Interface branche "competition" ---
+/** Entrée d'analyse vidéo IA — persistée en session (pas de backend pour l'historique jobs) */
 interface MatchEntry {
   jobId: string;
   team1: string;
@@ -33,6 +26,8 @@ interface MatchEntry {
   timestamp: Date;
 }
 
+const STORAGE_KEY = 'cp_match_history';
+
 @Component({
   selector: 'app-match-list',
   standalone: true,
@@ -42,10 +37,10 @@ interface MatchEntry {
 })
 export class MatchListComponent implements OnInit {
 
-  // --- State branche "competition" ---
-  matches: MatchEntry[] = [];
+  // ── Analyse vidéo IA ──────────────────────────────────────
+  analysisHistory: MatchEntry[] = [];
 
-  // --- State branche "main" ---
+  // ── Matchs compétition (API) ──────────────────────────────
   competitions: any[] = [];
   allMatches: any[] = [];
   filteredMatches: any[] = [];
@@ -53,6 +48,7 @@ export class MatchListComponent implements OnInit {
   loading = false;
   isAdmin = false;
 
+  // ── Génération de tickets (admin) ─────────────────────────
   showGenerateForm = false;
   selectedMatchForTickets = '';
   generateRequest: CreateTicketsRequest = {
@@ -65,32 +61,30 @@ export class MatchListComponent implements OnInit {
   generating = false;
 
   constructor(
-    private statistiqueService: StatistiqueService,  // ton travail
-    private competitionService: CompetitionService,  // équipe
-    private matchService: MatchService,              // équipe
-    private ticketService: TicketService,            // équipe
-    private authService: AuthService,                // équipe
-    private router: Router
+    private statistiqueService: StatistiqueService,
+    private competitionService: CompetitionService,
+    private matchService: MatchService,
+    private ticketService: TicketService,
+    private authService: AuthService,
+    public router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadFromStorage();                    // ton travail
-    this.isAdmin = this.authService.isAdmin(); // équipe
-    this.loadCompetitions();                   // équipe
+    this.loadAnalysisHistory();
+    this.isAdmin = this.authService.isAdmin();
+    this.loadCompetitions();
   }
 
-  // ════════════════════════════════
-  // TON TRAVAIL — branche competition
-  // ════════════════════════════════
+  // ── Analyse vidéo ─────────────────────────────────────────
 
   addMatch(entry: MatchEntry): void {
-    this.matches.unshift(entry);
-    this.saveToStorage();
+    this.analysisHistory.unshift(entry);
+    this.saveAnalysisHistory();
   }
 
   removeMatch(index: number): void {
-    this.matches.splice(index, 1);
-    this.saveToStorage();
+    this.analysisHistory.splice(index, 1);
+    this.saveAnalysisHistory();
   }
 
   viewDetails(match: MatchEntry): void {
@@ -108,20 +102,15 @@ export class MatchListComponent implements OnInit {
   }
 
   refreshStatus(match: MatchEntry): void {
-    if (match.status === 'processing' || match.status === 'uploading') {
-      this.statistiqueService.getJobStatus(match.jobId).subscribe({
-        next: (s: JobStatusResponse) => {
-          match.progress = Math.round((s.progress || 0) * 100);
-          if (s.status === 'completed') {
-            match.status = 'completed';
-            this.fetchMatchResult(match);
-          } else if (s.status === 'failed') {
-            match.status = 'failed';
-          }
-          this.saveToStorage();
-        }
-      });
-    }
+    if (match.status !== 'processing' && match.status !== 'uploading') return;
+    this.statistiqueService.getJobStatus(match.jobId).subscribe({
+      next: (s: JobStatusResponse) => {
+        match.progress = Math.round((s.progress || 0) * 100);
+        if (s.status === 'completed') { match.status = 'completed'; this.fetchMatchResult(match); }
+        else if (s.status === 'failed') { match.status = 'failed'; }
+        this.saveAnalysisHistory();
+      }
+    });
   }
 
   fetchMatchResult(match: MatchEntry): void {
@@ -136,38 +125,27 @@ export class MatchListComponent implements OnInit {
         }
         match.processingTime = res.processing_time_seconds;
         match.status = 'completed';
-        this.saveToStorage();
+        this.saveAnalysisHistory();
       }
     });
   }
 
-  trackByJob(_: number, match: MatchEntry): string {
-    return match.jobId;
+  trackByJob(_: number, match: MatchEntry): string { return match.jobId; }
+
+  private saveAnalysisHistory(): void {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.analysisHistory)); } catch (_) {}
   }
 
-  private saveToStorage(): void {
+  private loadAnalysisHistory(): void {
     try {
-      localStorage.setItem('match_history', JSON.stringify(this.matches));
-    } catch (_) {}
+      const raw = localStorage.getItem(STORAGE_KEY);
+      this.analysisHistory = raw
+        ? JSON.parse(raw).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
+        : [];
+    } catch (_) { this.analysisHistory = []; }
   }
 
-  private loadFromStorage(): void {
-    try {
-      const raw = localStorage.getItem('match_history');
-      if (raw) {
-        this.matches = JSON.parse(raw).map((m: any) => ({
-          ...m,
-          timestamp: new Date(m.timestamp)
-        }));
-      }
-    } catch (_) {
-      this.matches = [];
-    }
-  }
-
-  // ════════════════════════════════
-  // TRAVAIL ÉQUIPE — branche main
-  // ════════════════════════════════
+  // ── Matchs compétition ────────────────────────────────────
 
   loadCompetitions(): void {
     this.competitionService.getAllCompetitions().subscribe({

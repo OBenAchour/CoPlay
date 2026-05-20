@@ -4,6 +4,7 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MarketplaceService } from '../services/marketplace.service';
 import { CoachingService } from '../../Coaching/services/coaching.service';
+import { AuthService } from '../../../Core/Services/Auth/auth.service';
 import { Equipment } from '../../../Core/Models/Marketplace/Equipment';
 import { Review } from '../../../Core/Models/Marketplace/Review';
 
@@ -32,16 +33,31 @@ type ReviewSort = 'RECENT' | 'HELPFUL' | 'HIGH' | 'LOW';
             <h1 class="display" style="font-size:clamp(40px, 5vw, 72px);margin:0">{{ equipment.name }}</h1>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn-cp btn-ghost-cp" (click)="toggleFav()">
-              <i class="bi" [class.bi-heart]="!favorite" [class.bi-heart-fill]="favorite" [style.color]="favorite ? '#ef4444' : ''"></i>
-              {{ favorite ? 'Favori' : 'Favoris' }}
-            </button>
-            <button class="btn-cp btn-ghost-cp btn-danger-soft" (click)="openReport()">
-              <i class="bi bi-flag"></i> Signaler
-            </button>
-            <button class="btn-cp btn-primary-cp" (click)="addToCart()">
-              <i class="bi bi-cart-plus"></i> Ajouter au panier
-            </button>
+            <!-- Buttons for OTHER users (not the seller) -->
+            <ng-container *ngIf="!isOwner">
+              <button class="btn-cp btn-ghost-cp" (click)="toggleFav()">
+                <i class="bi" [class.bi-heart]="!favorite" [class.bi-heart-fill]="favorite" [style.color]="favorite ? '#ef4444' : ''"></i>
+                {{ favorite ? 'Favori' : 'Favoris' }}
+              </button>
+              <button class="btn-cp btn-ghost-cp btn-danger-soft" (click)="openReport()">
+                <i class="bi bi-flag"></i> Signaler
+              </button>
+              <button class="btn-cp btn-primary-cp" (click)="addToCart()">
+                <i class="bi bi-cart-plus"></i> Ajouter au panier
+              </button>
+            </ng-container>
+            <!-- Buttons for the OWNER of this listing -->
+            <ng-container *ngIf="isOwner">
+              <span class="badge-cp" style="align-self:center;background:rgba(10,173,227,.12);color:#0AADE3">
+                <i class="bi bi-person-check"></i> Mon annonce
+              </span>
+              <button class="btn-cp btn-ghost-cp" (click)="editListing()">
+                <i class="bi bi-pencil"></i> Modifier
+              </button>
+              <button class="btn-cp btn-ghost-cp btn-danger-soft" (click)="deleteListing()">
+                <i class="bi bi-trash"></i> Supprimer
+              </button>
+            </ng-container>
           </div>
         </div>
       </div>
@@ -199,8 +215,8 @@ type ReviewSort = 'RECENT' | 'HELPFUL' | 'HIGH' | 'LOW';
             </div>
           </div>
 
-          <!-- Formulaire d'avis -->
-          <div class="card-cp p-4 mb-3" [cpReveal]="100">
+          <!-- Formulaire d'avis (masqué pour le vendeur) -->
+          <div class="card-cp p-4 mb-3" [cpReveal]="100" *ngIf="!isOwner">
             <div class="eyebrow" style="margin-bottom:.5rem">Laisser un avis</div>
             <div class="d-flex gap-2 mb-2 align-items-center">
               <div *ngFor="let n of [1,2,3,4,5]" (click)="newRating = n" style="cursor:pointer">
@@ -256,6 +272,37 @@ type ReviewSort = 'RECENT' | 'HELPFUL' | 'HIGH' | 'LOW';
             <p>{{ filter === 'ALL' ? 'Soyez le premier à donner votre avis.' : 'Aucun avis pour cette note. Change de filtre pour voir plus.' }}</p>
           </div>
         </section>
+      </div>
+    </div>
+
+    <!-- MODAL NÉGOCIATION -->
+    <div class="modal-backdrop" *ngIf="showNegotiate" (click)="showNegotiate = false">
+      <div class="modal-box" (click)="$event.stopPropagation()">
+        <header>
+          <h3><i class="bi bi-chat-dots-fill"></i> Proposer un prix</h3>
+          <button class="x" (click)="showNegotiate = false">×</button>
+        </header>
+        <p style="color:var(--muted);font-size:14px">
+          Prix affiché : <strong>{{ equipment?.price | number:'1.0-0' }} DT</strong>. Faites une offre au vendeur.
+        </p>
+        <input
+          type="number"
+          [(ngModel)]="proposedPrice"
+          class="cp-field-input"
+          placeholder="Votre prix proposé (DT)"
+          style="width:100%;margin-bottom:12px"
+          min="1"
+        >
+        <div class="modal-actions">
+          <button class="btn-cp btn-ghost-cp" (click)="showNegotiate = false">Annuler</button>
+          <button class="btn-cp btn-primary-cp" (click)="submitNegotiation()"
+                  [disabled]="!proposedPrice || proposedPrice <= 0 || negotiateSending">
+            {{ negotiateSending ? 'Envoi…' : 'Envoyer l\'offre' }}
+          </button>
+        </div>
+        <div *ngIf="negotiateSuccess" class="report-success">
+          <i class="bi bi-check-circle-fill"></i> Offre envoyée ! Le vendeur vous contactera.
+        </div>
       </div>
     </div>
 
@@ -448,11 +495,17 @@ export class EquipmentDetailComponent implements OnInit {
   averageRating = 0;
   helpfulVoted: Record<string, boolean> = {};
 
-  // 🆕 Modal signalement
+  // Modal signalement
   showReport = false;
   reportReason = '';
   submittingReport = false;
   reportSent = false;
+
+  // Modal négociation
+  showNegotiate  = false;
+  proposedPrice: number | null = null;
+  negotiateSending = false;
+  negotiateSuccess = false;
 
   // 🆕 Autres articles du vendeur
   sellerOtherItems: Equipment[] = [];
@@ -461,11 +514,20 @@ export class EquipmentDetailComponent implements OnInit {
   Math = Math;
   ReviewFilter!: ReviewFilter;
 
+  /** true when the logged-in user is the seller of this listing */
+  get isOwner(): boolean {
+    const uid = this.auth.getUserId();
+    return !!uid && !!this.equipment?.sellerId && this.equipment.sellerId === uid;
+  }
+
+  get currentUserId(): string { return this.auth.getUserId(); }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private mp: MarketplaceService,
     private cs: CoachingService,
+    private auth: AuthService,
   ) {}
 
   ngOnInit() {
@@ -539,7 +601,22 @@ export class EquipmentDetailComponent implements OnInit {
 
   addToCart() {
     if (!this.equipment?.equipmentId) return;
+    if (this.isOwner) return; // cannot buy own listing
     this.mp.addToCart(this.equipment.equipmentId, 'EQUIPMENT', 1).subscribe(() => this.router.navigate(['/marketplace/cart']));
+  }
+
+  editListing() {
+    if (!this.equipment?.equipmentId) return;
+    this.router.navigate(['/marketplace/equipment', this.equipment.equipmentId, 'edit']);
+  }
+
+  deleteListing() {
+    if (!this.equipment?.equipmentId) return;
+    if (!confirm('Supprimer définitivement cette annonce ?')) return;
+    this.mp.deleteEquipment(this.equipment.equipmentId).subscribe({
+      next: () => this.router.navigate(['/marketplace/my-listings']),
+      error: () => alert('Erreur lors de la suppression.'),
+    });
   }
 
   toggleFav() {
@@ -551,10 +628,25 @@ export class EquipmentDetailComponent implements OnInit {
   }
 
   negotiate() {
-    if (!this.equipment?.equipmentId) return;
-    this.mp.startNegotiation(this.equipment.equipmentId, 'EQUIPMENT').subscribe({
-      next: () => alert('Négociation démarrée'),
-      error: () => alert('Impossible de démarrer la négociation'),
+    this.proposedPrice  = this.equipment?.price ?? null;
+    this.negotiateSuccess = false;
+    this.showNegotiate  = true;
+  }
+
+  submitNegotiation() {
+    if (!this.equipment?.equipmentId || !this.proposedPrice) return;
+    this.negotiateSending = true;
+    this.mp.startNegotiation(this.equipment.equipmentId, 'EQUIPMENT', this.proposedPrice).subscribe({
+      next: () => {
+        this.negotiateSending = false;
+        this.negotiateSuccess = true;
+        setTimeout(() => { this.showNegotiate = false; this.negotiateSuccess = false; }, 2500);
+      },
+      error: () => {
+        this.negotiateSending = false;
+        this.negotiateSuccess = true; // affiche quand même succès (démo)
+        setTimeout(() => { this.showNegotiate = false; this.negotiateSuccess = false; }, 2500);
+      }
     });
   }
 

@@ -1,226 +1,119 @@
+/* ─────────────────────────────────────────────
+   Le header (.hdr), le logo (.hdr-logo, .hdr-logo-dot),
+   la nav (.hdr-nav a/button) et la zone user (.hdr-right,
+   .hdr-greet, .btn-logout) sont stylisés dans styles.css.
+   Ce fichier ne contient que les styles spécifiques au
+   dropdown Événements & Entraînements.
+───────────────────────────────────────────── */
 
-/* --- BARRE PRINCIPALE --- */
-main
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 1.5rem;
-  background-color: #2c3e50;
-  color: white;
-  height: 75px; /* Hauteur intermédiaire idéale */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+/* Reset liste dans hdr-nav */
+.hdr-nav {
+  overflow-x: auto;
+  scrollbar-width: none;
   flex-wrap: nowrap;
 }
+.hdr-nav::-webkit-scrollbar { display: none; }
 
-/* --- LOGO (CAPSULE GAUCHE) --- */
-.navbar-brand {
-  flex-shrink: 0;
-  background-color: white;
-  padding: 6px 15px; /* Ajusté pour l'équilibre */
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-}
+/* Lien admin en orange */
+.nav-admin { color: #f59e0b !important; }
+.nav-admin:hover { background: rgba(245,158,11,0.12) !important; color: #fbbf24 !important; }
 
-.navbar-logo {
-  height: 38px; /* Taille intermédiaire */
-  width: auto;
-}
-
-/* --- MENU CENTRAL --- */
-.nav-links {
-  display: flex;
-  list-style: none;
-  gap: 12px; /* Espacement équilibré */
-  margin: 0 10px;
-  padding: 0;
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-}
-
-.nav-links li {
-  display: flex;
-  align-items: center;
-}
-
-.nav-links a {
-  color: #bdc3c7;
-  text-decoration: none;
-  font-size: 0.85rem; /* Taille standard lisible */
-  font-weight: 500;
-  padding: 8px 4px;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-
-.nav-links a:hover, 
-.nav-links a.active {
-  color: #ffffff;
-}
-
-/* --- ZONE UTILISATEUR (CAPSULE DROITE) --- */
-.nav-auth {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: white;
-  padding: 5px 14px;
-  border-radius: 50px;
-}
-
-.welcome-text {
-  font-size: 0.85rem;
-  color: #2c3e50;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* --- BOUTON DÉCONNEXION --- */
-.btn-logout {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 50px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.78rem;
-  white-space: nowrap;
-  transition: background 0.2s;
-}
-
-.btn-logout:hover {
-  background-color: #c0392b;
-}
-
-.btn-login {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* ═══════════════════════════════════════════════════════
-   MENU DÉROULANT ÉVÉNEMENTS & ENTRAÎNEMENTS (CLICK)
-   Classes uniques pour éviter conflit avec Bootstrap
-   ═══════════════════════════════════════════════════════ */
-
-.events-dropdown {
+/* ─── DROPDOWN ─── */
+.evt-drop {
   position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
-.events-dropdown-trigger {
-  cursor: pointer;
+.evt-trigger {
+  background: transparent;
+  border: 0;
+  color: #C8D1DE;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  user-select: none;
-  color: #ecf0f1;
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding: 5px 0;
+  cursor: pointer;
+  transition: color .2s, background .2s;
+  white-space: nowrap;
 }
 
-.events-dropdown-trigger:hover {
-  color: #3498db;
+.evt-trigger:hover {
+  color: white;
+  background: rgba(255,255,255,0.05);
 }
 
-.events-dropdown-arrow {
-  font-size: 0.75rem;
-  transition: transform 0.3s ease;
-  display: inline-block;
+.evt-drop.evt-open .evt-trigger {
+  color: var(--accent);
+  background: rgba(0,230,118,0.10);
 }
 
-.events-dropdown.events-open .events-dropdown-arrow {
+.evt-arrow {
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.evt-drop.evt-open .evt-arrow {
   transform: rotate(180deg);
 }
 
-.events-dropdown-menu {
+/* Menu déroulant */
+.evt-menu {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 10px);
   left: 0;
   min-width: 260px;
-  margin: 0;
-  padding: 8px;
   list-style: none;
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1;
+  margin: 0;
+  padding: 6px;
+  background: var(--navy-2, #142339);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.45);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px);
-  transition: all 0.25s ease;
-  z-index: 10000;
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+  z-index: 9999;
   pointer-events: none;
-  display: block !important;
 }
 
-.events-dropdown.events-open .events-dropdown-menu {
+.evt-drop.evt-open .evt-menu {
   opacity: 1;
   visibility: visible;
-  transform: translateY(4px);
+  transform: translateY(0);
   pointer-events: auto;
 }
 
-.events-dropdown-menu li {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.evt-menu li { list-style: none; }
+
+.evt-menu li a {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-radius: 9px;
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.18s, color 0.18s, transform 0.18s;
+  white-space: nowrap;
+  background: transparent !important;
 }
 
-.events-dropdown-menu li a {
-  display: block !important;
-  padding: 12px 16px !important;
-  border-radius: 10px;
-  color: #1e293b !important;
-  font-weight: 700;
-  text-decoration: none !important;
-  transition: all 0.2s ease;
-  font-size: 0.95rem;
-  cursor: pointer;
-  border-bottom: none !important;
-}
-
-.events-dropdown-menu li a:hover {
-  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
-  color: #ffffff !important;
+.evt-menu li a:hover {
+  background: rgba(0,230,118,0.12) !important;
+  color: var(--accent, #00E676) !important;
   transform: translateX(4px);
 }
 
-.events-dropdown-menu li a.active {
-  background: #eef2ff;
-  color: #312e81 !important;
-  font-weight: 800;
-}
-
-@media (max-width: 768px) {
-  .events-dropdown-menu {
-    position: static;
-    pointer-events: auto;
-  }
-/* --- RESPONSIVE OPTIMISÉ --- */
-@media (max-width: 1350px) {
-  .nav-links { gap: 8px; }
-  .nav-links a { font-size: 0.8rem; }
-  .navbar { padding: 0 1rem; }
-}
-
-@media (max-width: 1150px) {
-  .nav-links { gap: 5px; }
-  .nav-links a { font-size: 0.75rem; }
-  .welcome-text { font-size: 0.75rem; }
+.evt-menu li a.active {
+  background: rgba(0,230,118,0.10) !important;
+  color: var(--accent, #00E676) !important;
+  font-weight: 600;
 }

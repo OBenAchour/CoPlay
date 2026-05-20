@@ -1,183 +1,145 @@
-<div class="events-page competition-list">
+<div class="pg">
 
-  <!-- ══ HEADER ══ -->
-  <div class="page-header">
-    <div class="header-left">
+  <!-- Header -->
+  <div class="pg-header">
+    <div>
+      <h1 class="pg-title">Compétitions</h1>
+      <p class="pg-sub">{{ filteredCompetitions.length }} compétition{{ filteredCompetitions.length !== 1 ? 's' : '' }}</p>
+    </div>
+    <button class="pg-btn-primary" *ngIf="canCreate()" (click)="openCompetitionModal()">+ Créer</button>
+  </div>
 
-      <h1 class="page-title">
-        <span class="title-icon">⚽</span> Compétitions
-      </h1>
+  <!-- Filtres -->
+  <div class="pg-filters">
+    <button class="pg-filter-btn" [class.active]="selectedType === 'ALL'"        (click)="filterByType('ALL')">Toutes</button>
+    <button class="pg-filter-btn" [class.active]="selectedType === 'LEAGUE'"     (click)="filterByType('LEAGUE')">Ligues</button>
+    <button class="pg-filter-btn" [class.active]="selectedType === 'TOURNAMENT'" (click)="filterByType('TOURNAMENT')">Tournois</button>
+  </div>
 
-      <p class="page-subtitle">
-        Organisez et suivez vos compétitions
-      </p>
+  <!-- Loading -->
+  <div *ngIf="loading" class="pg-skeleton-grid">
+    <div class="pg-skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
 
-      <!-- FILTERS -->
-      <div class="header-actions mt-4">
+  <!-- Vide -->
+  <div *ngIf="!loading && filteredCompetitions.length === 0" class="pg-empty">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(14,26,43,0.25)" stroke-width="1.5"><polyline points="8 21 12 17 16 21"/><line x1="12" y1="17" x2="12" y2="11"/><path d="M7 4h10l1 7a5 5 0 01-10 0L7 4z"/></svg>
+    <p>Aucune compétition trouvée</p>
+  </div>
 
-        <button class="btn-create" [class.active]="selectedType === 'ALL'" (click)="filterByType('ALL')">
-          🌍 Toutes
-        </button>
+  <!-- Grille -->
+  <div *ngIf="!loading" class="pg-grid">
+    <div *ngFor="let c of filteredCompetitions" class="cp-comp-card" @fadeIn>
 
-        <button class="btn-create league-trigger" [class.active]="selectedType === 'LEAGUE'"
-          (click)="filterByType('LEAGUE')">
-          🏆 Championnat
-        </button>
-
-        <button class="btn-create tournament-trigger" [class.active]="selectedType === 'TOURNAMENT'"
-          (click)="filterByType('TOURNAMENT')">
-          🥇 Tournoi
-        </button>
-
-        <!-- CREATE -->
-        <button class="btn-create" style="margin-left:auto;" (click)="openCompetitionModal()">
-          ＋ Créer
-        </button>
-
+      <div class="cp-comp-card-top">
+        <span class="cp-comp-type" [class.league]="c.type === 'LEAGUE'" [class.tournament]="c.type === 'TOURNAMENT'">
+          {{ c.type === 'LEAGUE' ? 'Ligue' : 'Tournoi' }}
+        </span>
+        <span class="cp-comp-sport">{{ c.sport }}</span>
       </div>
 
-    </div>
-  </div>
+      <h3 class="cp-comp-name">{{ c.name }}</h3>
 
-  <!-- LOADING -->
-  <div class="loading" *ngIf="loading">
-    <div class="spinner"></div>
-    <p>Chargement...</p>
-  </div>
+      <div class="cp-comp-meta">
+        <div class="cp-comp-meta-row">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          <span>{{ c.countTeams ?? 0 }} / {{ c.maxTeams }} équipes</span>
+        </div>
+        <div class="cp-comp-meta-row" *ngIf="c.startDate">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Début {{ c.startDate | date:'dd MMM yyyy' }}</span>
+        </div>
+      </div>
 
-  <!-- GRID -->
-  <div class="events-grid" *ngIf="!loading">
+      <!-- Progress bar -->
+      <div class="cp-comp-progress">
+        <div class="cp-comp-progress-bar" [style.width.%]="((c.countTeams ?? 0) / c.maxTeams) * 100"></div>
+      </div>
 
-    <div class="event-card competition-card" *ngFor="let comp of filteredCompetitions">
+      <div class="cp-comp-actions">
+        <button class="cp-comp-btn-detail" (click)="goToDetail(c.id)">Voir détails</button>
 
-      <!-- HEADER -->
-      <div class="card-header">
-        <span class="status-badge">
-          {{ comp.type === 'LEAGUE' ? 'Championnat' : 'Tournoi' }}
+        <!-- Bouton rejoindre -->
+        <button
+          class="cp-comp-btn-join"
+          *ngIf="canJoin(c)"
+          (click)="joinCompetition(c.id); $event.stopPropagation()"
+        >Rejoindre</button>
+
+        <!-- Raison si on ne peut pas rejoindre -->
+        <span class="cp-comp-no-join" *ngIf="!canJoin(c) && !canDelete(c)" [title]="getJoinBlockReason(c)">
+          {{ getJoinBlockReason(c) }}
         </span>
 
-        <span class="visibility-chip">
-          {{ comp.sport }}
-        </span>
+        <button
+          class="cp-comp-btn-delete"
+          *ngIf="canDelete(c)"
+          (click)="deleteCompetition(c.id); $event.stopPropagation()"
+          [disabled]="deletingCompetitionId === c.id"
+        >{{ deletingCompetitionId === c.id ? '…' : 'Supprimer' }}</button>
       </div>
+    </div>
+  </div>
 
-      <!-- TITLE -->
-      <h3 class="event-title">{{ comp.name }}</h3>
+  <!-- Toasts -->
+  <div class="cp-toasts">
+    <div *ngFor="let t of toasts" class="cp-toast" [ngClass]="'cp-toast-' + t.type">{{ t.message }}</div>
+  </div>
 
-      <!-- INFO -->
-      <div class="event-info">
-        <div class="info-row">
-          👥 {{ comp.countTeams || 0 }}/{{ comp.maxTeams }} équipes
+  <!-- Modal création -->
+  <div class="cp-modal-overlay" *ngIf="showCompetitionModal" (click)="closeCompetitionModal()">
+    <div class="cp-modal" (click)="$event.stopPropagation()">
+      <div class="cp-modal-head">
+        <h2>Nouvelle compétition</h2>
+        <button class="cp-modal-close" (click)="closeCompetitionModal()">✕</button>
+      </div>
+      <div class="cp-modal-body">
+        <div class="cp-field-group">
+          <label>Nom</label>
+          <input [(ngModel)]="newCompetition.name" placeholder="Nom de la compétition" class="cp-input">
         </div>
-        <div class="info-row">
-          🗓️ {{ comp.startDate | date:'mediumDate' }}
+        <div class="cp-field-row">
+          <div class="cp-field-group">
+            <label>Sport</label>
+            <select [(ngModel)]="newCompetition.sport" class="cp-input">
+              <option>Football</option><option>Basketball</option><option>Tennis</option><option>Padel</option>
+            </select>
+          </div>
+          <div class="cp-field-group">
+            <label>Type</label>
+            <select [(ngModel)]="newCompetition.type" class="cp-input">
+              <option value="LEAGUE">Ligue</option><option value="TOURNAMENT">Tournoi</option>
+            </select>
+          </div>
+        </div>
+        <div class="cp-field-row">
+          <div class="cp-field-group">
+            <label>Équipes max</label>
+            <input type="number" [(ngModel)]="newCompetition.maxTeams" class="cp-input">
+          </div>
+          <div class="cp-field-group">
+            <label>Double confrontation</label>
+            <select [(ngModel)]="newCompetition.isDoubleLeg" class="cp-input">
+              <option [ngValue]="true">Oui</option><option [ngValue]="false">Non</option>
+            </select>
+          </div>
+        </div>
+        <div class="cp-field-row">
+          <div class="cp-field-group">
+            <label>Date début</label>
+            <input type="date" [(ngModel)]="newCompetition.startDate" class="cp-input">
+          </div>
+          <div class="cp-field-group">
+            <label>Date fin</label>
+            <input type="date" [(ngModel)]="newCompetition.endDate" class="cp-input">
+          </div>
         </div>
       </div>
-
-      <!-- ACTIONS (ON SAME LINE) -->
-      <div class="card-footer mt-auto">
-        <div class="actions-row">
-          <button class="btn-detail flex-grow" (click)="goToDetail(comp.id)">
-            Voir →
-          </button>
-          
-          <!-- JOIN -->
-          <button class="btn-join" *ngIf="canJoin(comp)" (click)="joinCompetition(comp.id)">
-            ➕ Rejoindre
-          </button>
-          
-          <!-- DELETE (ADMIN) -->
-          <button class="btn-action btn-delete-small" *ngIf="canDelete(comp)"
-            (click)="deleteCompetition(comp.id); $event.stopPropagation()"
-            [disabled]="deletingCompetitionId === comp.id" title="Supprimer">
-
-            <svg *ngIf="deletingCompetitionId !== comp.id" class="action-icon" viewBox="0 0 24 24">
-              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-            </svg>
-            
-            <span *ngIf="deletingCompetitionId === comp.id" class="mini-spinner"></span>
-          </button>
-        </div>
+      <div class="cp-modal-foot">
+        <button class="cp-btn-cancel" (click)="closeCompetitionModal()">Annuler</button>
+        <button class="cp-btn-submit" (click)="submitCompetition()">Créer la compétition</button>
       </div>
-
-    </div>
-
-  </div>
-
-  <!-- EMPTY -->
-  <div class="empty-state" *ngIf="!loading && filteredCompetitions.length === 0">
-    <div class="empty-icon">🏟️</div>
-    <h3>Aucune compétition</h3>
-    <p>Soyez le premier à organiser un événement !</p>
-  </div>
-
-  <!-- TOASTS -->
-  <div class="toast-container">
-    <div class="toast-item" *ngFor="let t of toasts" [ngClass]="'toast-' + t.type" @fadeIn>
-      <span class="toast-icon">
-        <ng-container [ngSwitch]="t.type">
-          <span *ngSwitchCase="'success'">✅</span>
-          <span *ngSwitchCase="'error'">❌</span>
-          <span *ngSwitchCase="'info'">ℹ️</span>
-        </ng-container>
-      </span>
-      <span class="toast-msg">{{ t.message }}</span>
     </div>
   </div>
 
-</div>
-
-<!-- ═════════ MODAL ═════════ -->
-<div class="modal-overlay" *ngIf="showCompetitionModal" (click)="closeCompetitionModal()">
-
-  <div class="modal-box" (click)="$event.stopPropagation()">
-
-    <div class="modal-head">
-      <h3>Créer compétition</h3>
-      <button class="close-x" (click)="closeCompetitionModal()">×</button>
-    </div>
-
-    <div class="modal-body">
-
-      <input placeholder="Nom" [(ngModel)]="newCompetition.name">
-
-
-
-      <select [(ngModel)]="newCompetition.sport">
-        <option value="Football">Football</option>
-        <option value="Handball">Handball</option>
-        <option value="Basketball ">Basketball </option>
-      </select>
-
-      <select [(ngModel)]="newCompetition.type">
-        <option value="LEAGUE">Championnat</option>
-        <option value="TOURNAMENT">Tournoi</option>
-      </select>
-
-      <input type="number" placeholder="Max équipes" [(ngModel)]="newCompetition.maxTeams">
-
-      <input type="date" [(ngModel)]="newCompetition.startDate">
-
-      <input type="date" [(ngModel)]="newCompetition.endDate">
-
-      <label>
-        <input type="checkbox" [(ngModel)]="newCompetition.isDoubleLeg">
-        Aller / Retour
-      </label>
-
-    </div>
-
-    <div class="modal-foot">
-
-      <button class="btn-ghost" (click)="closeCompetitionModal()">
-        Annuler
-      </button>
-
-      <button class="btn-primary" (click)="submitCompetition()">
-        Créer
-      </button>
-
-    </div>
-
-  </div>
 </div>

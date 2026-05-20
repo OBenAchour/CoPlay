@@ -14,13 +14,8 @@ export class NavbarComponent {
   // ⬆️
   // Injecte AuthService en public pour y accéder directement depuis le template HTML (ex: vérification isLoggedIn)
   constructor(
-  public authService: AuthService,
-  public router: Router // Ajoute ceci ici
-) {}
-
-  constructor(
     public authService: AuthService,
-    private router: Router
+    public router: Router
   ) {}
 
   onLogout(): void {

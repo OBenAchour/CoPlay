@@ -37,6 +37,28 @@ export class RegisterComponent implements OnInit {
     this.passwordVisible = !this.passwordVisible;
   }
 
+  // Calcule la force du mot de passe (0 à 4)
+  get passwordStrength(): number {
+    const pwd = this.registerForm.get('password')?.value || '';
+    let score = 0;
+    if (pwd.length >= 6)  score++;
+    if (pwd.length >= 10) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    return Math.min(score, 4);
+  }
+
+  get passwordStrengthLabel(): string {
+    const labels = ['', 'Faible', 'Moyen', 'Bon', 'Fort'];
+    return labels[this.passwordStrength] || '';
+  }
+
+  get passwordStrengthColor(): string {
+    const colors = ['', '#EF4444', '#F97316', '#EAB308', '#22C55E'];
+    return colors[this.passwordStrength] || '';
+  }
+
   // Traite l'envoi du formulaire, crée l'utilisateur via le service et redirige vers la connexion en cas de succès
   onSubmit(): void {
     if (this.registerForm.valid) {

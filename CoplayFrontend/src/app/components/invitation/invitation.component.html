@@ -1,1 +1,120 @@
-<p>invitation works!</p>
+<div class="page">
+
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <button class="back-btn" routerLink="/team">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour aux équipes
+    </button>
+    <div class="header-eyebrow">ÉQUIPES</div>
+    <h1 class="header-title">Inviter un joueur</h1>
+    <p class="header-sub">Envoyez une invitation à un joueur pour rejoindre votre équipe.</p>
+  </div>
+
+  <!-- ── Toast ── -->
+  <div class="toast" *ngIf="toast" [class.toast-success]="toastType==='success'" [class.toast-error]="toastType==='error'">
+    <svg *ngIf="toastType==='success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <svg *ngIf="toastType==='error'"   width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    {{ toast }}
+  </div>
+
+  <div class="layout">
+
+    <!-- ── Formulaire ── -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <div class="form-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div>
+          <div class="form-card-title">Nouvelle invitation</div>
+          <div class="form-card-sub">Sélectionnez votre équipe et saisissez l'ID du joueur.</div>
+        </div>
+      </div>
+
+      <!-- Sélection de l'équipe -->
+      <div class="field-group">
+        <label>Votre équipe *</label>
+        <div class="select-wrap" *ngIf="!loading; else loadingTeams">
+          <select [(ngModel)]="selectedTeamId">
+            <option value="">— Choisir une équipe —</option>
+            <option *ngFor="let t of teams" [value]="t.teamId">
+              {{ sportIcon(t.sport) }} {{ t.name }} · {{ t.city || 'Ville inconnue' }}
+            </option>
+          </select>
+          <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <ng-template #loadingTeams>
+          <div class="input-skeleton"></div>
+        </ng-template>
+      </div>
+
+      <!-- Preview équipe sélectionnée -->
+      <div class="team-preview" *ngIf="selectedTeam">
+        <div class="preview-avatar">{{ teamInitial(selectedTeam.name) }}</div>
+        <div class="preview-info">
+          <strong>{{ selectedTeam.name }}</strong>
+          <span>{{ sportIcon(selectedTeam.sport) }} {{ selectedTeam.sport }}
+            <ng-container *ngIf="selectedTeam.city"> · {{ selectedTeam.city }}</ng-container>
+          </span>
+        </div>
+      </div>
+
+      <!-- ID du joueur -->
+      <div class="field-group">
+        <label>ID du joueur à inviter *</label>
+        <div class="input-with-icon">
+          <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+          <input
+            type="text"
+            [(ngModel)]="invitedUserId"
+            placeholder="Ex : 64f3a2b1c9e12d4a5f6b7c8d"
+          />
+        </div>
+        <span class="field-hint">Demandez à votre joueur de partager son ID de profil.</span>
+      </div>
+
+      <button
+        class="btn-send"
+        [disabled]="!selectedTeamId || !invitedUserId.trim() || sending"
+        (click)="invite()">
+        <div class="btn-loader" *ngIf="sending"></div>
+        <ng-container *ngIf="!sending">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Envoyer l'invitation
+        </ng-container>
+      </button>
+    </div>
+
+    <!-- ── Invitations envoyées ── -->
+    <div class="history-card">
+      <div class="history-head">
+        <div class="history-title">Invitations envoyées</div>
+        <div class="history-count">{{ sentInvitations.length }}</div>
+      </div>
+
+      <!-- État vide -->
+      <div class="history-empty" *ngIf="sentInvitations.length === 0">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D0CFC8" stroke-width="1.5" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <p>Aucune invitation envoyée</p>
+      </div>
+
+      <!-- Liste -->
+      <div class="inv-list" *ngIf="sentInvitations.length > 0">
+        <div class="inv-item" *ngFor="let inv of sentInvitations">
+          <div class="inv-team-av">{{ teamInitial(inv.teamName) }}</div>
+          <div class="inv-body">
+            <div class="inv-team">{{ inv.teamName }}</div>
+            <div class="inv-player">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+              {{ inv.invitedUserId }}
+            </div>
+            <div class="inv-date">{{ formatDate(inv.sentAt) }}</div>
+          </div>
+          <div class="status-badge pending">En attente</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

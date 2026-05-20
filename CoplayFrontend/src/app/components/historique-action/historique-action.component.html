@@ -1,1 +1,146 @@
-<p>historique-action works!</p>
+<div class="historique-page">
+
+  <!-- Header -->
+  <div class="hist-header">
+    <div>
+      <h1 class="hist-title">📜 Historique des actions</h1>
+      <p class="hist-sub">Suivez toutes les activités de vos équipes</p>
+    </div>
+    <button class="btn-add" (click)="openAdd()">+ Ajouter une action</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar" *ngIf="!loading">
+    <input
+      type="text"
+      [(ngModel)]="filterSearch"
+      (ngModelChange)="applyFilters()"
+      placeholder="🔍 Rechercher…"
+      class="filter-input"
+    >
+    <select [(ngModel)]="filterTeam" (ngModelChange)="applyFilters()" class="filter-select">
+      <option value="">Toutes les équipes</option>
+      <option *ngFor="let t of teams" [value]="t.teamId">{{ t.name }}</option>
+    </select>
+    <select [(ngModel)]="filterType" (ngModelChange)="applyFilters()" class="filter-select">
+      <option value="">Tous les types</option>
+      <option *ngFor="let at of actionTypes" [value]="at">
+        {{ iconFor(at) }} {{ labelFor(at) }}
+      </option>
+    </select>
+    <button *ngIf="filterTeam || filterType || filterSearch"
+            class="btn-reset" (click)="resetFilters()">✕ Réinitialiser</button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="hist-loading">
+    <div class="spinner"></div>
+    <p>Chargement…</p>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading && filtered.length === 0" class="hist-empty">
+    <div class="empty-icon">📜</div>
+    <h3>Aucune activité trouvée</h3>
+    <p *ngIf="filterTeam || filterType || filterSearch">
+      Aucune action ne correspond à vos filtres.
+    </p>
+    <p *ngIf="!filterTeam && !filterType && !filterSearch">
+      Aucune action enregistrée pour vos équipes.
+    </p>
+    <button class="btn-add" (click)="openAdd()">+ Ajouter une action</button>
+  </div>
+
+  <!-- Timeline -->
+  <div *ngIf="!loading && filtered.length > 0" class="timeline">
+    <div *ngFor="let e of filtered" class="timeline-item">
+
+      <!-- Icon dot -->
+      <div class="timeline-dot" [style.background]="colorFor(e.type)">
+        {{ iconFor(e.type) }}
+      </div>
+
+      <!-- Content -->
+      <div class="timeline-card">
+        <div class="timeline-top">
+          <div class="timeline-left">
+            <span class="type-badge" [style.background]="colorFor(e.type) + '1a'"
+                                     [style.color]="colorFor(e.type)">
+              {{ iconFor(e.type) }} {{ labelFor(e.type) }}
+            </span>
+            <span class="team-badge">{{ e.teamName }}</span>
+          </div>
+          <div class="timeline-right">
+            <span class="time-label" [title]="e.date | date:'dd/MM/yyyy HH:mm'">
+              {{ relativeTime(e.date) }}
+            </span>
+            <button class="btn-del" title="Supprimer" (click)="delete(e.id)">🗑️</button>
+          </div>
+        </div>
+
+        <p class="timeline-label">{{ e.label }}</p>
+        <p class="timeline-detail" *ngIf="e.detail">{{ e.detail }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Count footer -->
+  <div *ngIf="!loading && filtered.length > 0" class="hist-count">
+    {{ filtered.length }} action{{ filtered.length > 1 ? 's' : '' }} affichée{{ filtered.length > 1 ? 's' : '' }}
+  </div>
+
+</div>
+
+<!-- ─── Modal ─────────────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>+ Nouvelle action</h3>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-error" *ngIf="formError">⚠️ {{ formError }}</div>
+
+      <div class="form-group">
+        <label>Équipe *</label>
+        <select [(ngModel)]="formEntry.teamId" class="form-input">
+          <option value="">-- Sélectionner --</option>
+          <option *ngFor="let t of teams" [value]="t.teamId">{{ t.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Type d'action *</label>
+        <select [(ngModel)]="formEntry.type" class="form-input">
+          <option value="">-- Sélectionner --</option>
+          <option *ngFor="let at of actionTypes" [value]="at">
+            {{ iconFor(at) }} {{ labelFor(at) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Titre *</label>
+        <input type="text" [(ngModel)]="formEntry.label"
+               placeholder="Ex: Ahmed rejoint l'équipe…" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label>Détails</label>
+        <textarea [(ngModel)]="formEntry.detail" rows="3"
+                  placeholder="Description supplémentaire…" class="form-input"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Date</label>
+        <input type="datetime-local" [(ngModel)]="formEntry.date" class="form-input">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+      <button class="btn-submit" (click)="submit()">Enregistrer</button>
+    </div>
+  </div>
+</div>

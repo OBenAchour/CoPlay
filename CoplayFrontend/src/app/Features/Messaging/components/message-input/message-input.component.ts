@@ -51,9 +51,9 @@ export class MessageInputComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (response: any) => {
-        console.log('API Response received:', response);
         this.isLoadingSuggestions = false;
-        if (response && response.suggestions) {
+        // Don't show stale suggestions if the user already sent the message (input cleared)
+        if (response && response.suggestions && this.message.trim().length >= 2) {
           this.suggestions = response.suggestions.filter((s: string) => s && s.trim());
           this.showSuggestions = this.suggestions.length > 0;
         } else {
@@ -91,7 +91,6 @@ export class MessageInputComponent implements OnInit, OnDestroy {
   }
 
   onInput(event: Event): void {
-    console.log('onInput called, message:', this.message)
     const target = event.target as HTMLTextAreaElement;
     this.message = target.value;
     this.messageChange.emit(this.message);
@@ -123,16 +122,19 @@ export class MessageInputComponent implements OnInit, OnDestroy {
       this.showSuggestions = false;
       this.suggestions = [];
       this.send.emit();
+      // Explicitly clear message and notify parent
+      this.message = '';
+      this.messageChange.emit('');
       this.typing.emit(false);
     }
   }
 
-  onKeyPress(event: KeyboardEvent): void {
+  // Using keydown (keypress is deprecated and may miss Enter in some browsers)
+  onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.onSend();
     }
-
     if (event.key === 'Escape') {
       this.showSuggestions = false;
     }

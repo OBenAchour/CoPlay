@@ -1,72 +1,163 @@
-<div class="match-list-page">
-  <div class="list-header">
-    <h2>🏟️ Match History</h2>
-    <span class="match-count">{{ matches.length }} match{{ matches.length !== 1 ? 'es' : '' }}</span>
+<div class="pg">
+
+  <!-- Header -->
+  <div class="pg-header">
+    <div>
+      <h1 class="pg-title">Matchs</h1>
+      <p class="pg-sub">Historique d'analyse et matchs de compétition</p>
+    </div>
   </div>
 
-  <div class="empty-state" *ngIf="matches.length === 0">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5">
-      <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
-    <p>No matches analyzed yet.</p>
-    <small>Upload a video from the Statistics page to get started.</small>
-  </div>
+  <!-- ─── SECTION 1 : Matchs de compétition ─── -->
+  <div class="ml-section">
+    <h2 class="ml-section-title">Matchs par compétition</h2>
 
-  <div class="match-grid">
-    <div class="match-card" *ngFor="let match of matches; let i = index; trackBy: trackByJob"
-         [class]="getStatusClass(match.status)">
+    <div class="ml-comp-select">
+      <label class="ml-label">Choisir une compétition</label>
+      <div class="ml-select-row">
+        <select class="ml-select" [(ngModel)]="selectedCompetitionId" (change)="loadMatches()">
+          <option value="">— Sélectionner —</option>
+          <option *ngFor="let c of competitions" [value]="c.id">{{ c.name }}</option>
+        </select>
+        <span class="ml-select-hint" *ngIf="!selectedCompetitionId">Sélectionnez une compétition pour voir ses matchs</span>
+      </div>
+    </div>
 
-      <div class="card-top">
-        <div class="teams-label">
-          <span class="team-badge" [style.background]="match.team1Color">{{ match.team1.charAt(0) }}</span>
-          <span class="vs-text">{{ match.team1 }} vs {{ match.team2 }}</span>
-          <span class="team-badge" [style.background]="match.team2Color">{{ match.team2.charAt(0) }}</span>
+    <div *ngIf="loading" class="pg-skeleton-grid">
+      <div class="pg-skeleton-card" *ngFor="let i of [1,2,3]" style="height:96px"></div>
+    </div>
+
+    <div *ngIf="!loading && selectedCompetitionId && filteredMatches.length === 0" class="pg-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(14,26,43,0.22)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/><path d="M2 12h20"/></svg>
+      <p>Aucun match dans cette compétition</p>
+    </div>
+
+    <div *ngIf="!loading && filteredMatches.length > 0" class="ml-matches-list">
+      <div *ngFor="let m of filteredMatches" class="ml-match-card" (click)="router.navigate(['/matchs', m.id])">
+
+        <div class="ml-match-inner">
+          <!-- Équipe A -->
+          <div class="ml-team ml-team-a">
+            <div class="ml-team-initial">{{ (m.equipeA?.name || '?').charAt(0) }}</div>
+            <span class="ml-team-name">{{ m.equipeA?.name || 'Équipe A' }}</span>
+          </div>
+
+          <!-- Score / VS -->
+          <div class="ml-score-block">
+            <ng-container *ngIf="m.status === 'PLAYED' || m.status === 'VALIDATED'; else vsBlock">
+              <span class="ml-score">{{ m.scoreA ?? 0 }}</span>
+              <span class="ml-score-sep">–</span>
+              <span class="ml-score">{{ m.scoreB ?? 0 }}</span>
+            </ng-container>
+            <ng-template #vsBlock>
+              <span class="ml-vs">VS</span>
+            </ng-template>
+            <span class="ml-status-badge" [ngClass]="getStatusClass(m.status)">{{ getStatusLabel(m.status) }}</span>
+          </div>
+
+          <!-- Équipe B -->
+          <div class="ml-team ml-team-b">
+            <div class="ml-team-initial">{{ (m.equipeB?.name || '?').charAt(0) }}</div>
+            <span class="ml-team-name">{{ m.equipeB?.name || 'Équipe B' }}</span>
+          </div>
         </div>
-        <span class="status-pill" [class]="getStatusClass(match.status)">
-          {{ getStatusLabel(match.status) }}
-        </span>
-      </div>
 
-      <!-- Progress (if processing) -->
-      <div class="card-progress" *ngIf="match.status === 'processing'">
-        <div class="mini-bar"><div class="mini-fill" [style.width.%]="match.progress"></div></div>
-        <span>{{ match.progress }}%</span>
-      </div>
-
-      <!-- Result (if completed) -->
-      <div class="card-result" *ngIf="match.status === 'completed' && match.possessionTeam1">
-        <div class="poss-mini">
-          <span>{{ match.team1 }}: <b>{{ match.possessionTeam1 }}</b></span>
-          <span>{{ match.team2 }}: <b>{{ match.possessionTeam2 }}</b></span>
+        <div class="ml-match-footer">
+          <span *ngIf="m.dateMatch">📅 {{ m.dateMatch | date:'dd MMM yyyy' }}</span>
+          <span>Journée {{ m.numeroJournee }}</span>
+          <button
+            class="ml-ticket-btn"
+            *ngIf="!isMatchFinished(m.status)"
+            (click)="goToTickets(m.id); $event.stopPropagation()"
+          >🎫 Billets</button>
+          <button
+            class="ml-ticket-gen-btn"
+            *ngIf="isAdmin && !isMatchFinished(m.status)"
+            (click)="openGenerateForm(m.id); $event.stopPropagation()"
+          >Générer billets</button>
         </div>
-        <div class="dom-line" *ngIf="match.dominantTeam">
-          🏆 {{ match.dominantTeam }} dominated
-        </div>
-      </div>
 
-      <!-- Error -->
-      <div class="card-error" *ngIf="match.status === 'failed'">
-        <span>❌ Analysis failed</span>
-      </div>
-
-      <!-- Actions -->
-      <div class="card-actions">
-        <button class="act-btn" (click)="viewDetails(match)" *ngIf="match.status === 'completed'">
-          📊 Details
-        </button>
-        <button class="act-btn" (click)="downloadVideo(match)" *ngIf="match.status === 'completed'">
-          ⬇ Video
-        </button>
-        <button class="act-btn" (click)="refreshStatus(match)"
-                *ngIf="match.status === 'processing' || match.status === 'uploading'">
-          🔄 Refresh
-        </button>
-        <button class="act-btn del" (click)="removeMatch(i)">🗑️</button>
-      </div>
-
-      <div class="card-time">
-        {{ match.timestamp | date:'short' }}
-        <span *ngIf="match.processingTime"> · {{ match.processingTime }}s</span>
       </div>
     </div>
   </div>
+
+  <!-- ─── SECTION 2 : Analyse vidéo ─── -->
+  <div class="ml-section" *ngIf="analysisHistory.length > 0">
+    <h2 class="ml-section-title">Analyses vidéo IA</h2>
+    <div class="ml-ai-list">
+      <div *ngFor="let m of analysisHistory; trackBy: trackByJob" class="ml-ai-card">
+        <div class="ml-ai-head">
+          <div class="ml-ai-teams">
+            <div class="ml-ai-team-dot" [style.background]="m.team1Color || '#1FA9E0'"></div>
+            <strong>{{ m.team1 }}</strong>
+            <span class="ml-ai-vs">vs</span>
+            <div class="ml-ai-team-dot" [style.background]="m.team2Color || '#F58220'"></div>
+            <strong>{{ m.team2 }}</strong>
+          </div>
+          <span class="ml-ai-status" [ngClass]="'ai-' + m.status">{{ getStatusLabel(m.status) }}</span>
+        </div>
+
+        <div *ngIf="m.status === 'processing' || m.status === 'uploading'" class="ml-progress">
+          <div class="ml-progress-bar" [style.width.%]="m.progress"></div>
+        </div>
+
+        <div *ngIf="m.status === 'completed' && m.possessionTeam1" class="ml-ai-stats">
+          <div class="ml-ai-stat">
+            <span>{{ m.team1 }}</span>
+            <strong>{{ m.possessionTeam1 }}</strong>
+          </div>
+          <div class="ml-ai-stat">
+            <span>Possession</span>
+          </div>
+          <div class="ml-ai-stat">
+            <span>{{ m.team2 }}</span>
+            <strong>{{ m.possessionTeam2 }}</strong>
+          </div>
+        </div>
+
+        <div class="ml-ai-footer">
+          <span class="ml-ai-time">{{ m.timestamp | date:'dd/MM HH:mm' }}</span>
+          <div class="ml-ai-actions">
+            <button class="ml-ai-btn" (click)="refreshStatus(m)" *ngIf="m.status === 'processing' || m.status === 'uploading'">↻ Actualiser</button>
+            <button class="ml-ai-btn ml-ai-btn-primary" (click)="viewDetails(m)" *ngIf="m.status === 'completed'">Voir résultats</button>
+            <button class="ml-ai-btn" (click)="downloadVideo(m)" *ngIf="m.status === 'completed'">↓ Vidéo</button>
+            <button class="ml-ai-btn ml-ai-btn-danger" (click)="removeMatch(analysisHistory.indexOf(m))">Supprimer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal génération de billets -->
+  <div class="cp-modal-overlay" *ngIf="showGenerateForm" (click)="closeGenerateForm()">
+    <div class="cp-modal" (click)="$event.stopPropagation()">
+      <div class="cp-modal-head">
+        <h2>Générer des billets</h2>
+        <button class="cp-modal-close" (click)="closeGenerateForm()">✕</button>
+      </div>
+      <div class="cp-modal-body">
+        <div class="cp-field-row">
+          <div class="cp-field-group"><label>Billets VIP</label><input type="number" [(ngModel)]="generateRequest.vipCount" class="cp-input"></div>
+          <div class="cp-field-group"><label>Prix VIP (DT)</label><input type="number" [(ngModel)]="generateRequest.vipPrice" class="cp-input"></div>
+        </div>
+        <div class="cp-field-row">
+          <div class="cp-field-group"><label>Tribune</label><input type="number" [(ngModel)]="generateRequest.tribuneCount" class="cp-input"></div>
+          <div class="cp-field-group"><label>Prix Tribune (DT)</label><input type="number" [(ngModel)]="generateRequest.tribunePrice" class="cp-input"></div>
+        </div>
+        <div class="cp-field-row">
+          <div class="cp-field-group"><label>Pelouse</label><input type="number" [(ngModel)]="generateRequest.pelouseCount" class="cp-input"></div>
+          <div class="cp-field-group"><label>Prix Pelouse (DT)</label><input type="number" [(ngModel)]="generateRequest.pelousePrice" class="cp-input"></div>
+        </div>
+        <div *ngIf="generateSuccess" class="ml-gen-success">{{ generateSuccess }}</div>
+        <div *ngIf="generateError" class="ml-gen-error">{{ generateError }}</div>
+      </div>
+      <div class="cp-modal-foot">
+        <button class="cp-btn-cancel" (click)="closeGenerateForm()">Annuler</button>
+        <button class="cp-btn-submit" (click)="generateTickets()" [disabled]="generating">
+          {{ generating ? 'Génération…' : 'Générer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>

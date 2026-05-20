@@ -4,6 +4,7 @@ import { Post } from '../../../Core/Models/Social/Post';
 import { PostType } from '../../../Core/Models/Social/PostType';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Comment, CreateCommentRequest } from '../../../Core/Models/Social/Comment';
+import { AuthService } from '../../../Core/Services/Auth/auth.service';
 
 @Component({
   selector: 'app-feed',
@@ -22,9 +23,18 @@ export class FeedComponent implements OnInit {
   expandedComments: Set<string> = new Set();
   likedPosts: Set<string> = new Set();
 
+  // ── Utilisateur courant ──────────────────────────────────
+  currentUserId  = '';
+  currentUserName = '';
+
+  // ── Édition inline de post ───────────────────────────────
+  editingPostId: string | null = null;
+  editingContent = '';
+
   constructor(
     private postService: PostService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private auth: AuthService
   ) {
     this.createPostForm = this.fb.group({
       content: ['', [Validators.required, Validators.maxLength(5000)]],
@@ -32,6 +42,8 @@ export class FeedComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.currentUserId   = this.auth.getUserId();
+    this.currentUserName = this.auth.getUserName();
     this.loadPosts();
   }
 
@@ -195,6 +207,34 @@ export class FeedComponent implements OnInit {
     });
   }
 
+  // ── Édition inline de post ────────────────────────────────
+  startEditPost(post: Post): void {
+    this.editingPostId  = post.postId!;
+    this.editingContent = post.content || '';
+  }
+
+  cancelEdit(): void {
+    this.editingPostId  = null;
+    this.editingContent = '';
+  }
+
+  saveEditPost(post: Post): void {
+    if (!this.editingContent.trim()) return;
+    this.postService.updatePost(post.postId!, {
+      type: post.type ?? PostType.TEXT,
+      content: this.editingContent
+    }).subscribe({
+      next: (updated: Post) => {
+        post.content = updated.content;
+        this.cancelEdit();
+      },
+      error: () => {
+        this.error = 'Erreur lors de la modification.';
+        setTimeout(() => this.error = null, 4000);
+      }
+    });
+  }
+
   getRelativeTime(dateStr: string): string {
     const now = new Date();
     const date = new Date(dateStr);
@@ -218,14 +258,15 @@ export class FeedComponent implements OnInit {
     return this.commentForms.get(postId)!;
   }
 
-  getInitials(name: string): string {
+  getInitials(name: string | undefined): string {
     return (name || '?').charAt(0).toUpperCase();
   }
 
-  getAvatarColor(id: string): string {
+  getAvatarColor(id: string | undefined): string {
     const colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#a18cd1', '#fbc2eb', '#84fab0'];
+    if (!id) return colors[0];
     let hash = 0;
-    for (let i = 0; i < (id || '').length; i++) {
+    for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
     return colors[Math.abs(hash) % colors.length];
@@ -233,5 +274,9 @@ export class FeedComponent implements OnInit {
 
   onImageError(event: Event): void {
     (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  getTotalLikes(): number {
+    return this.posts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
   }
 }

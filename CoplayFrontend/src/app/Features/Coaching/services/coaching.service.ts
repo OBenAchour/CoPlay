@@ -19,6 +19,17 @@ export class CoachingService {
     return this.http.get(`${BASE}/coach-profiles`, { params: { verifiedOnly, page, size } as any });
   }
 
+  // Admin — coach verification workflow
+  getPendingCoaches(): Observable<CoachProfile[]> {
+    return this.http.get<CoachProfile[]>(`${BASE}/coach-profiles/pending`);
+  }
+  approveCoach(id: string): Observable<CoachProfile> {
+    return this.http.put<CoachProfile>(`${BASE}/coach-profiles/${id}/approve`, {});
+  }
+  rejectCoach(id: string, reason: string): Observable<CoachProfile> {
+    return this.http.put<CoachProfile>(`${BASE}/coach-profiles/${id}/reject`, { reason });
+  }
+
   // Injuries
   myInjuries(): Observable<Injury[]> { return this.http.get<Injury[]>(`${BASE}/injuries/me`); }
   createInjury(i: Partial<Injury>): Observable<Injury> { return this.http.post<Injury>(`${BASE}/injuries`, i); }

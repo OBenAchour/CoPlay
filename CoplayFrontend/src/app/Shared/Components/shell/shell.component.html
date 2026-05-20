@@ -1,0 +1,98 @@
+<div class="cp-shell" [class.cp-collapsed]="collapsed">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="cp-sidebar">
+
+    <div class="cp-sidebar-head">
+      <a routerLink="/dashboard" class="cp-logo">
+        <div class="cp-logo-icon-wrap">
+          <img src="assets/logo-coplay.png.png" alt="" class="cp-logo-img">
+        </div>
+        <span class="cp-logo-wordmark">CoPlay</span>
+      </a>
+      <button class="cp-collapse-btn" (click)="collapsed = !collapsed" title="Réduire">
+        <span [innerHTML]="getIcon('chevron', 16)"></span>
+      </button>
+    </div>
+
+    <nav class="cp-sidebar-nav">
+      <div *ngFor="let section of navSections" class="cp-nav-section">
+        <p class="cp-nav-label">{{ section.label }}</p>
+        <a
+          *ngFor="let item of section.items"
+          class="cp-nav-item"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [title]="item.name"
+        >
+          <span class="cp-nav-icon" [innerHTML]="getIcon(item.icon)"></span>
+          <span class="cp-nav-name">{{ item.name }}</span>
+        </a>
+      </div>
+      <div *ngIf="isAdmin" class="cp-nav-section">
+        <p class="cp-nav-label">Administration</p>
+        <a class="cp-nav-item" routerLink="/admin/users" routerLinkActive="active" title="Utilisateurs">
+          <span class="cp-nav-icon" [innerHTML]="getIcon('user')"></span>
+          <span class="cp-nav-name">Utilisateurs</span>
+        </a>
+        <a class="cp-nav-item" routerLink="/admin/reclamations" routerLinkActive="active" title="Réclamations">
+          <span class="cp-nav-icon" [innerHTML]="getIcon('bell')"></span>
+          <span class="cp-nav-name">Réclamations</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="cp-sidebar-bottom">
+      <a routerLink="/profile" class="cp-sidebar-user">
+        <div class="cp-sidebar-avatar">{{ userInitial }}</div>
+        <div class="cp-sidebar-user-info">
+          <span class="cp-sidebar-username">{{ userName }}</span>
+          <span class="cp-sidebar-role">Joueur CoPlay</span>
+        </div>
+      </a>
+      <button class="cp-logout-btn" (click)="onLogout()">
+        <span [innerHTML]="getIcon('logout', 18)"></span>
+        <span class="cp-nav-name">Déconnexion</span>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <div class="cp-main">
+
+    <!-- Topbar -->
+    <header class="cp-topbar">
+      <div class="cp-topbar-left">
+        <div class="cp-search">
+          <span class="cp-search-icon" [innerHTML]="getIcon('search', 16)"></span>
+          <input class="cp-search-input" type="text" placeholder="Rechercher matchs, événements…">
+        </div>
+      </div>
+      <div class="cp-topbar-right">
+        <button class="cp-find-btn" [routerLink]="'/matchs'">
+          <span [innerHTML]="getIcon('plus', 15)"></span>
+          Trouver un match
+        </button>
+        <button class="cp-notif-btn" title="Notifications">
+          <span [innerHTML]="getIcon('bell', 20)"></span>
+          <span class="cp-notif-dot"></span>
+        </button>
+        <div class="cp-profile-trigger" (click)="profileOpen = !profileOpen">
+          <div class="cp-profile-avatar">{{ userInitial }}</div>
+          <span class="cp-profile-name">{{ userName }}</span>
+          <span class="cp-profile-chevron" [innerHTML]="getIcon('chevron', 14)"></span>
+          <div class="cp-profile-dropdown" *ngIf="profileOpen" (click)="$event.stopPropagation()">
+            <button class="cp-dd-item cp-dd-logout" (click)="onLogout()">Se déconnecter</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="cp-content">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>

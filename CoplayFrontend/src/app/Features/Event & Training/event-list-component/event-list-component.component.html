@@ -1,158 +1,81 @@
-<div class="events-page">
+<div class="pg">
 
-  <!-- ══ HEADER ══ -->
-  <div class="page-header">
-    <div class="header-left">
-      <h1 class="page-title"><span class="title-icon">📅</span> Événements</h1>
-      <p class="page-subtitle">Gérez les entraînements et matchs de votre équipe</p>
+  <!-- Header -->
+  <div class="pg-header">
+    <div>
+      <h1 class="pg-title">Événements</h1>
+      <p class="pg-sub">{{ events.length }} événement{{ events.length !== 1 ? 's' : '' }} au total</p>
     </div>
-
-    <!-- ✅ MODIFIÉ : Bouton visible seulement pour les admins -->
-    <button class="btn-create" (click)="goToCreate()" *ngIf="isAdmin">
-      <span class="btn-icon">＋</span> Créer un événement
-    </button>
+    <button class="pg-btn-primary" (click)="goToCreate()">+ Créer un événement</button>
   </div>
 
-  <!-- ══ STATS BAR ══ -->
-  <div class="stats-bar" *ngIf="!isLoading && !errorMessage && events.length > 0">
-    <div class="stat-chip">
-      <span class="stat-dot all"></span>
-      <span class="stat-value">{{ events.length }}</span>
-      <span class="stat-label">Total</span>
-    </div>
-
-    <div class="stat-divider"></div>
-
-    <div class="stat-chip">
-      <span class="stat-dot scheduled"></span>
-      <span class="stat-value">{{ countByStatus('SCHEDULED') }}</span>
-      <span class="stat-label">Planifiés</span>
-    </div>
-
-    <div class="stat-divider"></div>
-
-    <div class="stat-chip">
-      <span class="stat-dot ongoing"></span>
-      <span class="stat-value">{{ countByStatus('ONGOING') }}</span>
-      <span class="stat-label">En cours</span>
-    </div>
-
-    <div class="stat-divider"></div>
-
-    <div class="stat-chip">
-      <span class="stat-dot completed"></span>
-      <span class="stat-value">{{ countByStatus('COMPLETED') }}</span>
-      <span class="stat-label">Terminés</span>
-    </div>
-  </div>
-
-  <!-- ══ FILTRES ══ -->
-  <div class="filters">
+  <!-- Filtres -->
+  <div class="pg-filters">
     <button
-      *ngFor="let option of statusOptions"
-      class="filter-btn"
-      [class.active]="selectedStatus === option.value"
-      (click)="filterByStatus(option.value)">
-      {{ option.label }}
+      *ngFor="let opt of statusOptions"
+      class="pg-filter-btn"
+      [class.active]="selectedStatus === opt.value"
+      (click)="filterByStatus(opt.value)"
+    >
+      {{ opt.label }}
+      <span class="pg-filter-count" *ngIf="opt.value !== 'ALL'">{{ countByStatus(opt.value) }}</span>
     </button>
   </div>
 
-  <!-- ══ LOADING ══ -->
-  <div class="loading" *ngIf="isLoading">
-    <div class="spinner"></div>
-    <p>Chargement des événements...</p>
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="pg-skeleton-grid">
+    <div class="pg-skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
   </div>
 
-  <!-- ══ ERREUR ══ -->
-  <div class="error-message" *ngIf="errorMessage">
-    <span>⚠️ {{ errorMessage }}</span>
-    <button (click)="loadEvents()">Réessayer</button>
+  <!-- Erreur -->
+  <div *ngIf="errorMessage" class="pg-alert pg-alert-error">{{ errorMessage }}</div>
+
+  <!-- Vide -->
+  <div *ngIf="!isLoading && filteredEvents.length === 0 && !errorMessage" class="pg-empty">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(14,26,43,0.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <p>Aucun événement pour ce filtre</p>
   </div>
 
-  <!-- ══ ÉTAT VIDE ══ -->
-  <div class="empty-state" *ngIf="!isLoading && filteredEvents.length === 0 && !errorMessage">
-    <div class="empty-icon">🏃</div>
-    <h3>Aucun événement trouvé</h3>
-    <p>{{ isAdmin ? 'Créez votre premier événement pour démarrer la saison !' : 'Aucun événement disponible pour le moment.' }}</p>
-    <button class="btn-create" (click)="goToCreate()" *ngIf="isAdmin">＋ Créer un événement</button>
-  </div>
+  <!-- Grille -->
+  <div *ngIf="!isLoading" class="pg-grid">
+    <div *ngFor="let event of filteredEvents" class="ev-card" (click)="goToDetail(event.eventId!)">
 
-  <!-- ══ GRILLE ══ -->
-  <div class="events-grid" *ngIf="!isLoading && filteredEvents.length > 0">
-    <div
-      class="event-card"
-      *ngFor="let event of filteredEvents"
-      [ngClass]="'card-' + getStatusKey(event.status)"
-      (click)="goToDetail(event.eventId!)">
-
-      <div class="card-header">
-        <span class="status-badge" [ngClass]="getStatusClass(event.status)">
-          {{ getStatusLabel(event.status) }}
+      <!-- Status pill -->
+      <div class="ev-card-top">
+        <span class="ev-status" [ngClass]="getStatusKey(event.status)">{{ getStatusLabel(event.status) }}</span>
+        <span class="ev-paid" *ngIf="event.isPaid">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{ event.registrationFee }} DT
         </span>
-        <span class="visibility-chip" *ngIf="event.isPublic">🌍 Public</span>
-        <span class="visibility-chip private" *ngIf="!event.isPublic">🔒 Privé</span>
       </div>
 
-      <h3 class="event-title">{{ event.title }}</h3>
+      <h3 class="ev-title">{{ event.title }}</h3>
 
-      <div class="event-info">
-        <div class="info-row">
-          <span class="info-icon">🗓️</span>
-          <span>{{ formatDate(event.startDate) }}</span>
+      <div class="ev-meta">
+        <div class="ev-meta-row">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          {{ formatDate(event.startDate) }}
         </div>
-
-        <div class="info-row" *ngIf="event.location">
-          <span class="info-icon">📍</span>
-          <span>{{ event.location.name }}</span>
+        <div class="ev-meta-row" *ngIf="event.location?.name">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ event.location?.name }}
         </div>
-
-        <div class="info-row" *ngIf="event.maxParticipants">
-          <span class="info-icon">👥</span>
-          <span>Max {{ event.maxParticipants }} joueurs</span>
-        </div>
-
-        <div class="info-row fee" *ngIf="event.isPaid">
-          <span class="info-icon">💰</span>
-          <span>{{ event.registrationFee }} DT</span>
+        <div class="ev-meta-row" *ngIf="event.maxParticipants">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Max {{ event.maxParticipants }} participants
         </div>
       </div>
 
-      <div class="card-footer">
-        <!-- ✅ MODIFIÉ : Actions visibles seulement pour les admins -->
-        <div class="card-actions" *ngIf="isAdmin">
-          <button
-            class="btn-action btn-edit-small"
-            (click)="goToEdit(event.eventId!); $event.stopPropagation()"
-            title="Modifier"
-            aria-label="Modifier">
-            <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
-            </svg>
-          </button>
-
-          <button
-            class="btn-action btn-delete"
-            (click)="deleteEvent(event); $event.stopPropagation()"
-            [disabled]="deletingEventId === event.eventId"
-            title="Supprimer"
-            aria-label="Supprimer">
-            <svg *ngIf="deletingEventId !== event.eventId" class="action-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M3 6h18"></path>
-              <path d="M8 6V4h8v2"></path>
-              <path d="M19 6l-1 14H6L5 6"></path>
-              <path d="M10 11v6"></path>
-              <path d="M14 11v6"></path>
-            </svg>
-            <span *ngIf="deletingEventId === event.eventId" class="action-loading">...</span>
-          </button>
-        </div>
-
-        <button class="btn-detail" (click)="goToDetail(event.eventId!); $event.stopPropagation()">
-          Voir le détail →
+      <div class="ev-actions" *ngIf="canManage(event)" (click)="$event.stopPropagation()">
+        <button class="ev-btn-edit" (click)="goToEdit(event)">Modifier</button>
+        <button
+          class="ev-btn-delete"
+          (click)="deleteEvent(event)"
+          [disabled]="deletingEventId === event.eventId"
+        >
+          {{ deletingEventId === event.eventId ? '…' : 'Supprimer' }}
         </button>
       </div>
-
     </div>
   </div>
 

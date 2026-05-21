@@ -115,6 +115,17 @@
             <artifactId>stripe-java</artifactId>
             <version>26.12.0</version>
         </dependency>
+
+        <!-- Spring Boot Actuator + Prometheus metrics -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

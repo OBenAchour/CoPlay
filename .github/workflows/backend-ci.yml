@@ -1,0 +1,48 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'Coplaybackend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    paths:
+      - 'Coplaybackend/**'
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build & Test
+        working-directory: Coplaybackend
+        run: mvn verify -B
+        env:
+          MONGODB_URI: mongodb://localhost:27017/coplay_test
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/coplay-backend:${{ github.sha }} ./Coplaybackend
+
+      - name: Push to Docker Hub
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/coplay-backend:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/coplay-backend:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/coplay-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/coplay-backend:latest

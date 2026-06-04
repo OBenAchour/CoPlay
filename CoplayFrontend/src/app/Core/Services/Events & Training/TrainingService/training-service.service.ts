@@ -54,6 +54,14 @@ export class TrainingService {
   }
 
   /**
+   * FONCTION MÉTIER — Programmes recommandés selon le niveau du joueur.
+   * GET /api/training/recommended/{userId}
+   */
+  getRecommendedPrograms(userId: string): Observable<TrainingProgram[]> {
+    return this.http.get<TrainingProgram[]>(`${this.baseUrl}/recommended/${userId}`);
+  }
+
+  /**
    * Retourne tous les programmes d'entraînement.
    * GET /api/training/all
    */

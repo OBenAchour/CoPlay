@@ -1,6 +1,7 @@
 package com.example.coplaybackend.Controllers.Events;
 
 import com.example.coplaybackend.DTOs.Events.EventRequestDTO;
+import com.example.coplaybackend.DTOs.Events.FlouciInitResponse;
 import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Events.*;
 import com.example.coplaybackend.Repositories.Auth.UserRepository;
@@ -8,7 +9,9 @@ import com.example.coplaybackend.Repositories.Events.EventRepository;
 import com.example.coplaybackend.Repositories.Events.LocationRepository;
 import com.example.coplaybackend.Repositories.Teams.TeamRepository;
 import com.example.coplaybackend.Services.Events.EventService;
+import com.example.coplaybackend.Services.Events.FlouciPaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +29,11 @@ public class EventController {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;           // ✅ AJOUTÉ
     private final LocationRepository locationRepository;   // ✅ AJOUTÉ
+    private final FlouciPaymentService flouciPaymentService; // ✅ paiement Flouci
+
+    /** URL du frontend pour les redirections de retour Flouci. */
+    @Value("${app.frontend-url:http://localhost:4200}")
+    private String frontendUrl;
 
     // ── Méthodes utilitaires ───────────────────────────────────────
 
@@ -202,10 +210,31 @@ public class EventController {
         return ResponseEntity.ok(eventService.getParticipations(event));
     }
 
+    /**
+     * Annule la participation (RSVP) d'un joueur à un événement.
+     * DELETE /api/events/rsvp/delete/{eventId}/{userId}
+     * Libère la place et promeut le prochain en liste d'attente si besoin.
+     */
+    @DeleteMapping("/rsvp/delete/{eventId}/{userId}")
+    public ResponseEntity<Void> cancelRsvp(
+            @PathVariable String eventId,
+            @PathVariable String userId) {
+
+        Event event = findEventOrThrow(eventId);
+        User user   = findUserOrThrow(userId);
+
+        eventService.cancelRsvp(event, user);
+        return ResponseEntity.noContent().build();
+    }
+
     // ═══════════════════════════════════════════════════════════════
     //  PAIEMENT
     // ═══════════════════════════════════════════════════════════════
 
+    /**
+     * Paiement « simulé » (démo) : passe directement le statut à PAID sans passerelle.
+     * Conservé comme repli quand Flouci n'est pas configuré.
+     */
     @PutMapping("/payment/confirm/{eventId}/{userId}")
     public ResponseEntity<EventParticipation> confirmPayment(
             @PathVariable String eventId,
@@ -214,6 +243,58 @@ public class EventController {
         Event event = findEventOrThrow(eventId);
         User user   = findUserOrThrow(userId);
 
+        return ResponseEntity.ok(eventService.confirmPayment(event, user));
+    }
+
+    /**
+     * Initie un paiement Flouci pour la participation du joueur.
+     * POST /api/events/payment/initiate/{eventId}/{userId}
+     * Renvoie l'URL de paiement Flouci (link) + le payment_id (stocké côté participation).
+     */
+    @PostMapping("/payment/initiate/{eventId}/{userId}")
+    public ResponseEntity<FlouciInitResponse> initiateFlouciPayment(
+            @PathVariable String eventId,
+            @PathVariable String userId) {
+
+        Event event = findEventOrThrow(eventId);
+        User user   = findUserOrThrow(userId);
+
+        EventParticipation participation = eventService.getParticipation(event, user);
+        double amount = event.getRegistrationFee() != null ? event.getRegistrationFee() : 0.0;
+
+        String successLink = frontendUrl + "/events/" + eventId + "?flouciPaid=1";
+        String failLink    = frontendUrl + "/events/" + eventId + "?flouciPaid=0";
+
+        FlouciInitResponse init = flouciPaymentService.generatePayment(
+                amount, successLink, failLink, participation.getParticipationId());
+
+        // Mémoriser le payment_id pour la vérification au retour
+        eventService.attachFlouciPaymentId(event, user, init.getPaymentId());
+
+        return ResponseEntity.ok(init);
+    }
+
+    /**
+     * Vérifie le paiement Flouci au retour de la page de paiement et finalise (PAID).
+     * PUT /api/events/payment/verify/{eventId}/{userId}
+     */
+    @PutMapping("/payment/verify/{eventId}/{userId}")
+    public ResponseEntity<EventParticipation> verifyFlouciPayment(
+            @PathVariable String eventId,
+            @PathVariable String userId) {
+
+        Event event = findEventOrThrow(eventId);
+        User user   = findUserOrThrow(userId);
+
+        EventParticipation participation = eventService.getParticipation(event, user);
+        boolean paid = flouciPaymentService.verifyPayment(participation.getFlouciPaymentId());
+
+        if (!paid) {
+            // Paiement non confirmé → on renvoie l'état actuel (toujours PENDING)
+            return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(participation);
+        }
+
+        // Paiement confirmé → on finalise via la logique métier existante
         return ResponseEntity.ok(eventService.confirmPayment(event, user));
     }
 

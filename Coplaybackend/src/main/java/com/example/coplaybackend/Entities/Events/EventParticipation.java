@@ -77,6 +77,12 @@ public class EventParticipation {
 
     private LocalDateTime paymentDeadline;
 
+    /**
+     * Identifiant de la transaction Flouci générée à l'initiation du paiement.
+     * Sert à vérifier le statut au retour de la page de paiement Flouci.
+     */
+    private String flouciPaymentId;
+
     // ── Présence réelle ────────────────────────────────────────────
     /**
      * Validée manuellement par le capitaine après l'événement.

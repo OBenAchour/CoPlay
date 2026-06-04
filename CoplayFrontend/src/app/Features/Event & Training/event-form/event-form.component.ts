@@ -39,6 +39,9 @@ export class EventFormComponent implements OnInit {
   teams: Team[] = [];
   selectedTeamId: string = '';
 
+  // userId réel (absent du JWT/login) chargé via /api/users/me
+  currentUserId = '';
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -52,6 +55,10 @@ export class EventFormComponent implements OnInit {
   ngOnInit(): void {
     this.buildForm();
     this.loadTeams();
+    this.eventService.getCurrentUser().subscribe({
+      next: (u) => { this.currentUserId = u?.userId || u?.id || ''; },
+      error: () => { this.currentUserId = this.authService.getUserId(); }
+    });
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -281,7 +288,7 @@ export class EventFormComponent implements OnInit {
 
     const payload = {
       teamId: this.selectedTeamId,
-      organizerId: this.authService.getUserId() || undefined,
+      organizerId: this.currentUserId || this.authService.getUserId() || undefined,
       title: v.title,
       startDate: v.startDate,
       endDate: v.endDate || null,
@@ -305,8 +312,8 @@ export class EventFormComponent implements OnInit {
         this.isSubmitting = false;
         this.router.navigate(['/events']);
       },
-      error: () => {
-        this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'Une erreur est survenue. Veuillez réessayer.';
         this.isSubmitting = false;
       }
     });

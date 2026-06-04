@@ -7,6 +7,19 @@
     </button>
   </div>
 
+  <!-- ✅ FONCTION MÉTIER : recommandation par niveau -->
+  <div class="reco-bar">
+    <button class="btn-filter" [class.active]="!showingRecommended" (click)="loadPrograms()">
+      📚 Tous les programmes
+    </button>
+    <button class="btn-filter" [class.active]="showingRecommended" (click)="loadRecommended()">
+      ⭐ Recommandés pour mon niveau<span *ngIf="myLevel"> ({{ myLevel }})</span>
+    </button>
+  </div>
+  <p *ngIf="showingRecommended" class="reco-hint">
+    Programmes adaptés à votre niveau sportif <strong>{{ myLevel || '—' }}</strong>.
+  </p>
+
   <div *ngIf="isLoading" class="loading">Chargement...</div>
   <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
 

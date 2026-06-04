@@ -23,6 +23,7 @@ export class EventDetailComponent implements OnInit {
   userParticipation: EventParticipation | null = null;
   mapsLink = '';
   userAttendanceRate: number | null = null;  // ✅ NOUVEAU
+  currentUserId = '';                          // ✅ chargé via /api/users/me
 
   isLoading        = false;
   errorMessage     = '';
@@ -32,6 +33,10 @@ export class EventDetailComponent implements OnInit {
   cancelError      = '';
   isChangingStatus = false;
   statusError      = '';
+  isPaying         = false;   // ✅ paiement en cours
+  payError         = '';
+  isCancellingRsvp = false;   // ✅ annulation participation en cours
+  cancelRsvpError  = '';
 
   // Exposer les enums au template
   RSVPStatus          = RSVPStatus;
@@ -49,18 +54,29 @@ export class EventDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadEvent(id);
-      this.loadUserAttendanceRate();  // ✅ NOUVEAU
-    } else {
+    if (!id) {
       this.errorMessage = 'Identifiant d\'événement manquant.';
+      return;
     }
+
+    // L'userId n'est ni dans le login ni dans le JWT → on le récupère via /me,
+    // puis on charge l'événement et les participations (matching correct).
+    this.eventService.getCurrentUser().subscribe({
+      next: (u) => { this.currentUserId = u?.userId || u?.id || ''; this.initData(id); },
+      error: () => { this.currentUserId = this.authService.getUserId(); this.initData(id); }
+    });
+  }
+
+  private initData(id: string): void {
+    this.loadEvent(id);
+    this.loadUserAttendanceRate();
+    this.handleFlouciReturn(id);  // ✅ retour de paiement Flouci
   }
 
   // ─── Getters Auth ───────────────────────────────────────────────────────────
 
   get isAdmin(): boolean      { return this.authService.isAdmin(); }
-  get userId():  string       { return this.authService.getUserId(); }
+  get userId():  string       { return this.currentUserId || this.authService.getUserId(); }
 
   /** True if current user can manage this event (organizer or admin) */
   get canManageEvent(): boolean {
@@ -212,6 +228,119 @@ export class EventDetailComponent implements OnInit {
     }
   });
 }
+
+  // ─── Paiement ───────────────────────────────────────────────────────────────
+
+  /** True si l'utilisateur a un paiement en attente sur un événement encore planifié. */
+  get canPayNow(): boolean {
+    return !!this.userParticipation
+      && this.userParticipation.paymentStatus === PaymentStatus.PENDING
+      && this.event?.status === EventStatus.SCHEDULED;
+  }
+
+  /** Affiche la page de paiement (overlay). */
+  showCheckout = false;
+
+  /**
+   * Clic « Payer » :
+   *  - Si Flouci est configuré (jetons) → redirige vers la vraie page Flouci.
+   *  - Sinon → ouvre la page de paiement intégrée (interface de paiement simulée).
+   */
+  confirmPayment(): void {
+    if (!this.event?.eventId || !this.userId) return;
+
+    this.isPaying = true;
+    this.payError = '';
+
+    this.eventService.initiateFlouciPayment(this.event.eventId, this.userId).subscribe({
+      next: (res) => {
+        this.isPaying = false;
+        if (res?.link) {
+          window.location.href = res.link;      // vraie passerelle Flouci
+        } else {
+          this.openCheckout();                  // page de paiement intégrée
+        }
+      },
+      error: () => {
+        // Flouci non configuré → on affiche quand même une interface de paiement
+        this.isPaying = false;
+        this.openCheckout();
+      }
+    });
+  }
+
+  openCheckout(): void { this.showCheckout = true; this.payError = ''; }
+  closeCheckout(): void { this.showCheckout = false; }
+
+  /** Confirmation du paiement depuis la page de paiement intégrée. */
+  payNow(): void {
+    if (!this.event?.eventId || !this.userId) return;
+
+    this.isPaying = true;
+    this.payError = '';
+
+    this.eventService.confirmPayment(this.event.eventId, this.userId).subscribe({
+      next: participation => {
+        this.userParticipation = participation;
+        this.isPaying = false;
+        this.showCheckout = false;
+        this.loadParticipations(this.event!.eventId!);
+      },
+      error: (err) => {
+        console.error('Erreur paiement:', err);
+        this.payError = err.error?.message || 'Erreur lors du paiement.';
+        this.isPaying = false;
+      }
+    });
+  }
+
+  /** Au retour de la page Flouci (?flouciPaid=1) : vérifie et finalise le paiement. */
+  private handleFlouciReturn(eventId: string): void {
+    const flag = this.route.snapshot.queryParamMap.get('flouciPaid');
+    if (!flag) return;
+
+    if (flag === '1') {
+      this.eventService.verifyFlouciPayment(eventId, this.userId).subscribe({
+        next: (participation) => {
+          this.userParticipation = participation;
+          this.loadParticipations(eventId);
+        },
+        error: () => { this.payError = 'Le paiement Flouci n\'a pas pu être confirmé.'; }
+      });
+    } else {
+      this.payError = 'Paiement annulé ou échoué.';
+    }
+  }
+
+  // ─── Annulation participation (RSVP) ─────────────────────────────────────────
+
+  /** True si l'utilisateur a une participation annulable (événement encore planifié). */
+  get canCancelRsvp(): boolean {
+    return !!this.userParticipation
+      && this.event?.status === EventStatus.SCHEDULED
+      && this.userParticipation.participationStatus !== ParticipationStatus.DECLINED;
+  }
+
+  cancelRsvp(): void {
+    if (!this.event?.eventId || !this.userId) return;
+    if (!confirm('Annuler votre participation à cet événement ?')) return;
+
+    this.isCancellingRsvp = true;
+    this.cancelRsvpError = '';
+
+    this.eventService.cancelRsvp(this.event.eventId, this.userId).subscribe({
+      next: () => {
+        this.userParticipation = null;
+        this.isCancellingRsvp = false;
+        this.loadParticipations(this.event!.eventId!);
+      },
+      error: (err) => {
+        console.error('Erreur annulation participation:', err);
+        this.cancelRsvpError = err.error?.message || 'Erreur lors de l\'annulation.';
+        this.isCancellingRsvp = false;
+      }
+    });
+  }
 
   // ─── Annulation ─────────────────────────────────────────────────────────────
 

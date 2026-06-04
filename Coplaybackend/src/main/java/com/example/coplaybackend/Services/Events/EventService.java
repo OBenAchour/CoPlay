@@ -4,12 +4,15 @@ import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Events.*;
 import com.example.coplaybackend.Repositories.Events.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class EventService {
 
@@ -39,8 +42,8 @@ public class EventService {
             throw new IllegalArgumentException("La date de début doit être dans le futur.");
         }
 
-        // Règle 2 : endDate après startDate
-        if (event.getEndDate().isBefore(event.getStartDate())) {
+        // Règle 2 : endDate après startDate (endDate est optionnelle)
+        if (event.getEndDate() != null && event.getEndDate().isBefore(event.getStartDate())) {
             throw new IllegalArgumentException("La date de fin doit être après la date de début.");
         }
 
@@ -124,7 +127,7 @@ public class EventService {
         // Si payant → rembourser tous les joueurs ayant payé
         if (Boolean.TRUE.equals(event.getIsPaid())) {
             List<EventParticipation> paidParticipations =
-                    participationRepository.findByEventIdAndPaymentStatus(event, PaymentStatus.PAID);
+                    participationRepository.findByEventId_EventIdAndPaymentStatus(event.getEventId(), PaymentStatus.PAID);
 
             paidParticipations.forEach(p -> {
                 p.setPaymentStatus(PaymentStatus.REFUNDED);
@@ -137,7 +140,7 @@ public class EventService {
         eventRepository.save(event);
 
         // Supprimer toutes les participations non remboursées
-        participationRepository.deleteByEventIdAndPaymentStatusNot(event, PaymentStatus.REFUNDED);
+        participationRepository.deleteByEventId_EventIdAndPaymentStatusNot(event.getEventId(), PaymentStatus.REFUNDED);
     }
 
     /**
@@ -202,7 +205,7 @@ public class EventService {
         }
 
         // Participation existante ?
-        return participationRepository.findByEventIdAndUserId(event, user)
+        return participationRepository.findByEventId_EventIdAndUserId_UserId(event.getEventId(), user.getUserId())
                 .map(existing -> updateExistingParticipation(existing, event, rsvpStatus))
                 .orElseGet(() -> createNewParticipation(event, user, rsvpStatus, userAttendanceScore));
     }
@@ -269,7 +272,7 @@ public class EventService {
     private void applyYesLogic(EventParticipation participation, Event event) {
         // Compter les CONFIRMED actuels
         long confirmedCount = participationRepository
-                .countByEventIdAndParticipationStatus(event, ParticipationStatus.CONFIRMED);
+                .countByEventId_EventIdAndParticipationStatus(event.getEventId(), ParticipationStatus.CONFIRMED);
 
         // Places disponibles ?
         boolean hasPlace = event.getMaxParticipants() == null ||
@@ -298,14 +301,42 @@ public class EventService {
      */
     private void promoteNextWaiting(Event event) {
         List<EventParticipation> waitingList =
-                participationRepository.findByEventIdAndParticipationStatusOrderByAttendanceScoreDesc(
-                        event, ParticipationStatus.WAITING);
+                participationRepository.findByEventId_EventIdAndParticipationStatusOrderByAttendanceScoreDesc(
+                        event.getEventId(), ParticipationStatus.WAITING);
 
         if (!waitingList.isEmpty()) {
             EventParticipation next = waitingList.get(0);
             next.setParticipationStatus(ParticipationStatus.CONFIRMED);
             // TODO : envoyer une notification au joueur promu
             participationRepository.save(next);
+        }
+    }
+
+    /**
+     * Annule la participation (RSVP) d'un joueur à un événement.
+     * Supprime la participation : le joueur pourra réinscrire de zéro.
+     * Si le joueur était CONFIRMED, sa place est libérée et le prochain
+     * WAITING (meilleur score) est automatiquement promu.
+     *
+     * Bloqué si l'événement n'est plus SCHEDULED.
+     */
+    public void cancelRsvp(Event event, User user) {
+        if (event.getStatus() != EventStatus.SCHEDULED) {
+            throw new IllegalStateException(
+                    "Impossible d'annuler une participation à un événement " + event.getStatus());
+        }
+
+        EventParticipation participation = participationRepository
+                .findByEventId_EventIdAndUserId_UserId(event.getEventId(), user.getUserId())
+                .orElseThrow(() -> new RuntimeException("Participation introuvable."));
+
+        boolean wasConfirmed =
+                participation.getParticipationStatus() == ParticipationStatus.CONFIRMED;
+
+        participationRepository.delete(participation);
+
+        if (wasConfirmed) {
+            promoteNextWaiting(event);
         }
     }
 
@@ -318,7 +349,7 @@ public class EventService {
      */
     public EventParticipation confirmPayment(Event event, User user) {
         EventParticipation participation = participationRepository
-                .findByEventIdAndUserId(event, user)
+                .findByEventId_EventIdAndUserId_UserId(event.getEventId(), user.getUserId())
                 .orElseThrow(() -> new RuntimeException("Participation introuvable"));
 
         if (participation.getPaymentStatus() != PaymentStatus.PENDING) {
@@ -339,13 +370,44 @@ public class EventService {
     }
 
     /**
-     * Expire les paiements dépassés.
-     * À appeler via un scheduler toutes les heures.
+     * Retourne la participation d'un joueur à un événement (ou lève une exception).
      */
+    public EventParticipation getParticipation(Event event, User user) {
+        return participationRepository
+                .findByEventId_EventIdAndUserId_UserId(event.getEventId(), user.getUserId())
+                .orElseThrow(() -> new RuntimeException("Participation introuvable."));
+    }
+
+    /**
+     * Associe l'identifiant de transaction Flouci à la participation
+     * (appelé lors de l'initiation du paiement). Exige un paiement en attente.
+     */
+    public EventParticipation attachFlouciPaymentId(Event event, User user, String paymentId) {
+        EventParticipation participation = getParticipation(event, user);
+
+        if (participation.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Aucun paiement en attente pour cette participation.");
+        }
+
+        participation.setFlouciPaymentId(paymentId);
+        return participationRepository.save(participation);
+    }
+
+    /**
+     * Expire les paiements dépassés.
+     * Planifié automatiquement toutes les 15 min (voir EventSchedulingConfig pour @EnableScheduling).
+     * - fixedDelay : attend la fin de l'exécution précédente avant de reprogrammer.
+     * - initialDelay : laisse l'application démarrer avant la 1re exécution.
+     */
+    @Scheduled(fixedDelay = 15 * 60 * 1000L, initialDelay = 60 * 1000L)
     public void expireOverduePayments() {
         List<EventParticipation> overduePayments =
                 participationRepository.findByPaymentStatusAndPaymentDeadlineBefore(
                         PaymentStatus.PENDING, LocalDateTime.now());
+
+        if (!overduePayments.isEmpty()) {
+            log.info("[Events] Expiration auto : {} paiement(s) en retard traité(s).", overduePayments.size());
+        }
 
         overduePayments.forEach(p -> {
             p.setPaymentStatus(PaymentStatus.EXPIRED);
@@ -376,7 +438,7 @@ public class EventService {
         }
 
         EventParticipation participation = participationRepository
-                .findByEventIdAndUserId(event, user)
+                .findByEventId_EventIdAndUserId_UserId(event.getEventId(), user.getUserId())
                 .orElseThrow(() -> new RuntimeException("Participation introuvable."));
 
         participation.setIsPresent(isPresent);
@@ -400,7 +462,7 @@ public class EventService {
      * US-031
      */
     public List<EventParticipation> getParticipations(Event event) {
-        return participationRepository.findByEventId(event);
+        return participationRepository.findByEventId_EventId(event.getEventId());
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -414,7 +476,7 @@ public class EventService {
      */
     public double getAttendanceRate(User user) {
         List<EventParticipation> allParticipations =
-                participationRepository.findByUserId(user);
+                participationRepository.findByUserId_UserId(user.getUserId());
 
         if (allParticipations.isEmpty()) return 0.0;
 

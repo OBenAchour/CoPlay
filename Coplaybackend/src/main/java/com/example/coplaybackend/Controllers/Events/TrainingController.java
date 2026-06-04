@@ -1,9 +1,11 @@
 package com.example.coplaybackend.Controllers.Events;
 
 import com.example.coplaybackend.DTOs.Events.TrainingRequestDTO;
+import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Events.Exercise;
 import com.example.coplaybackend.Entities.Events.TrainingProgram;
 import com.example.coplaybackend.Entities.Teams.Team;
+import com.example.coplaybackend.Repositories.Auth.UserRepository;
 import com.example.coplaybackend.Repositories.Teams.TeamRepository;
 import com.example.coplaybackend.Services.Events.TrainingService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class TrainingController {
 
     private final TrainingService trainingService;
     private final TeamRepository teamRepository;
+    private final UserRepository userRepository;   // ✅ pour la recommandation par niveau
 
     // ═══════════════════════════════════════════════════════════════
     //  PROGRAMMES
@@ -75,6 +78,17 @@ public class TrainingController {
     @GetMapping("/get/level/{level}")
     public ResponseEntity<List<TrainingProgram>> getProgramsByLevel(@PathVariable String level) {
         return ResponseEntity.ok(trainingService.getProgramsByLevel(level));
+    }
+
+    /**
+     * FONCTION MÉTIER — Programmes recommandés pour un joueur selon son niveau.
+     * GET /api/training/recommended/{userId}
+     */
+    @GetMapping("/recommended/{userId}")
+    public ResponseEntity<List<TrainingProgram>> getRecommendedPrograms(@PathVariable String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : " + userId));
+        return ResponseEntity.ok(trainingService.getRecommendedProgramsForUser(user));
     }
 
     /**

@@ -1,14 +1,19 @@
 package com.example.coplaybackend.Services.Events;
 
+import com.example.coplaybackend.Entities.Auth.SportLevel;
+import com.example.coplaybackend.Entities.Auth.User;
 import com.example.coplaybackend.Entities.Events.Exercise;
 import com.example.coplaybackend.Entities.Events.TrainingProgram;
 import com.example.coplaybackend.Repositories.Events.TrainingProgramRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * TrainingService — logique métier des programmes d'entraînement.
@@ -54,6 +59,52 @@ public class TrainingService {
 
     public List<TrainingProgram> getProgramsByLevel(String level) {
         return trainingProgramRepository.findByLevel(level);
+    }
+
+    /**
+     * FONCTION MÉTIER — Recommandation de programmes par niveau.
+     *
+     * Recommande au joueur les programmes d'entraînement adaptés à SON niveau
+     * sportif (défini dans son profil : BEGINNER / INTERMEDIATE / ADVANCED / PROFESSIONAL).
+     *
+     * Règle :
+     *  - Si le joueur a un niveau renseigné → programmes de ce niveau exact.
+     *  - Sinon (profil/niveau absent) → on renvoie tous les programmes (pas de filtre possible).
+     */
+    public List<TrainingProgram> getRecommendedProgramsForUser(User user) {
+        SportLevel level = (user.getProfile() != null) ? user.getProfile().getLevel() : null;
+
+        if (level == null) {
+            return getAllPrograms();
+        }
+
+        // Le niveau du joueur est un enum anglais (BEGINNER…), mais les programmes
+        // peuvent stocker le niveau en français (Débutant…). On matche donc de façon
+        // tolérante : insensible à la casse et aux accents, FR comme EN.
+        Set<String> accepted = acceptedLabels(level);
+
+        return getAllPrograms().stream()
+                .filter(p -> p.getLevel() != null && accepted.contains(normalize(p.getLevel())))
+                .collect(Collectors.toList());
+    }
+
+    /** Libellés acceptés (normalisés) pour un niveau, en français et en anglais. */
+    private Set<String> acceptedLabels(SportLevel level) {
+        switch (level) {
+            case BEGINNER:     return Set.of("beginner", "debutant");
+            case INTERMEDIATE: return Set.of("intermediate", "intermediaire");
+            case ADVANCED:     return Set.of("advanced", "avance");
+            case PROFESSIONAL: return Set.of("professional", "professionnel", "expert");
+            default:           return Set.of(normalize(level.name()));
+        }
+    }
+
+    /** Minuscule + suppression des accents (Débutant → debutant). */
+    private String normalize(String s) {
+        if (s == null) return "";
+        String stripped = Normalizer.normalize(s.trim(), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return stripped.toLowerCase();
     }
 
     public TrainingProgram updateProgram(String programId, TrainingProgram updatedData) {

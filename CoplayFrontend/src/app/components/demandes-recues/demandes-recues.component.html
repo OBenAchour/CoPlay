@@ -1,0 +1,92 @@
+<div class="page">
+
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <button class="back-btn" routerLink="/team">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour aux équipes
+    </button>
+    <div class="header-info">
+      <div class="header-eyebrow">ÉQUIPES</div>
+      <h1 class="header-title">Demandes d'adhésion reçues</h1>
+      <p class="header-sub">Gérez les demandes des joueurs qui veulent rejoindre vos équipes.</p>
+    </div>
+  </div>
+
+  <!-- ── Toast ── -->
+  <div class="toast" *ngIf="toast" [class.toast-success]="toastType==='success'" [class.toast-error]="toastType==='error'">
+    <svg *ngIf="toastType==='success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <svg *ngIf="toastType==='error'"   width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    {{ toast }}
+  </div>
+
+  <!-- ── Compteur ── -->
+  <div class="counter-badge" *ngIf="!loading && getDemandesTotalCount() > 0">
+    {{ getDemandesTotalCount() }} demande(s) en attente
+  </div>
+
+  <!-- ── Skeleton ── -->
+  <div class="skeleton-list" *ngIf="loading">
+    <div class="skeleton-item" *ngFor="let i of [1,2,3,4,5]"></div>
+  </div>
+
+  <!-- ── Demandes par équipe ── -->
+  <ng-container *ngIf="!loading">
+    <div class="teams-section" *ngFor="let team of myTeams">
+      <div class="team-header">
+        <div class="team-avatar">{{ teamInitial(team.name) }}</div>
+        <div class="team-info">
+          <h3>{{ team.name }}</h3>
+          <span class="demande-count" *ngIf="(demandesMap[team.teamId!] || []).length > 0">
+            {{ (demandesMap[team.teamId!] || []).length }} demande(s)
+          </span>
+          <span class="no-demandes" *ngIf="(demandesMap[team.teamId!] || []).length === 0">
+            Aucune demande
+          </span>
+        </div>
+      </div>
+
+      <!-- Demandes pour cette équipe -->
+      <div class="demandes-list" *ngIf="(demandesMap[team.teamId!] || []).length > 0">
+        <div class="demande-item" *ngFor="let demande of demandesMap[team.teamId!] || []">
+          <div class="demande-user">
+            <div class="user-avatar">{{ demande.userId.substring(0,2).toUpperCase() }}</div>
+            <div class="user-info">
+              <strong>{{ demande.userId }}</strong>
+              <span>{{ formatDate(demande.createdAt) }}</span>
+            </div>
+          </div>
+          <div class="demande-actions">
+            <button
+              class="btn-accept"
+              [disabled]="processing === demande.demandeId"
+              (click)="acceptDemande(demande)">
+              <div class="btn-loader" *ngIf="processing === demande.demandeId"></div>
+              <ng-container *ngIf="processing !== demande.demandeId">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Accepter
+              </ng-container>
+            </button>
+            <button
+              class="btn-refuse"
+              [disabled]="processing === demande.demandeId"
+              (click)="refuseDemande(demande)">
+              <div class="btn-loader" *ngIf="processing === demande.demandeId"></div>
+              <ng-container *ngIf="processing !== demande.demandeId">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </ng-container>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ── État vide ── -->
+  <div class="empty-state" *ngIf="!loading && getDemandesTotalCount() === 0">
+    <div class="empty-icon">📭</div>
+    <h3>Aucune demande en attente</h3>
+    <p>Les joueurs qui demandent à rejoindre vos équipes apparaîtront ici.</p>
+  </div>
+
+</div>

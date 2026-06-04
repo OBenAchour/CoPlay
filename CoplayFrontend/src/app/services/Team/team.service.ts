@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Team } from '../../Core/Models/Teams/Team';
 
 @Injectable({
   providedIn: 'root'
@@ -10,34 +9,50 @@ export class TeamService {
 
   private apiUrl = 'http://localhost:8080/api/teams';
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient) { }
+
+  getAllTeams(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}`);
   }
 
-  // 🔹 GET ALL TEAMS
-  getAllTeams(): Observable<Team[]> {
-    return this.http.get<Team[]>(this.apiUrl);
+  getTeamById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
-  // 🔹 GET TEAM BY ID
-  getTeamById(teamId: string): Observable<Team> {
-    return this.http.get<Team>(`${this.apiUrl}/${teamId}`);
+  /** NOUVEAU : Récupère une équipe avec ses membres (avec displayName, email, etc.) */
+  getTeamDetail(teamId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/detail/${teamId}`);
   }
 
-  // 🔹 CREATE TEAM
-  createTeam(team: Team, creatorId: string): Observable<Team> {
-    const params = new HttpParams().set('creatorId', creatorId);
-
-    return this.http.post<Team>(this.apiUrl, team, {params});
+  getTeamsByCreator(creatorId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/creator/${creatorId}`);
   }
 
-  // ✅ UPDATE
-  updateTeam(id: string, team: Team): Observable<Team> {
-    return this.http.put<Team>(`${this.apiUrl}/${id}`, team);
+  createTeam(team: any, creatorId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}?creatorId=${creatorId}`, team);
   }
 
-  // ✅ DELETE
-  deleteTeam(id: string) {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+  updateTeam(teamId: string, team: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${teamId}?currentUserId=${this.getCurrentUserId()}`, team);
   }
 
+  deleteTeam(teamId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${teamId}?currentUserId=${this.getCurrentUserId()}`);
+  }
+
+  isCaptain(teamId: string, userId: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/${teamId}/captain/${userId}`);
+  }
+
+  isMember(teamId: string, userId: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/${teamId}/member/${userId}`);
+  }
+
+  getUserRole(teamId: string, userId: string): Observable<string> {
+    return this.http.get<string>(`${this.apiUrl}/${teamId}/role/${userId}`);
+  }
+
+  private getCurrentUserId(): string {
+    return localStorage.getItem('userId') || '';
+  }
 }

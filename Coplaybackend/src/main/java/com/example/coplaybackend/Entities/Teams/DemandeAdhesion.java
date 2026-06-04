@@ -16,9 +16,11 @@ public class DemandeAdhesion {
     @Id
     private String demandeId;
 
-    private String teamId;           // ref → Team
+    private String teamId;
 
-    private String userId;           // ref → User
+    private String userId;
+
+    private RoleEquipe proposedRole;    // ← AJOUTER CE CHAMP
 
     private StatutDemande statut;
 

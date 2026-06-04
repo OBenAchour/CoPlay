@@ -28,7 +28,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         String path = request.getServletPath();
 
-        // --- CORRECTION : Si la route est publique, on ne traite pas le JWT ---
         if (path.startsWith("/api/auth/")) {
             filterChain.doFilter(request, response);
             return;
@@ -43,29 +42,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             if (jwtUtils.validateToken(jwt)) {
-                String userEmail = jwtUtils.extractUsername(jwt);
+                String userId = jwtUtils.extractUserId(jwt);  // ← UTILISE L'ID
                 String role = jwtUtils.extractRole(jwt);
 
-                if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    // Sécurité : Si le rôle est manquant dans le token pour une raison X, on met PLAYER
+                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     String finalRole = (role != null) ? role : "PLAYER";
 
-                    // IMPORTANT : Création de l'autorité avec le rôle extrait
                     SimpleGrantedAuthority authority = new SimpleGrantedAuthority(finalRole);
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userEmail,
+                            userId,    // ← UTILISE L'ID AU LIEU DE L'EMAIL
                             null,
                             Collections.singletonList(authority)
                     );
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    // On injecte l'utilisateur authentifié (avec son rôle ADMIN) dans le contexte
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                    // Petit log de debug (tu pourras le retirer après)
-                    System.out.println("User: " + userEmail + " authentifié avec succès. Rôle: " + finalRole);
+                    System.out.println("User (ID): " + userId + " authentifié avec succès. Rôle: " + finalRole);
                 }
             }
         } catch (Exception e) {

@@ -62,14 +62,14 @@ public class SignalingService {
         List<String> otherParticipantIds = new ArrayList<>();
         List<String> otherParticipantEmails = new ArrayList<>();
         for (Participant p : participants) {
-            if (!p.getUser().getUserId().equals(initiator.getUserId())) {
-                otherParticipantIds.add(p.getUser().getUserId());
+            if (!p.getUser().getId().equals(initiator.getId())) {
+                otherParticipantIds.add(p.getUser().getId());
                 otherParticipantEmails.add(p.getUser().getEmail());
             }
         }
 
         log.info("[SIGNALING] Participants found: {}, initiatorId: {}, toUserIds: {}, toEmails: {}",
-                participants.size(), initiator.getUserId(), otherParticipantIds, otherParticipantEmails);
+                participants.size(), initiator.getId(), otherParticipantIds, otherParticipantEmails);
 
         CallNotificationMessage notification = new CallNotificationMessage(
                 "call-initiated",

@@ -35,9 +35,28 @@ export class DemandeAdhesionComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
+
+    // Charger toutes les équipes
     this.teamSvc.getAllTeams().subscribe({
-      next:  (data: any) => { this.teams = data; this.loading = false; },
-      error: ()          => { this.loading = false; }
+      next: (data: any) => {
+        this.teams = data;
+
+        // Après avoir chargé les équipes, charger les demandes envoyées
+        this.demandeSvc.getSentRequests(this.currentUserId).subscribe({
+          next: (demandes: any[]) => {
+            this.sentRequests = demandes.map(d => ({
+              teamId: d.teamId,
+              teamName: this.teams.find(t => t.teamId === d.teamId)?.name || 'Équipe supprimée',
+              sentAt: new Date(d.createdAt),
+              status: d.statut === 'PENDING' ? 'EN_ATTENTE' :
+                d.statut === 'ACCEPTED' ? 'ACCEPTEE' : 'REFUSEE'
+            }));
+            this.loading = false;
+          },
+          error: () => { this.loading = false; }
+        });
+      },
+      error: () => { this.loading = false; }
     });
   }
 

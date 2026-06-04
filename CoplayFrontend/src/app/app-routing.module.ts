@@ -55,6 +55,7 @@ import { MyTicketsComponent } from './Features/Tickets/my-tickets/my-tickets.com
 
 // Social
 import { FeedComponent } from './Features/Social/feed/feed.component';
+import {DemandesRecuesComponent} from "./components/demandes-recues/demandes-recues.component";
 
 const routes: Routes = [
   // ─── Pages publiques (pas de shell) ───
@@ -96,6 +97,7 @@ const routes: Routes = [
       { path: 'team/sponsors',       component: EquipeSponsorComponent },
       { path: 'team/historique',     component: HistoriqueActionComponent },
       { path: 'teammember',          component: TeamMemberComponent },
+      { path: 'team/adhesion-requests', component: DemandesRecuesComponent },
 
       // Compétitions — route statique AVANT la route paramétrée /:id
       { path: 'competitions',            component: CompetitionListComponent },

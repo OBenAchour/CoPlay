@@ -25,4 +25,6 @@ public class Team {
     private Integer capacityMax;
 
     private TeamStatus status;
+
+    private String creatorId;           // ← AJOUTER CE CHAMP
 }

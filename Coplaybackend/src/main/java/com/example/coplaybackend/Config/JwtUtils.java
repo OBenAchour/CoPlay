@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class JwtUtils {
 
     private final String SECRET_KEY = "ma_cle_secrete_tres_longue_et_securisee_pour_coplay_2026";
-    private final int JWT_EXPIRATION_MS = 7000000; // 1 heure
+    private final int JWT_EXPIRATION_MS = 3600000; // 1 heure
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
@@ -26,16 +26,16 @@ public class JwtUtils {
 
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        // On s'assure que le rôle n'est pas nul avant de le mettre dans le token
         String roleName = (user.getRole() != null) ? user.getRole().name() : "PLAYER";
         String displayName = (user.getProfile() != null) ? user.getProfile().getDisplayName() : "Utilisateur";
 
         claims.put("role", roleName);
         claims.put("name", displayName);
+        claims.put("userId", user.getId());  // ← AJOUTE L'ID RÉEL
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(user.getEmail())
+                .setSubject(user.getId())  // ← UTILISE L'ID AU LIEU DE L'EMAIL
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION_MS))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS384)
@@ -48,6 +48,10 @@ public class JwtUtils {
 
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    public String extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

@@ -46,7 +46,7 @@ public class ConversationController {
     public ResponseEntity<List<ConversationListItem>> getForUser() {
         String userId = SecurityUtils.getCurrentUserId();
         log.info("Fetching conversations for user: {}", userId);
-        return ResponseEntity.ok(conversationService.getConversationsForUserWithDetails(userId));
+        return ResponseEntity.ok(List.of());  // ← Retourne une liste vide pour l'instant
 
     }
 

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    private String userId;
+    private String id;
 
     @Indexed
     private String email;
@@ -24,10 +24,8 @@ public class User {
 
     private Role role;
 
-    @Builder.Default
     private Boolean isEmailVerified = false;
 
-    @Builder.Default
     private Boolean isActive = true;
 
     // L'AGRÉGATION (EMBEDDING) SE FAIT ICI
@@ -37,7 +35,16 @@ public class User {
     private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
 
-    public String getId() {
-        return this.userId;
+    // ← AJOUTER CE CHAMP SI MANQUANT (pour AwardService)
+    @Builder.Default
+    private Integer stars = 0;  // Nombre d'étoiles du joueur (récompenses)
+    // AJOUTER CE GETTER
+    /**
+     * Getter de compatibilité - MongoDB utilise @Id private String id
+     */
+    public String getUserId() {
+        return this.id;
     }
+
+
 }

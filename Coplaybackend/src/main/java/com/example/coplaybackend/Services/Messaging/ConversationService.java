@@ -90,7 +90,7 @@ public class ConversationService {
         String resolvedUserId = userId;
         if (userId != null && userId.contains("@")) {
             resolvedUserId = userRepository.findByEmail(userId)
-                    .map(User::getUserId)
+                    .map(User::getId)
                     .orElse(userId);
         }
 
@@ -142,7 +142,7 @@ public class ConversationService {
         return messageRepository.findByConversation_ConversationIdAndIsDeletedFalseOrderBySentAtAsc(conversationId)
                 .stream()
                 .filter(m -> m.getStatus() != MessageStatus.READ)
-                .filter(m -> !m.getSender().getUserId().equals(userId))
+                .filter(m -> !m.getSender().getId().equals(userId))
                 .filter(m -> participant.getLastReadAt() == null
                         || m.getSentAt().isAfter(participant.getLastReadAt()))
                 .count();
@@ -152,7 +152,7 @@ public class ConversationService {
         String resolvedUserId = userId;
         if (userId != null && userId.contains("@")) {
             resolvedUserId = userRepository.findByEmail(userId)
-                    .map(User::getUserId)
+                    .map(User::getId)
                     .orElse(userId);
         }
 
@@ -198,11 +198,11 @@ public class ConversationService {
                         .findByConversation_ConversationIdAndIsActiveTrue(conv.getConversationId());
 
                 for (Participant p : otherParticipants) {
-                    if (!p.getUser().getUserId().equals(resolvedUserId)) {
+                    if (!p.getUser().getId().equals(resolvedUserId)) {
                         // This is the other user
                         User otherUser = p.getUser();
                         name = otherUser.getProfile().getDisplayName();
-                        otherUserId = otherUser.getUserId();
+                        otherUserId = otherUser.getId();
                         otherUserAvatar = name != null && !name.isEmpty()
                                 ? name.substring(0, 1).toUpperCase()
                                 : "?";

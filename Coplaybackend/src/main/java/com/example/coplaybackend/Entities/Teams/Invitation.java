@@ -16,11 +16,15 @@ public class Invitation {
     @Id
     private String invitationId;
 
-    private String teamId;           // ref → Team
+    private String teamId;
 
-    private String invitedUserId;    // ref → User (invité)
+    private String teamName;            // ← AJOUTER CE CHAMP
 
-    private String invitedByUserId;  // ref → User (qui invite)
+    private String invitedUserId;
+
+    private String invitedByUserId;
+
+    private RoleEquipe proposedRole;    // ← AJOUTER CE CHAMP
 
     private StatutDemande statut;
 

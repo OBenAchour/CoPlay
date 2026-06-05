@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface TeamRepository extends MongoRepository<Team,String> {
+public interface TeamRepository extends MongoRepository<Team, String> {
 
     List<Team> findByCity(String city);
 
@@ -13,4 +13,5 @@ public interface TeamRepository extends MongoRepository<Team,String> {
 
     List<Team> findByStatus(String status);
 
+    List<Team> findByCreatorId(String creatorId);  // ← AJOUTE CETTE MÉTHODE
 }

@@ -19,6 +19,14 @@
     {{ toast }}
   </div>
 
+  <!-- ── Navigation équipes ── -->
+  <div class="team-nav">
+    <button class="nav-btn" routerLink="/team">Mes équipes</button>
+    <button class="nav-btn" routerLink="/team/demandes">Demandes d'adhésion</button>
+    <button class="nav-btn" routerLink="/team/invitations">
+      🎯 Mes invitations reçues
+    </button>
+  </div>
   <!-- ── Tabs ── -->
   <div class="tabs">
     <button class="tab" [class.active]="activeTab==='mes-equipes'" (click)="activeTab='mes-equipes'">
@@ -203,7 +211,22 @@
       </div>
       <button class="close-btn" (click)="closeModal()">✕</button>
     </div>
-    <div class="modal-body">
+    <!-- Onglets -->
+    <div class="detail-tabs">
+      <button class="detail-tab"
+              [class.active]="detailTab === 'infos'"
+              (click)="detailTab = 'infos'">
+        📋 Infos
+      </button>
+      <button class="detail-tab"
+              [class.active]="detailTab === 'assistant'"
+              (click)="detailTab = 'assistant'">
+        🤖 Assistant
+      </button>
+    </div>
+
+    <!-- Contenu onglet INFOS -->
+    <div class="modal-body" *ngIf="detailTab === 'infos'">
       <!-- Infos -->
       <div class="info-grid">
         <div class="info-row" *ngIf="modalTeam?.city"><span>Ville</span><strong>{{ modalTeam?.city }}</strong></div>
@@ -218,20 +241,30 @@
         <div class="members-list" *ngIf="!modalLoading">
           <div class="member-row" *ngFor="let m of modalMembers">
             <div class="member-av" [style.background]="roleColor(m.roleEquipe)+'22'" [style.color]="roleColor(m.roleEquipe)">
-              {{ m.userId.substring(0,2).toUpperCase() }}
+              {{ (m.displayName || m.userId || '?').substring(0,2).toUpperCase() }}
             </div>
             <div class="member-info">
-              <div class="member-id">{{ m.userId }}</div>
+              <div class="member-id">{{ m.displayName || m.userId }}</div>
+              <div class="member-email" *ngIf="m.email" style="font-size: 11px; color: #9A8F7F; margin-top: 2px;">{{ m.email }}</div>
               <div class="member-joined" *ngIf="m.joinedAt">Rejoint le {{ m.joinedAt | date:'dd/MM/yyyy' }}</div>
             </div>
             <span class="role-chip" [style.background]="roleColor(m.roleEquipe)+'18'" [style.color]="roleColor(m.roleEquipe)">
-              {{ roleLabel(m.roleEquipe) }}
-            </span>
+          {{ roleLabel(m.roleEquipe) }}
+        </span>
           </div>
           <div class="members-empty" *ngIf="modalMembers.length===0">Aucun membre chargé.</div>
         </div>
       </div>
     </div>
+
+    <!-- Contenu onglet ASSISTANT -->
+    <div class="modal-body" *ngIf="detailTab === 'assistant'">
+      <app-onboarding-chat
+        [teamId]="modalTeam?.teamId!"
+        [userId]="currentUserId">
+      </app-onboarding-chat>
+    </div>
+
     <div class="modal-foot">
       <button class="btn-secondary" (click)="closeModal()">Fermer</button>
       <button class="btn-danger" *ngIf="isMember(modalTeam?.teamId!)" (click)="quitterEquipe(modalTeam!)">
@@ -300,10 +333,11 @@
         <div class="members-list">
           <div class="member-row" *ngFor="let m of modalMembers">
             <div class="member-av" [style.background]="roleColor(m.roleEquipe)+'22'" [style.color]="roleColor(m.roleEquipe)">
-              {{ m.userId.substring(0,2).toUpperCase() }}
+              {{ (m.displayName || m.userId || '?').substring(0,2).toUpperCase() }}
             </div>
             <div class="member-info">
-              <div class="member-id">{{ m.userId }}</div>
+              <div class="member-id">{{ m.displayName || m.userId }}</div>
+              <div class="member-email" *ngIf="m.email" style="font-size: 11px; color: #9A8F7F; margin-top: 2px;">{{ m.email }}</div>
             </div>
             <span class="role-chip" [style.background]="roleColor(m.roleEquipe)+'18'" [style.color]="roleColor(m.roleEquipe)">
               {{ roleLabel(m.roleEquipe) }}
@@ -322,18 +356,93 @@
         <div class="add-member-form">
           <div class="col-title" style="margin-top:16px">Ajouter un membre</div>
           <div class="frow">
-            <div class="fg">
-              <input type="text" [(ngModel)]="newMemberUserId" placeholder="ID du joueur"/>
+            <div class="fg" style="position:relative">
+              <input
+                type="text"
+                [(ngModel)]="searchQuery"
+                (input)="searchUsers()"
+                (focus)="showSearchResults = searchResults.length > 0"
+                placeholder="Taper le nom du joueur"/>
+
+              <!-- Dropdown de résultats -->
+              <div class="search-dropdown" *ngIf="showSearchResults && searchResults.length > 0">
+                <div class="search-item" *ngFor="let user of searchResults" (click)="selectUser(user)">
+                  <div class="user-avatar">{{ user.profile.displayName.substring(0,2).toUpperCase() }}</div>
+                  <div class="user-info">
+                    <strong>{{ user.profile.displayName }}</strong>
+                    <span>{{ user.email }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message "aucun résultat" -->
+              <div class="search-empty" *ngIf="showSearchResults && searchResults.length === 0">
+                Aucun utilisateur trouvé
+              </div>
             </div>
+
             <div class="fg" style="max-width:130px">
               <div class="sel-wrap">
                 <select [(ngModel)]="newMemberRole">
-                  <option *ngFor="let r of roles" [value]="r">{{ roleLabel(r) }}</option>
+                  <option *ngFor="let r of availableRoles" [value]="r">{{ roleLabel(r) }}</option>
                 </select>
                 <svg class="sel-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
               </div>
             </div>
           </div>
+
+          <!-- Invitations envoyées -->
+          <div class="invitations-section" style="margin-top: 24px; border-top: 1px solid #E0DDD5; padding-top: 24px;">
+            <div class="col-title">Invitations envoyées</div>
+
+            <div class="invitations-list" *ngIf="sentInvitations.length > 0">
+              <div class="invitation-item" *ngFor="let inv of sentInvitations" [class.status-pending]="inv.statut === 'PENDING'" [class.status-accepted]="inv.statut === 'ACCEPTED'" [class.status-rejected]="inv.statut === 'REJECTED'">
+                <div class="inv-user">
+                  <strong>{{ inv.userId }}</strong>
+                  <span class="inv-date">{{ formatDate(inv.createdAt) }}</span>
+                </div>
+                <div class="inv-actions">
+                  <div class="inv-status" [class.badge-pending]="inv.statut === 'PENDING'" [class.badge-accepted]="inv.statut === 'ACCEPTED'" [class.badge-rejected]="inv.statut === 'REJECTED'">
+                    {{ inv.statut === 'PENDING' ? '⏳ En attente' : inv.statut === 'ACCEPTED' ? '✓ Acceptée' : '✗ Refusée' }}
+                  </div>
+                  <button class="delete-inv-btn" (click)="deleteInvitation(inv)" title="Supprimer l'invitation">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="invitations-empty" *ngIf="sentInvitations.length === 0">
+              Aucune invitation envoyée
+            </div>
+          </div>
+          <!-- Demandes d'adhésion reçues -->
+          <div class="demandes-section" style="margin-top: 24px; border-top: 1px solid #E0DDD5; padding-top: 24px;">
+            <div class="col-title">Demandes d'adhésion reçues</div>
+
+            <div class="demandes-list" *ngIf="receivedDemandes.length > 0">
+              <div class="demande-item" *ngFor="let dem of receivedDemandes">
+                <div class="dem-user">
+                  <strong>{{ dem.userId }}</strong>
+                  <span class="dem-role">{{ roleLabel(dem.proposedRole) }}</span>
+                  <span class="dem-date">{{ formatDate(dem.createdAt) }}</span>
+                </div>
+                <div class="dem-actions">
+                  <button class="btn-accept" (click)="accepterDemande(dem)" title="Accepter">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </button>
+                  <button class="btn-reject" (click)="refuserDemande(dem)" title="Refuser">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="demandes-empty" *ngIf="receivedDemandes.length === 0">
+              Aucune demande en attente
+            </div>
+          </div>
+
           <button class="btn-outline add-btn" [disabled]="!newMemberUserId.trim() || sending==='addmember'" (click)="addMemberToTeam()">
             <div class="btn-loader btn-loader-dark" *ngIf="sending==='addmember'"></div>
             <ng-container *ngIf="sending!=='addmember'">
@@ -343,23 +452,14 @@
           </button>
         </div>
 
-        <!-- Invitations -->
-        <div class="invite-shortcut">
-          <div class="col-title" style="margin-top:16px">Invitations</div>
-          <button class="btn-outline" routerLink="/team/invitations" (click)="closeModal()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Inviter un joueur
+        <div class="modal-foot">
+          <button class="btn-secondary" (click)="closeModal()">Fermer</button>
+          <button class="btn-danger" (click)="deleteTeam(modalTeam!)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Supprimer l'équipe
           </button>
         </div>
       </div>
-    </div>
-
-    <div class="modal-foot">
-      <button class="btn-secondary" (click)="closeModal()">Fermer</button>
-      <button class="btn-danger" (click)="deleteTeam(modalTeam!)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-        Supprimer l'équipe
-      </button>
     </div>
   </div>
 </div>

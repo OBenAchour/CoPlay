@@ -156,7 +156,7 @@ public class CompetitionController {
                 .orElse(null);
         String trueUserId = (currentUser != null) ? currentUser.getId() : null;
 
-        boolean isCreator = competition.getCreator() != null && competition.getCreator().getUserId().equals(trueUserId);
+        boolean isCreator = competition.getCreator() != null && competition.getCreator().getId().equals(trueUserId);
 
         if (!isAdmin && !isCreator) {
             return ResponseEntity.status(403).body("Accès refusé. Vous devez être ADMIN ou le créateur.");
@@ -326,7 +326,7 @@ public class CompetitionController {
 
         User user = userRepo.findByEmail(auth.getName())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-        String trueUserId = user.getUserId(); // Utiliser userId explicitement
+        String trueUserId = user.getId(); // Utiliser userId explicitement
 
         // 3. Vérification du rôle (COACH, CAPTAIN ou ADMIN)
         boolean isAuth = auth.getAuthorities().stream()

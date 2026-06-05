@@ -53,6 +53,8 @@ import { MapComponent } from './Features/Event & Training/map/map.component';
 
 // Reclamations
 import { AdminReclamationComponent } from './components/admin-reclamation/admin-reclamation.component';
+import { DemandesRecuesComponent } from './components/demandes-recues/demandes-recues.component';
+import { OnboardingChatComponent } from './components/onboarding-chat/onboarding-chat/onboarding-chat.component';
 
 @NgModule({
   declarations: [
@@ -85,13 +87,17 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     EquipeSponsorComponent,
     HistoriqueActionComponent,
     InvitationComponent,
+    OnboardingChatComponent,  // ← AJOUTER CETTE LIGNE
+
 
     TeamMemberComponent,
-   
-    
-    // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés 
+
+
+    // Note : Les composants de messagerie (ChatBubble, etc.) sont déclarés
     // Reclamations
     AdminReclamationComponent,
+               DemandesRecuesComponent,
+               OnboardingChatComponent,
     // Note: FeedComponent est déclaré dans SocialModule
     // Note: Les composants de messagerie (ChatBubble, etc.) sont déclarés
 
@@ -104,7 +110,7 @@ import { AdminReclamationComponent } from './components/admin-reclamation/admin-
     BrowserAnimationsModule,
     CommonModule,        // Fournit ngClass, ngIf, ngFor
     AppRoutingModule,
-    HttpClientModule, 
+    HttpClientModule,
     FormsModule,           // Fournit ngModel
     ReactiveFormsModule,   // Fournit formGroup
     MessagingModule,

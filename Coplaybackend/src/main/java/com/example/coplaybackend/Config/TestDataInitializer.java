@@ -55,8 +55,7 @@ public class TestDataInitializer implements CommandLineRunner {
                 return;
             }
 
-            String uid = user.get().getUserId();
-
+            String uid = user.get().getId();  // ✅ CORRECT
             int equipments = seedEquipments(uid);
             int services = seedServices(uid);
             int injuries = seedInjuries(uid);

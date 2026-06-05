@@ -1,0 +1,40 @@
+<div class="chat-wrap">
+  <div class="chat-header">
+    <div class="chat-icon">🤖</div>
+    <div class="chat-header-text">
+      <div class="chat-title">Assistant onboarding</div>
+      <div class="chat-sub">Pose toutes tes questions sur l'équipe</div>
+    </div>
+    <button class="btn-clear-chat" (click)="clear()" title="Réinitialiser la conversation">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+      Réinitialiser
+    </button>
+  </div>
+
+  <div class="chat-messages">
+    <div *ngFor="let m of messages"
+         class="msg"
+         [ngClass]="m.role === 'user' ? 'msg-user' : 'msg-bot'">
+      <div class="bubble">{{ m.content }}</div>
+    </div>
+    <div class="msg msg-bot" *ngIf="loading">
+      <div class="bubble typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input-row">
+    <textarea
+      [(ngModel)]="inputText"
+      (keydown)="onKey($event)"
+      placeholder="Pose ta question..."
+      rows="1"
+      class="chat-inp">
+    </textarea>
+    <button class="btn-send" (click)="send()" [disabled]="loading || !inputText.trim()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Envoyer
+    </button>
+  </div>
+</div>

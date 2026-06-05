@@ -18,16 +18,37 @@ export class DemandeAdhesionService {
   constructor(private http: HttpClient) {}
 
   /** Soumettre une demande d'adhésion à une équipe */
-  rejoindre(teamId: string, userId: string): Observable<DemandeAdhesion> {
+  rejoindre(teamId: string, userId: string, proposedRole: string = 'PLAYER'): Observable<DemandeAdhesion> {
     const params = new HttpParams()
       .set('teamId', teamId)
-      .set('userId', userId);
+      .set('userId', userId)
+      .set('proposedRole', proposedRole);
     return this.http.post<DemandeAdhesion>(`${this.apiUrl}/join`, null, { params });
   }
 
-  /** Accepter une demande (admin/capitaine) */
-  accepter(demandeId: string, adminId: string): Observable<DemandeAdhesion> {
-    const params = new HttpParams().set('adminId', adminId);
-    return this.http.put<DemandeAdhesion>(`${this.apiUrl}/accept/${demandeId}`, null, { params });
+  // Récupère les demandes reçues pour une équipe
+  getReceivedRequests(teamId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/team/${teamId}`);
   }
+
+// Accepter une demande
+  accepter(demandeId: string, captainId: string): Observable<any> {
+    const params = new HttpParams().set('captainId', captainId);
+    return this.http.put<any>(`${this.apiUrl}/accept/${demandeId}`, null, { params });
+  }
+
+// Refuser une demande
+  refuser(demandeId: string, captainId: string): Observable<any> {
+    const params = new HttpParams().set('captainId', captainId);
+    return this.http.put<any>(`${this.apiUrl}/refuse/${demandeId}`, null, { params });
+  }
+
+  /** Récupérer mes demandes envoyées */
+  getSentRequests(userId: string): Observable<DemandeAdhesion[]> {
+    const params = new HttpParams().set('userId', userId);
+    return this.http.get<DemandeAdhesion[]>(`${this.apiUrl}/my-demandes`, { params });
+  }
+
+
+
 }
